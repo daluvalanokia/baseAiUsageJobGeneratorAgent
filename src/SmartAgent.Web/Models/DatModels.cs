@@ -65,6 +65,14 @@ public sealed class DistributeRequest
     public int? WorkMs { get; set; }
     /// <summary>How many of the tasks should fail on their first attempt (tests redistribution).</summary>
     public int? FailFirstAttempts { get; set; }
+    /// <summary>Assign descending priorities so earlier tasks are processed first (priority processing).</summary>
+    public bool Prioritize { get; set; }
+    /// <summary>Each task allocates this many KB to simulate memory-heavy work (0 = off).</summary>
+    public int? MemoryHogKb { get; set; }
+    /// <summary>Per-lane allocation budget in KB; a lane crossing it is GC-trimmed and recycled.</summary>
+    public int? LaneMemoryBudgetKb { get; set; }
+    /// <summary>Run-wide allocation budget in KB; lane spawning stops beyond it.</summary>
+    public int? TotalMemoryBudgetKb { get; set; }
 }
 
 public sealed class DistributeResponse
@@ -74,6 +82,9 @@ public sealed class DistributeResponse
     public int Succeeded { get; set; }
     public int Failed { get; set; }
     public long ElapsedMs { get; set; }
+    public int LanesSpawned { get; set; }
+    public int LanesRecycled { get; set; }
+    public long AllocatedBytes { get; set; }
     public string ConsolidationFile { get; set; } = string.Empty;
     public List<object> Results { get; set; } = new();
 }

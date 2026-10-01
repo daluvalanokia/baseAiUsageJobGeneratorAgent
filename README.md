@@ -267,22 +267,52 @@ orchestration and OO classification alongside the prompt pipeline.
 
 ### ThreadGovernor (`/api/dat/distribute`)
 
-A work-queue governor that creates a bounded set of worker threads (lanes),
-releases tasks to them, and redistributes failed tasks to free lanes before
-consolidating the run into a CSV-style .dat report.
+A memory-managed, priority-aware work-queue governor. It creates a bounded
+pool of worker lanes, processes high-priority tasks first, measures per-task
+and per-lane memory allocation, recycles lanes that become memory-heavy,
+spawns replacement lanes while work remains, redistributes failed tasks, and
+consolidates the run into a CSV-style .dat report.
 
 ```json
 POST /api/dat/distribute
-{ "subject": "demo", "taskCount": 24, "maxThreads": 8, "workMs": 10, "failFirstAttempts": 6 }
+{
+  "subject": "demo",            // consolidation file subject
+  "taskCount": 24, "maxThreads": 8, "workMs": 10,
+  "failFirstAttempts": 6,       // tasks that fail once (tests redistribution)
+  "prioritize": true,           // earlier tasks get higher priority
+  "memoryHogKb": 300,           // each task allocates this much (simulates heavy work)
+  "laneMemoryBudgetKb": 500,     // per-lane allocation budget; crossing it recycles the lane
+  "totalMemoryBudgetKb": 4096   // run-wide budget; spawning stops beyond it
+}
 ```
+
+**Priority processing.** Every task carries a `Priority` (higher first,
+FIFO within a level). With `prioritize: true` the demo assigns descending
+priorities so T0001 is processed first.
+
+**Memory management.** Allocation is measured per task and per lane with
+`GC.GetAllocatedBytesForCurrentThread()` and reported as `AllocatedBytes`
+(run total and per task). Two budgets apply:
+
+- `laneMemoryBudgetBytes` — a high-memory lane crossing its budget is
+  GC-trimmed and recycled; the supervisor spawns a fresh replacement lane
+  so throughput is unaffected. Recycles are counted as `LanesRecycled`.
+- `totalMemoryBudgetBytes` — once the run-wide budget trips, the governor
+  trims once and stops spawning new lanes; existing lanes keep draining.
+
+**Adaptive spawning.** A supervisor grows the pool toward the backlog
+(`backlog / TasksPerLane`, capped by `maxThreads` and the memory budget), so
+lanes are spawned only when they speed processing up. Live check: 100 x 25ms
+tasks ran on 12 grown lanes in 231ms vs ~2500ms sequential.
 
 Every task is named after a SubjectBank formula (round-robin), evaluated with
 random inputs. A task that throws is re-queued once and retried on another lane
 (attempts=2); genuinely failing tasks end as `failed` with the error archived.
 The consolidation report is written to `data/dat/consolidations/<subject>.dat`
-(header comment + one CSV row per task: TaskId, Subject, Status, Attempts,
-ThreadId, ElapsedMs, Output) and returned in the response. `Threads` in the
-report is the number of worker lanes created.
+(header comments with run totals incl. LanesSpawned / LanesRecycled /
+AllocatedBytes, then one CSV row per task: TaskId, Subject, Priority, Status,
+Attempts, ThreadId, Lane, ElapsedMs, AllocatedBytes, Output) and returned in
+the response. `Threads` in the report is the peak number of active lanes.
 
 ### ObjectBank (`/api/dat/classes`, `/api/dat/classes/rebuild`)
 

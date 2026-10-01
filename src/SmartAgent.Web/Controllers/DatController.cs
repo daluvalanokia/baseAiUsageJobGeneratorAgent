@@ -36,7 +36,11 @@ public sealed class DatController(
             subjects = subjectBank.Subjects,
             subjectFormulas = subjectBank.Subjects.ToDictionary(
                 s => s, s => subjectBank.List(s).Count),
-            governor = new { governor.LatestRunTasks, Threads = governor.LatestRunThreads, governor.LatestRunUtc }
+            governor = new
+            {
+                governor.LatestRunTasks, Threads = governor.LatestRunThreads, governor.LatestRunUtc,
+                governor.LatestRunLanesSpawned, governor.LatestRunLanesRecycled, governor.LatestRunAllocatedBytes
+            }
         });
     }
 
@@ -166,6 +170,10 @@ public sealed class DatController(
         var maxThreads = body?.MaxThreads is >= 1 and <= 64 ? body!.MaxThreads.Value : 4;
         var workMs = body?.WorkMs is >= 0 and <= 5000 ? body!.WorkMs.Value : 20;
         var failFirst = Math.Clamp(body?.FailFirstAttempts ?? 0, 0, taskCount);
+        var prioritize = body?.Prioritize == true;
+        var memoryHogBytes = body?.MemoryHogKb is >= 0 and <= 16_384 ? body!.MemoryHogKb.Value * 1024L : 0;
+        var laneBudgetBytes = body?.LaneMemoryBudgetKb is >= 1 ? body!.LaneMemoryBudgetKb.Value * 1024L : (long?)null;
+        var totalBudgetBytes = body?.TotalMemoryBudgetKb is >= 1 ? body!.TotalMemoryBudgetKb.Value * 1024L : (long?)null;
 
         // spread the tasks over every formula in every subject (round-robin)
         var formulas = subjectBank.Subjects
@@ -187,13 +195,18 @@ public sealed class DatController(
             {
                 Id = $"T{i:D4}",
                 Subject = $"{formulaSubject}:{formula.FormulaName}",
+                // priority processing: earlier tasks get higher priority when requested
+                Priority = prioritize ? taskCount - i : 0,
                 Body = async token =>
                 {
                     await Task.Delay(workMs, token);
+                    // simulate a memory-heavy task so per-lane accounting and
+                    // lane recycling are observable in the run report
+                    var scratch = memoryHogBytes > 0 ? new byte[memoryHogBytes] : null;
                     if (failOnce.TryRemove($"T{i:D4}", out _))
                         throw new InvalidOperationException("simulated first-attempt failure (redistribution test)");
                     var result = subjectBank.Evaluate(formulaSubject, formula.FormulaName, inputs);
-                    return $"{formula.FormulaName}={result.Value:0.####}{result.Units}";
+                    return $"{formula.FormulaName}={result.Value:0.####}{result.Units}{(scratch != null ? $" (+{memoryHogBytes / 1024}KB)" : "")}";
                 }
             };
         }).ToList();
@@ -202,15 +215,19 @@ public sealed class DatController(
 
         try
         {
-            var report = await governor.DistributeAsync(tasks, maxThreads, path, ct);
+            var report = await governor.DistributeAsync(tasks, maxThreads, path, ct,
+                laneMemoryBudgetBytes: laneBudgetBytes,
+                totalMemoryBudgetBytes: totalBudgetBytes);
             return Ok(new DistributeResponse
             {
                 Tasks = report.Tasks, Threads = report.Threads, Succeeded = report.Succeeded,
                 Failed = report.Failed, ElapsedMs = report.ElapsedMs, ConsolidationFile = path,
+                LanesSpawned = report.LanesSpawned, LanesRecycled = report.LanesRecycled,
+                AllocatedBytes = report.AllocatedBytes,
                 Results = report.Results.Select(r => (object)new
                 {
-                    r.Id, r.Subject, r.Status, r.Attempts, r.ThreadId, r.ElapsedMs,
-                    output = r.Output, error = r.Error
+                    r.Id, r.Subject, r.Status, r.Attempts, r.ThreadId, r.Lane, r.Priority,
+                    r.AllocatedBytes, r.ElapsedMs, output = r.Output, error = r.Error
                 }).ToList()
             });
         }

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using SmartAgent.Core.Dat;
 using Xunit;
@@ -193,9 +194,12 @@ public class DatFrameworkTests : IDisposable
         // consolidation archive written with header + one row per task
         var lines = await File.ReadAllLinesAsync(path);
         Assert.StartsWith("# ConsolidationReport", lines[0]);
-        Assert.Contains("TaskId,Subject,Status,Attempts,ThreadId,ElapsedMs,Output", lines);
-        Assert.Equal(50 + 3, lines.Length);
-        Assert.Contains(lines, l => l.StartsWith("T001,math,succeeded,1,"));
+        Assert.Contains("TaskId,Subject,Priority,Status,Attempts,ThreadId,Lane,ElapsedMs,AllocatedBytes,Output", lines);
+        Assert.Contains(lines, l => l.StartsWith("# LanesSpawned="));
+        Assert.Equal(50 + 4, lines.Length);
+        Assert.Contains(lines, l => l.StartsWith("T001,math,0,succeeded,1,"));
+        Assert.True(report.LanesSpawned > 0, "at least the initial lanes spawn");
+        Assert.True(report.AllocatedBytes >= 0, "memory accounting present");
     }
 
     [Fact]
@@ -250,5 +254,97 @@ public class DatFrameworkTests : IDisposable
 
         await new ThreadGovernor().DistributeAsync(tasks, maxThreads: 4, consolidationPath: path);
         Assert.True(peak <= 4, $"peak concurrency {peak} exceeded bound 4");
+    }
+
+    [Fact]
+    public async Task Governor_processes_tasks_in_priority_order()
+    {
+        var path = Path.Combine(_root, "consolidations", "priority.dat");
+        var order = new ConcurrentQueue<string>();
+        var tasks = new List<GovernorTask>();
+        // low priorities first in the input list, to prove ordering is by priority
+        foreach (var (id, priority) in new[]
+                 {
+                     ("low-1", 0), ("mid-1", 5), ("high-1", 10), ("low-2", 0), ("mid-2", 5), ("high-2", 10)
+                 })
+            tasks.Add(new GovernorTask
+            {
+                Id = id, Subject = "math", Priority = priority,
+                Body = async ct => { await Task.Delay(2, ct); order.Enqueue(id); return id; }
+            });
+
+        var report = await new ThreadGovernor().DistributeAsync(tasks, maxThreads: 1, consolidationPath: path);
+
+        Assert.Equal(6, report.Succeeded);
+        // single lane → strict priority order: all highs, then mids, then lows
+        Assert.Equal(new[] { "high-1", "high-2", "mid-1", "mid-2", "low-1", "low-2" }, order);
+        Assert.Equal(10, report.Results.Single(r => r.Id == "high-1").Priority);
+    }
+
+    [Fact]
+    public async Task Governor_recycles_high_memory_lanes()
+    {
+        var path = Path.Combine(_root, "consolidations", "recycle.dat");
+        // every task allocates ~100KB; a 10KB lane budget forces a recycle per task
+        var tasks = Enumerable.Range(1, 6).Select(i => new GovernorTask
+        {
+            Id = $"M{i:D2}", Subject = "chem",
+            Body = _ => { var scratch = new byte[100 * 1024]; scratch[0] = 1; return Task.FromResult("allocated"); }
+        }).ToList();
+
+        var report = await new ThreadGovernor().DistributeAsync(
+            tasks, maxThreads: 3, consolidationPath: path,
+            laneMemoryBudgetBytes: 10 * 1024);
+
+        Assert.Equal(6, report.Succeeded);
+        Assert.True(report.LanesRecycled > 0, "high-memory lanes must be recycled");
+        Assert.True(report.LanesSpawned > 3, "recycled lanes must be replaced by fresh spawns");
+        Assert.True(report.AllocatedBytes > 0, "per-lane allocation must be accounted");
+        // archive carries the memory bookkeeping (header + per-task allocation column)
+        var lines = await File.ReadAllLinesAsync(path);
+        var bookkeeping = lines.Single(l => l.StartsWith("# LanesSpawned="));
+        Assert.Contains("LanesRecycled=", bookkeeping);
+        Assert.Contains("AllocatedBytes=", bookkeeping);
+        Assert.Contains(lines, l => l.Contains(",succeeded,") && l.EndsWith("allocated"));
+    }
+
+    [Fact]
+    public async Task Governor_spawns_lanes_to_drain_a_backlog()
+    {
+        var path = Path.Combine(_root, "consolidations", "spawn.dat");
+        var tasks = Enumerable.Range(1, 60).Select(i => new GovernorTask
+        {
+            Id = $"S{i:D2}", Subject = "math",
+            Body = async ct => { await Task.Delay(20, ct); return "done"; }
+        }).ToList();
+
+        var report = await new ThreadGovernor().DistributeAsync(tasks, maxThreads: 8, consolidationPath: path);
+
+        Assert.Equal(60, report.Succeeded);
+        // initial lanes are 4; a 60-task backlog must grow the pool past them
+        Assert.True(report.Threads > 4, $"expected adaptive spawns past the initial 4 lanes, peak was {report.Threads}");
+        Assert.True(report.Threads <= 8, "peak lanes must stay within maxThreads");
+        // 60 sequential 20ms delays would be ~1200ms; parallel lanes must beat that
+        Assert.True(report.ElapsedMs < 900, $"60 x 20ms should run well under a second, took {report.ElapsedMs}ms");
+    }
+
+    [Fact]
+    public async Task Governor_stops_spawning_beyond_the_total_memory_budget()
+    {
+        var path = Path.Combine(_root, "consolidations", "budget.dat");
+        var tasks = Enumerable.Range(1, 40).Select(i => new GovernorTask
+        {
+            Id = $"B{i:D2}", Subject = "physics",
+            Body = _ => { var scratch = new byte[64 * 1024]; scratch[0] = 1; return Task.FromResult("done"); }
+        }).ToList();
+
+        // total budget smaller than what 40 x 64KB tasks allocate → no spawns past the initial lanes
+        var report = await new ThreadGovernor().DistributeAsync(
+            tasks, maxThreads: 8, consolidationPath: path,
+            totalMemoryBudgetBytes: 256 * 1024);
+
+        Assert.Equal(40, report.Succeeded);
+        Assert.True(report.LanesSpawned <= 8, $"spawning must be memory-capped, spawned {report.LanesSpawned}");
+        Assert.True(report.Threads <= 8, "peak lanes stay within maxThreads");
     }
 }

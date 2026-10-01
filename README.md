@@ -260,6 +260,69 @@ Live-verified against the repo itself: 26 findings → scoped prompt → 12 work
 across 4 threads, 0 failures, scope satisfied. Standalone use (`any prompt`, no source
 needed) stays available at `POST /api/evaluate-prompt`.
 
+## DAT framework — ThreadGovernor, ObjectBank, SubjectBank
+
+The DAT layer adds file-backed (.dat) primitives for multi-threaded task
+orchestration and OO classification alongside the prompt pipeline.
+
+### ThreadGovernor (`/api/dat/distribute`)
+
+A work-queue governor that creates a bounded set of worker threads (lanes),
+releases tasks to them, and redistributes failed tasks to free lanes before
+consolidating the run into a CSV-style .dat report.
+
+```json
+POST /api/dat/distribute
+{ "subject": "demo", "taskCount": 24, "maxThreads": 8, "workMs": 10, "failFirstAttempts": 6 }
+```
+
+Every task is named after a SubjectBank formula (round-robin), evaluated with
+random inputs. A task that throws is re-queued once and retried on another lane
+(attempts=2); genuinely failing tasks end as `failed` with the error archived.
+The consolidation report is written to `data/dat/consolidations/<subject>.dat`
+(header comment + one CSV row per task: TaskId, Subject, Status, Attempts,
+ThreadId, ElapsedMs, Output) and returned in the response. `Threads` in the
+report is the number of worker lanes created.
+
+### ObjectBank (`/api/dat/classes`, `/api/dat/classes/rebuild`)
+
+OO classification stored as a pipe-delimited class catalog in
+`data/dat/classbank.dat`. Each row is one class definition:
+
+`ClassName | Namespace | Kind | Access | IsAbstract | IsSealed | IsStatic | BaseClass | Interfaces | Properties | Methods | Constructors | Events | SourceFile`
+
+- `POST /api/dat/classes` upserts (append new, replace in place on update)
+- `POST /api/dat/classes/rebuild?maxThreads=N` parses the catalog on a
+  thread pool and materializes each class as a typed object graph (property
+  types resolved against other banked classes, unresolved types reported as
+  `missingTypes`), keyed by class name.
+
+### SubjectBank (`/api/dat/subjects`, `/api/dat/evaluate`)
+
+Subject-specific formula banks: one `.dat` file per subject
+(`math.dat`, `physics.dat`, `chemistry.dat`) with pipe-delimited rows:
+
+`FormulaName | Expression | Variables | Units`
+
+The built-in `FormulaEvaluator` is a recursive-descent parser supporting
+`+ - * / % ^`, parentheses, unary minus, and the functions `sin cos tan asin
+acos atan sqrt abs log ln exp floor ceil round min max` plus `pi` and `e`
+constants. Variable lookup is case-insensitive.
+
+- `GET /api/dat/subjects/{subject}` lists formulas
+- `POST /api/dat/subjects` upserts a formula (CSV escaping for commas in fields)
+- `POST /api/dat/evaluate` evaluates a formula:
+
+```json
+POST /api/dat/evaluate
+{ "subject": "physics", "formulaName": "KineticEnergy", "variables": { "m": 2, "v": 3 } }
+// -> { "value": 9, "units": "Joules" }
+```
+
+`GET /api/dat/status` summarizes bank contents and the governor's latest run.
+On first use the banks seed default subjects (math, physics, chemistry) and
+`classbank.dat` is excluded from subject scanning.
+
 ## Build & run
 
 ```bash

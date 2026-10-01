@@ -81,6 +81,22 @@ builder.Services.AddSingleton<AppAnalyzerAgent>();
 // In-memory store of run results (bounded; demo-suitable).
 builder.Services.AddSingleton<RunStore>();
 
+// DAT framework: OO classification bank, subject formula banks and the
+// top-level thread governor (create/distribute/redistribute/release/consolidate).
+builder.Services.AddSingleton(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+    var root = sp.GetRequiredService<IConfiguration>()["SmartAgent:DatRoot"] ?? "data/dat";
+    return new SmartAgent.Core.Dat.ObjectBank(Path.Combine(env.ContentRootPath, root, "classbank.dat"));
+});
+builder.Services.AddSingleton(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+    var root = sp.GetRequiredService<IConfiguration>()["SmartAgent:DatRoot"] ?? "data/dat";
+    return new SmartAgent.Core.Dat.SubjectBank(Path.Combine(env.ContentRootPath, root));
+});
+builder.Services.AddSingleton<SmartAgent.Core.Dat.ThreadGovernor>();
+
 // CI/CD continuity registry: persisted cross-run finding history per target.
 builder.Services.AddSingleton<ContinuityRegistry>(sp =>
 {

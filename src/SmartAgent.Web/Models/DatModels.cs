@@ -89,6 +89,31 @@ public sealed class DistributeResponse
     public List<object> Results { get; set; } = new();
 }
 
+public sealed class DbEntityRequest
+{
+    public string Key { get; set; } = string.Empty;
+    public string Kind { get; set; } = "table";
+    public string Schema { get; set; } = "dbo";
+    public string Name { get; set; } = string.Empty;
+    public int? Identifier { get; set; }
+    public string Columns { get; set; } = string.Empty;
+    public string IndexColumns { get; set; } = string.Empty;
+    public bool IsClustered { get; set; }
+    public string PartitionScheme { get; set; } = string.Empty;
+    public string Range { get; set; } = string.Empty;
+    public string Parent { get; set; } = string.Empty;
+    public string References { get; set; } = string.Empty;
+}
+
+public sealed class DbSchemaRebuildRequest
+{
+    /// <summary>Upper bound of resolution threads (1..64). Default 4.</summary>
+    public int? MaxThreads { get; set; }
+    /// <summary>Only resolve entities with identifiers in this inclusive range.</summary>
+    public int? FromIdentifier { get; set; }
+    public int? ToIdentifier { get; set; }
+}
+
 public sealed class ResolvedObjectDto
 {
     public string ClassName { get; set; } = string.Empty;

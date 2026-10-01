@@ -327,6 +327,29 @@ OO classification stored as a pipe-delimited class catalog in
   types resolved against other banked classes, unresolved types reported as
   `missingTypes`), keyed by class name.
 
+### DbSchemaBank (`/api/dat/schema`)
+
+Database entities — tables, views, indexes, clustered indexes, clusters,
+partitions, primary/foreign/unique keys — stored as a pipe-delimited catalog in
+`data/dat/dbbank.dat` and resolved into key-based data models:
+
+`Key|Kind|Schema|Name|Identifier|Columns|IndexColumns|IsClustered|PartitionScheme|Range|Parent|References`
+
+- `GET /api/dat/schema` lists every banked entity grouped by kind
+- `POST /api/dat/schema` upserts an entity (kind accepts table, view, index,
+  clusteredindex, cluster, partition, primarykey/pk, foreignkey/fk, uniquekey/uk)
+- `POST /api/dat/schema/rebuild` resolves the catalog into linked data models
+  on threaded lanes: entities are sorted by identifier, split into contiguous
+  ranges and resolved in parallel into a shared key-based hash dictionary.
+  Keys, indexes and partitions attach to their parent models, foreign keys
+  resolve to target model keys, and orphans (unbanked parents) are reported.
+  Optional `fromIdentifier` / `toIdentifier` process only an identifier range.
+  Tables/views resolve typed-defaulted columns (`Id:Int,Name:String`).
+
+The bank seeds a sample vehicle-fleet schema (Vehicles, Drivers, PK/clustered
+and non-clustered indexes, FK, unique key, cluster, partition, view) on first
+use. `dbbank.dat` is excluded from subject scanning.
+
 ### SubjectBank (`/api/dat/subjects`, `/api/dat/evaluate`)
 
 Subject-specific formula banks: one `.dat` file per subject

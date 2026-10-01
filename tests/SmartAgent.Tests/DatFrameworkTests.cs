@@ -171,6 +171,123 @@ public class DatFrameworkTests : IDisposable
             _subjects.Evaluate("math", "DoesNotExist", new Dictionary<string, double>()));
     }
 
+    // ---------- DbSchemaBank ----------
+
+    private DbSchemaBank SchemaBank() => new(Path.Combine(_root, "dbbank.dat"));
+
+    [Fact]
+    public void Schema_seeds_on_first_use_and_upsert_updates_in_place()
+    {
+        var bank = SchemaBank();
+        Assert.True(bank.Count > 0, "seed schema expected on first use");
+
+        var vehicles = bank.Find("dbo.Vehicles");
+        Assert.NotNull(vehicles);
+        Assert.Equal(DbEntityKind.Table, vehicles.Kind);
+
+        // update in place
+        var (updated, action) = bank.Upsert(vehicles! with { Columns = "Id:Int,Name:String" });
+        Assert.Equal("updated", action);
+        Assert.Equal("Id:Int,Name:String", bank.Find("dbo.Vehicles")!.Columns);
+
+        // persistence: a fresh bank over the same file loads the same rows
+        Assert.Equal(bank.Count, SchemaBank().Count);
+    }
+
+    [Fact]
+    public void Schema_upsert_requires_a_key_and_rejects_unknown_kinds()
+    {
+        var bank = SchemaBank();
+        Assert.Throws<ArgumentException>(() => bank.Upsert(new DbEntity { Key = " ", Kind = DbEntityKind.Table }));
+        Assert.Throws<ArgumentException>(() => DbEntity.ParseKind("gibberish"));
+        Assert.Equal(DbEntityKind.ClusteredIndex, DbEntity.ParseKind("clusteredindex"));
+        Assert.Equal(DbEntityKind.UniqueKey, DbEntity.ParseKind("uk"));
+    }
+
+    [Fact]
+    public void Schema_rebuild_resolves_linked_data_models()
+    {
+        var bank = SchemaBank();
+        var resolution = bank.Rebuild(maxThreads: 4);
+
+        Assert.Equal(bank.Count, resolution.Entities);
+        Assert.Equal(bank.Count, resolution.Resolved);
+        Assert.Empty(resolution.Orphans);
+
+        var vehicles = resolution.Models.Single(m => m.Key == "dbo.Vehicles");
+        Assert.Equal(0, vehicles.Columns["Id"]);                       // typed default
+        Assert.Equal(string.Empty, vehicles.Columns["Name"]);
+
+        // PK + FK attached, clustered index flagged, non-clustered index present
+        Assert.Contains(vehicles.Keys, k => k.Kind == DbEntityKind.PrimaryKey && k.Columns.SequenceEqual(new[] { "Id" }));
+        var fk = vehicles.Keys.Single(k => k.Kind == DbEntityKind.ForeignKey);
+        Assert.Equal("dbo.Drivers(Id)", fk.References);
+        Assert.True(vehicles.Indexes.Single(i => i.Name == "CIX_Vehicles").IsClustered);
+        Assert.False(vehicles.Indexes.Single(i => i.Name == "IX_Vehicles_Name").IsClustered);
+
+        // FK reference resolves to a banked model, no missing references
+        Assert.Empty(vehicles.MissingReferences);
+        Assert.Contains(resolution.Models, m => m.Key == "dbo.Drivers" &&
+            m.Keys.Any(k => k.Kind == DbEntityKind.UniqueKey));
+
+        // partition attached to its parent table
+        Assert.Contains(vehicles.Partitions, p => p.Scheme == "psVehicleYear" && p.Range == "2024");
+
+        // the view resolves with typed columns too
+        var view = resolution.Models.Single(m => m.Key == "dbo.vw_FleetSummary");
+        Assert.Equal(DbEntityKind.View, view.Kind);
+        Assert.Equal(string.Empty, view.Columns["Vehicle"]);
+    }
+
+    [Fact]
+    public void Schema_rebuild_flags_orphan_keys_and_missing_fk_references()
+    {
+        var bank = SchemaBank();
+        bank.Upsert(new DbEntity
+        {
+            Key = "dbo.fk_Ghost", Kind = DbEntityKind.ForeignKey, Name = "FK_Ghost", Identifier = 200,
+            IndexColumns = "GhostId", Parent = "dbo.Ghosts", References = "dbo.Ghosts(Id)"
+        });
+
+        var resolution = bank.Rebuild(maxThreads: 2);
+
+        Assert.Single(resolution.Orphans);
+        Assert.Contains("dbo.fk_Ghost", resolution.Orphans[0]);
+        Assert.Contains("unbanked parent 'dbo.Ghosts'", resolution.Orphans[0]);
+    }
+
+    [Fact]
+    public void Schema_rebuild_partitions_work_across_threads_by_identifier()
+    {
+        // 60 tables spread over identifiers 1..60 resolve on parallel lanes
+        var bank = SchemaBank();
+        for (var i = 1; i <= 60; i++)
+            bank.Upsert(new DbEntity
+            {
+                Key = $"dbo.Big{i:D3}", Kind = DbEntityKind.Table, Name = $"Big{i:D3}",
+                Identifier = i, Columns = "Id:Int,Value:Double"
+            });
+
+        var resolution = bank.Rebuild(maxThreads: 8);
+        Assert.Equal(bank.Count, resolution.Resolved);
+        Assert.True(resolution.Threads > 1, "identifier ranges must run on multiple lanes");
+        var distinctThreads = resolution.Models
+            .Where(m => m.Name.StartsWith("Big"))
+            .Select(m => m.ThreadId).Distinct().Count();
+        Assert.True(distinctThreads > 1, $"expected multiple resolving threads, saw {distinctThreads}");
+    }
+
+    [Fact]
+    public void Schema_rebuild_resolves_an_identifier_range_only()
+    {
+        var bank = SchemaBank();
+        var resolution = bank.Rebuild(maxThreads: 4, fromIdentifier: 101, toIdentifier: 102);
+
+        Assert.Equal(2, resolution.Resolved);                          // Vehicles + Drivers only
+        Assert.Contains(resolution.Models, m => m.Key == "dbo.Vehicles");
+        Assert.DoesNotContain(resolution.Models, m => m.Key == "dbo.vw_FleetSummary");
+    }
+
     // ---------- ThreadGovernor ----------
 
     [Fact]

@@ -11,6 +11,10 @@ namespace SmartAgent.Web.Controllers;
 /// DAT framework surface — the top-level multi-threaded processing layer:
 ///   • ObjectBank   : comma-separated OO classification catalog (.dat) with
 ///                    hash-dictionary load and threaded object rebuild
+///   • DbSchemaBank: database entities (tables, views, indexes, clustered
+///                    indexes, clusters, partitions, primary/foreign/unique keys)
+///                    resolved into key-based data models on threaded,
+///                    identifier-partitioned lanes
 ///   • SubjectBank  : per-subject formula '.dat' columns (math, physics,
 ///                    chemistry, ...) with a built-in expression evaluator
 ///   • ThreadGovernor: bounded worker pool — create, distribute, redistribute
@@ -22,6 +26,7 @@ namespace SmartAgent.Web.Controllers;
 public sealed class DatController(
     ObjectBank objectBank,
     SubjectBank subjectBank,
+    DbSchemaBank dbSchemaBank,
     ThreadGovernor governor,
     IConfiguration config) : ControllerBase
 {
@@ -36,6 +41,10 @@ public sealed class DatController(
             subjects = subjectBank.Subjects,
             subjectFormulas = subjectBank.Subjects.ToDictionary(
                 s => s, s => subjectBank.List(s).Count),
+            dbEntities = dbSchemaBank.All().Values
+                .GroupBy(e => e.Kind.ToString())
+                .ToDictionary(g => g.Key, g => g.Count()),
+            dbEntityTotal = dbSchemaBank.Count,
             governor = new
             {
                 governor.LatestRunTasks, Threads = governor.LatestRunThreads, governor.LatestRunUtc,
@@ -150,6 +159,72 @@ public sealed class DatController(
         }
         catch (KeyNotFoundException ex) { return NotFound(new { error = ex.Message }); }
         catch (Exception ex) { return BadRequest(new { error = ex.Message }); }
+    }
+
+    // ---------- database schema bank ----------
+
+    /// <summary>Lists every banked database entity grouped by kind.</summary>
+    [HttpGet("schema")]
+    public ActionResult ListSchema()
+    {
+        var all = dbSchemaBank.All().Values.OrderBy(e => e.Identifier).ThenBy(e => e.Key).ToList();
+        return Ok(new
+        {
+            count = all.Count,
+            columns = "Key|Kind|Schema|Name|Identifier|Columns|IndexColumns|IsClustered|PartitionScheme|Range|Parent|References",
+            kinds = all.GroupBy(e => e.Kind.ToString()).ToDictionary(g => g.Key, g => g.Count()),
+            entities = all
+        });
+    }
+
+    /// <summary>Upserts a database entity (table, view, index, clustered index, cluster, partition, key).</summary>
+    [HttpPost("schema")]
+    public ActionResult UpsertSchemaEntity([FromBody] DbEntityRequest body)
+    {
+        if (!Authorized()) return Unauthorized();
+        if (body is null || string.IsNullOrWhiteSpace(body.Key))
+            return BadRequest(new { error = "key is required (e.g. dbo.Vehicles)" });
+
+        try
+        {
+            var (entity, action) = dbSchemaBank.Upsert(new DbEntity
+            {
+                Key = body.Key.Trim(), Kind = DbEntity.ParseKind(body.Kind), Schema = body.Schema,
+                Name = string.IsNullOrWhiteSpace(body.Name) ? body.Key.Trim() : body.Name,
+                Identifier = body.Identifier ?? 0, Columns = body.Columns, IndexColumns = body.IndexColumns,
+                IsClustered = body.IsClustered, PartitionScheme = body.PartitionScheme, Range = body.Range,
+                Parent = body.Parent, References = body.References
+            });
+            return Ok(new { action, entity });
+        }
+        catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
+    }
+
+    /// <summary>
+    /// Resolves banked entities into linked data models on threaded lanes
+    /// partitioned by identifier. Keys, indexes and partitions attach to their
+    /// parent models; foreign-key references resolve to target model keys;
+    /// unbanked parents are reported as orphans.
+    /// </summary>
+    [HttpPost("schema/rebuild")]
+    public ActionResult RebuildSchema([FromBody] DbSchemaRebuildRequest? body)
+    {
+        var threads = body?.MaxThreads is >= 1 and <= 64 ? body.MaxThreads.Value : 4;
+        var resolution = dbSchemaBank.Rebuild(threads, body?.FromIdentifier, body?.ToIdentifier);
+
+        return Ok(new
+        {
+            entities = resolution.Entities, resolved = resolution.Resolved,
+            threads = resolution.Threads, elapsedMs = resolution.ElapsedMs,
+            orphans = resolution.Orphans,
+            models = resolution.Models.Select(m => new
+            {
+                m.Key, kind = m.Kind.ToString(), m.Schema, m.Name, m.Identifier,
+                columns = m.Columns.ToDictionary(kv => kv.Key, kv => kv.Value),
+                keys = m.Keys, indexes = m.Indexes, partitions = m.Partitions,
+                missingReferences = m.MissingReferences, m.ThreadId
+            })
+        });
     }
 
     // ---------- thread governor ----------

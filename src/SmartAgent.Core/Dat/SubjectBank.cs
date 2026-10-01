@@ -104,8 +104,11 @@ public sealed class SubjectBank(string rootDirectory)
             }
             foreach (var file in Directory.GetFiles(rootDirectory, "*.dat"))
             {
-                // the OO classification catalog shares the root but is not a subject
-                if (string.Equals(Path.GetFileName(file), "classbank.dat", StringComparison.OrdinalIgnoreCase))
+                // the OO classification and DB schema catalogs share the root
+                // but are not subjects
+                var fileName = Path.GetFileName(file);
+                if (fileName.Equals("classbank.dat", StringComparison.OrdinalIgnoreCase) ||
+                    fileName.Equals("dbbank.dat", StringComparison.OrdinalIgnoreCase))
                     continue;
                 var subject = Path.GetFileNameWithoutExtension(file);
                 var bank = _subjects.GetOrAdd(subject,

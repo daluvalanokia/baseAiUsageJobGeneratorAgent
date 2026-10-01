@@ -95,6 +95,14 @@ builder.Services.AddSingleton(sp =>
     var root = sp.GetRequiredService<IConfiguration>()["SmartAgent:DatRoot"] ?? "data/dat";
     return new SmartAgent.Core.Dat.SubjectBank(Path.Combine(env.ContentRootPath, root));
 });
+// database schema bank: tables/views/indexes/clusters/partitions/keys resolved
+// into key-based data models for identifier-partitioned multi-thread processing.
+builder.Services.AddSingleton(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+    var root = sp.GetRequiredService<IConfiguration>()["SmartAgent:DatRoot"] ?? "data/dat";
+    return new SmartAgent.Core.Dat.DbSchemaBank(Path.Combine(env.ContentRootPath, root, "dbbank.dat"));
+});
 builder.Services.AddSingleton<SmartAgent.Core.Dat.ThreadGovernor>();
 
 // CI/CD continuity registry: persisted cross-run finding history per target.

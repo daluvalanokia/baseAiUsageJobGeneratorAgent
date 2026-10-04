@@ -1,0 +1,207 @@
+@model SmartAgent.Core.Pm.ProgramPlan
+@using SmartAgent.Core.Pm
+@{
+    ViewData["Title"] = Model.Name;
+    var storiesByEpic = Model.Stories.GroupBy(s => s.EpicKey).ToDictionary(g => g.Key, g => g.ToList());
+    var sprintStories = Model.SprintPlans
+        .Select(sp => (Sprint: sp, Stories: sp.StoryKeys.Select(k => Model.Stories.FirstOrDefault(s => s.Key == k)).Where(s => s != null).ToList()))
+        .ToList();
+    var roles = Model.Resources.Select(r => r.Role).Distinct().OrderBy(r => r).ToList();
+    var quarterTotals = Model.Budget.QuarterTotals as IReadOnlyList<decimal> ?? Model.Budget.QuarterTotals.ToList();
+}
+<section class="hub">
+    <header class="hub-head">
+        <h1>@Model.Name</h1>
+        <p>@Model.SourceType: @Model.SourceName — @Model.Years-year agile delivery programme · @Model.Sprints sprints · @Model.Weeks weeks · @Model.Resources.Count team members · @Model.Squads.Count squads</p>
+        <p class="sub">@Model.SourceDetail</p>
+    </header>
+
+    <div class="kpis">
+        <div class="kpi"><b>@Model.Sprints</b><span>SPRINTS</span></div>
+        <div class="kpi"><b>@Model.Weeks</b><span>WEEKS</span></div>
+        <div class="kpi"><b>@Model.Resources.Count</b><span>TEAM MEMBERS</span></div>
+        <div class="kpi"><b>@Model.TotalStoryPoints</b><span>STORY POINTS</span></div>
+        <div class="kpi"><b>@Model.UserStoryCount</b><span>USER STORIES</span></div>
+        <div class="kpi green"><b>@Model.TestCaseCount</b><span>TEST CASES</span></div>
+    </div>
+
+    <div class="cols">
+        <div class="col">
+            <h2>Quarter Schedule</h2>
+            <table class="tbl">
+                <thead><tr><th>Quarter</th><th>Theme</th><th>Sprints</th><th>Weeks</th><th>Release</th><th>Budget</th></tr></thead>
+                <tbody>
+                @for (var qi = 0; qi < Model.Quarters.Count; qi++)
+                {
+                    var q = Model.Quarters[qi];
+                    <tr>
+                        <td><b>@q.Key</b></td>
+                        <td>@q.Theme</td>
+                        <td>@q.SprintFrom–@q.SprintTo</td>
+                        <td>@q.WeekFrom–@q.WeekTo</td>
+                        <td>@if (!string.IsNullOrEmpty(q.Release)) { <span class="badge">@q.Release</span> }</td>
+                        <td>$@(quarterTotals[qi].ToString("N0"))</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            <h2>Budget Management</h2>
+            <div class="budget">
+                <div class="kpi wide"><b>$@(Model.Budget.TotalUsd.ToString("N0"))</b><span>TOTAL PROGRAM</span></div>
+                <div class="kpi"><b>$@(Model.Budget.PerYearUsd.ToString("N0"))</b><span>PER YEAR</span></div>
+                <div class="kpi"><b>@Model.Budget.CommittedHours.ToString("N0")</b><span>COMMITTED HOURS</span></div>
+                <div class="kpi @(Model.Budget.WithinCap ? "green" : "red")">
+                    <b>@(Model.Budget.BudgetCapPerYearUsd > 0 ? Model.Budget.WithinCap ? "WITHIN CAP" : "OVER CAP" : "UNCONSTRAINED")</b>
+                    <span>@(Model.Budget.BudgetCapPerYearUsd > 0 ? $"CAP ${Model.Budget.BudgetCapPerYearUsd:N0}/YR" : "NO CAP SET")</span>
+                </div>
+            </div>
+            <table class="tbl">
+                <thead><tr><th>Role</th><th>Program cost</th></tr></thead>
+                <tbody>
+                @foreach (var rc in Model.Budget.CostByRole)
+                {
+                    <tr><td>@rc.Role</td><td>$@(rc.CostUsd.ToString("N0"))</td></tr>
+                }
+                </tbody>
+            </table>
+
+            <h2>Squad Domains</h2>
+            <ul class="squads">
+                @foreach (var sq in Model.Squads)
+                {
+                    <li><span class="avatar">@sq.Key</span> <b>@sq.Name</b> — @sq.Domain <em>(@sq.ResourceKeys.Count resources)</em></li>
+                }
+            </ul>
+        </div>
+
+        <div class="col">
+            <h2>Sprints (Task Management)</h2>
+            <div class="sprint-list">
+                @foreach (var (sprint, sStories) in sprintStories.Take(30))
+                {
+                    <details>
+                        <summary>
+                            <b>@sprint.Name</b> · @sprint.Quarter · wk @sprint.StartWeek–@sprint.EndWeek
+                            <span class="pts">@sprint.Points/@sprint.CapacityPoints pts</span>
+                            @if (!string.IsNullOrEmpty(sprint.Release)) { <span class="badge">@sprint.Release</span> }
+                            <span class="date">@sprint.StartDate.ToString("MM/dd/yy")–@sprint.EndDate.ToString("MM/dd/yy")</span>
+                        </summary>
+                        <p class="goal">@sprint.Goal</p>
+                        <ul>
+                            @foreach (var s in sStories)
+                            {
+                                <li><b>@s.Key</b> @s.Title <span class="pts">(@s.Points pts, @s.Risk risk)</span></li>
+                            }
+                            @if (sStories.Count == 0)
+                            {
+                                <li class="muted">Stabilization &amp; hardening sprint</li>
+                            }
+                        </ul>
+                        <p class="muted">Budget: $@(sprint.BudgetUsd.ToString("N0")) · @sprint.StoryKeys.Count stories</p>
+                    </details>
+                }
+            </div>
+        </div>
+    </div>
+
+    <h2>Requirements — @Model.UserStoryCount User Stories (feasible deliverable models)</h2>
+    <table class="tbl">
+        <thead><tr><th>Key</th><th>Epic</th><th>Story</th><th>Pts</th><th>Priority</th><th>Risk</th><th>Acceptance criteria</th></tr></thead>
+        <tbody>
+        @foreach (var epic in Model.Epics)
+        {
+            <tr class="epic"><td colspan="7">@epic.Key · @epic.Name (squad @epic.Squad, theme @epic.Theme)</td></tr>
+            @foreach (var s in storiesByEpic.GetValueOrDefault(epic.Key) ?? new List<PmStory>())
+            {
+                <tr>
+                    <td>@s.Key</td>
+                    <td>@epic.Key</td>
+                    <td>As a @s.AsA, I want @s.IWant, so that @s.SoThat.</td>
+                    <td>@s.Points</td>
+                    <td>@s.Priority</td>
+                    <td>@s.Risk</td>
+                    <td>@string.Join(" · ", s.AcceptanceCriteria)</td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+
+    <h2>Resource Management — RACI Chart (@Model.Resources.Count resources)</h2>
+    <table class="tbl raci">
+        <thead>
+        <tr><th>Phase \ Role</th>@foreach (var r in roles) { <th>@r</th> }</tr>
+        </thead>
+        <tbody>
+        @foreach (var phase in RaciChart.Phases)
+        {
+            <tr>
+                <th>@phase</th>
+                @foreach (var r in roles)
+                {
+                    var cell = RaciChart.Matrix.TryGetValue(phase, out var row) && row.TryGetValue(r, out var t)
+                        ? t switch { RaciType.Responsible => "R", RaciType.Accountable => "A", RaciType.Consulted => "C", _ => "I" } : "";
+                    <td class="@cell.ToLowerInvariant()">@cell</td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+    <table class="tbl">
+        <thead><tr><th>Resource</th><th>Role</th><th>Squad</th><th>Rate</th><th>Hours/sprint</th></tr></thead>
+        <tbody>
+        @foreach (var r in Model.Resources)
+        {
+            <tr><td>@r.Name (@r.Key)</td><td>@r.Role</td><td>@r.Squad</td><td>$@r.HourlyRate/h</td><td>@r.HoursPerSprint</td></tr>
+        }
+        </tbody>
+    </table>
+
+    <h2>Role-Threaded Deliverables (@Model.RoleOutputs.Count roles on parallel lanes)</h2>
+    <div class="roles">
+        @foreach (var (role, output) in Model.RoleOutputs)
+        {
+            <div class="role-card"><b>@role</b><p>@output</p></div>
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(Model.GovernorReportFile))
+    {
+        <p class="muted">Thread consolidation report: @Model.GovernorReportFile</p>
+    }
+</section>
+<style>
+    .hub { display: flex; flex-direction: column; gap: 18px; }
+    .hub-head h1 { margin: 0 0 4px; }
+    .hub-head .sub { color: #6c757d; font-size: 13px; margin: 2px 0; }
+    .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+    .kpi { border: 1px solid #dee2e6; border-radius: 8px; padding: 14px 16px; text-align: center; background: #fff; }
+    .kpi b { display: block; font-size: 26px; color: #0d6efd; }
+    .kpi.green b { color: #198754; }
+    .kpi.red b { color: #dc3545; }
+    .kpi span { font-size: 11px; color: #6c757d; letter-spacing: 1px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+    .tbl { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+    .tbl th, .tbl.td, .tbl td { border: 1px solid #e9ecef; padding: 6px 8px; text-align: left; }
+    .tbl thead th { background: #f8f9fa; }
+    .tbl tr.epic td { background: #eef5ff; font-weight: 600; }
+    .badge { background: #dc3545; color: #fff; border-radius: 4px; padding: 1px 6px; font-size: 11px; }
+    .pts { color: #6c757d; font-size: 12px; }
+    .muted { color: #868e96; font-size: 12px; }
+    .budget { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
+    .squads { list-style: none; padding: 0; }
+    .squads li { padding: 6px 0; border-bottom: 1px solid #e9ecef; }
+    .avatar { display: inline-block; width: 22px; height: 22px; background: #0d6efd; color: #fff; border-radius: 4px; text-align: center; line-height: 22px; font-size: 12px; }
+    .sprint-list details { border: 1px solid #e9ecef; border-radius: 6px; padding: 6px 10px; margin-bottom: 4px; background: #fff; }
+    .sprint-list summary { cursor: pointer; }
+    .sprint-list .goal { font-size: 12px; color: #495057; margin: 6px 0 2px; }
+    .date { float: right; color: #868e96; font-size: 11px; }
+    .raci td { text-align: center; font-weight: 700; }
+    .raci td.r { background: #d1e7dd; color: #0f5132; }
+    .raci td.a { background: #cfe2ff; color: #084298; }
+    .raci td.c { background: #fff3cd; color: #664d03; }
+    .raci td.i { background: #f8f9fa; color: #6c757d; }
+    .roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .role-card { border: 1px solid #dee2e6; border-radius: 8px; padding: 10px 12px; background: #fff; }
+    .role-card p { margin: 4px 0 0; font-size: 12px; color: #495057; }
+</style>

@@ -1,0 +1,8 @@
+bin/
+obj/
+*.user
+.vs/
+*.userprefs
+TestResults/
+[Ll]ogs/
+data/

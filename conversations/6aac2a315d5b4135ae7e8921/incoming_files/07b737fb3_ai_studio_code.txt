@@ -1,0 +1,112 @@
+  Surface Structure (TopX, TopY, TopZ)
+         ▲
+         │ (StructureVertexId - Common Spatial Axis)
+         ▼
+  Ground Surface (BottomX, BottomY, BottomZ = SurfaceElevationM)
+         │
+  Foundation Interface (FoundationDepthM, FoundationBottomElevationM)
+         │
+  Geotechnical Profile Intervals (Duplicated Structure Vertices projected along Z-axis)
+         ├── Fill / Topsoil [Layer 0]
+         ├── Sand / Silt / Alluvial Deposit [Layer 1]
+         ├── Dense Glacial Till / Clay [Layer 2]
+         ├── Weathered Rock Transition [Layer 3]
+         └── Competent Bedrock [Layer 4] (BedrockTopElevationM)
+         │
+  Hydrological Profile (GroundwaterTableElevationM, Pore Pressure)
+         │
+  Off-Site Corroborating Boreholes (Boreholes & BoreholeIntervals with distance/bearing offset)
+
+
+Key Notes:
+Vertical Digital-Twin via Vertex Duplication: Each StructureVertexId of a structure's polygon perimeter acts as a vertical borehole-axis anchor. Subsurface geometry duplicates this perimeter downwards across discrete stratigraphic interfaces (Ground, Foundation Base, Layer Boundaries, Bedrock, and Groundwater Table).
+Explicit Provenance & Inference Distinction: Direct measurements (borehole core logs, geotechnical reports) are distinguished from geostatistical interpolations (Kriging / inverse distance weighting from regional maps).
+Change Classification Discipline: Changes between subsurface versions are classified into PHYSICAL_CHANGE (settlement, groundwater fluctuation, void formation) vs. DATA_REFINEMENT (new borehole drilled, revised geological map), preventing spurious alerts.
+2. Database Schema & Data Models
+We will extend the database model in src/types.ts and the persistence engine in src/services/geometryMonitoring.ts with the following entities:
+2.1 Subsurface Profiles (SubsurfaceProfiles)
+Anchored to CityStructureId and optionally to StructureVertexId (vertical axis):
+subsurfaceProfileId: string (PK)
+cityStructureId: string (FK)
+structureVertexId: string | null (FK to surface vertex)
+subsurfaceGeometryVersionId: string (FK to version)
+surfaceElevationM: number (Ground collar elevation)
+foundationBottomElevationM: number (Base of footings/piles)
+foundationDepthM: number
+totalInvestigatedDepthM: number
+profileType: 'BOREHOLE' | 'GEOTECHNICAL' | 'GEOLOGICAL_MAP' | 'GEOPHYSICAL' | 'INFERRED' | 'COMPOSITE'
+observationMethod: string
+horizontalAccuracyM: number
+verticalAccuracyM: number
+isAuthoritative: boolean
+isInferred: boolean
+capturedUtc: string
+2.2 Subsurface Geological Layers (SubsurfaceGeologicalLayers)
+subsurfaceLayerId: string (PK)
+subsurfaceProfileId: string (FK)
+cityStructureId: string (FK)
+structureVertexId: string | null
+layerSequence: number (1 = shallowest, N = deepest)
+materialType: string (e.g., 'Compacted Fill', 'Glacial Till', 'Manhattan Schist')
+materialClass: 'FILL' | 'TOPSOIL' | 'CLAY' | 'SILT' | 'SAND' | 'GRAVEL' | 'DENSE_SOIL' | 'WEATHERED_ROCK' | 'COMPETENT_ROCK' | 'BEDROCK'
+topDepthM: number
+bottomDepthM: number
+topElevationM: number
+bottomElevationM: number
+thicknessM: number
+densityClass: string
+strengthClass: string
+waterBearing: boolean
+confidenceScore: number (0.00 – 1.00)
+isInferred: boolean
+2.3 Bedrock & Groundwater Observations
+StructureBedrockObservations: bedrockObservationId, cityStructureId, structureVertexId, bedrockTopElevationM, bedrockDepthM, rockType, weatheringClass, competenceClass, confidenceScore, uncertaintyM, observationDateUtc.
+GroundwaterObservations: groundwaterObservationId, cityStructureId, structureVertexId, waterLevelElevationM, waterDepthM, aquiferCode, waterPressureKPa, uncertaintyM, observationDateUtc.
+Boreholes & BoreholeIntervals: Nearby physical borehole logs with distanceM and bearingDeg relative to the structure's centroid and vertices.
+2.4 Subsurface Versioning & Change Events
+SubsurfaceGeometryVersions: subsurfaceGeometryVersionId, cityStructureId, versionNumber, versionType ('BASELINE' | 'OBSERVATION' | 'UPDATED' | 'INFERRED'), capturedUtc, crs, verticalDatum, modelResolutionM, geometryHash, isActive.
+SubsurfaceChangeEvents: subsurfaceChangeEventId, cityStructureId, structureVertexId, baselineVersionId, currentVersionId, changeType ('LAYER_BOUNDARY_SHIFT' | 'THICKNESS_CHANGE' | 'BEDROCK_REVISION' | 'GROUNDWATER_FLUCTUATION' | 'SUBSIDENCE_DISPLACEMENT'), depthChangeM, thicknessChangeM, groundwaterChangeM, classification ('PHYSICAL_CHANGE' | 'DATA_REFINEMENT' | 'NEW_OBSERVATION' | 'SOURCE_CONFLICT'), requiresValidation, confidenceScore.
+3. Subsurface API Adapter Architecture (ISubsurfaceGeologyProvider)
+Create a dedicated provider adapter (src/services/subsurfaceGeologyAdapter.ts) supporting:
+USGS 3DEP / National Geologic Map (NGMDB) & BGS (British Geological Survey) APIs: Query bedrock depth, surficial deposit classification, and lithology based on structure centroid & bounding polygon.
+Municipal Geotechnical Open Feeds (e.g. NYC DOB/OASIS, London Boreholes): Ingest official nearby soil boring logs.
+Vertex Duplication & 3D Extrusion Engine: Takes the structure's perimeter WGS84 vertices 
+ and generates the subsurface 3D prism:
+
+accounting for bedrock dipping, stratum inclinations, and localized basement/pile depths.
+4. Background Daemon & On-Demand Execution Updates
+Update both triggerDaemonRunNow and /api/structures/:id/compare to process subsurface monitoring:
+Daemon Scheduled Pass:
+Runs above-ground polygon inspection + subsurface stratigraphic inspection.
+Compares baseline subsurface geometry version 
+ with latest observation 
+.
+Flags differential settlement, bedrock depth adjustments, or significant groundwater table shifts exceeding geotechnical thresholds (e.g., groundwater fluctuation 
+ or layer boundary shift 
+).
+On-Demand Compare & Ingest:
+Allows engineers to trigger POST /api/structures/:id/subsurface/refresh and POST /api/structures/:id/subsurface/compare.
+Directly persists new subsurface geometry versions and logs IngestionRuns and AuditEvents.
+5. 3D/4D Animation & Inspector Integration Plan
+Extend the standalone structure inspector and 3D viewer:
+Split-Level / Cutaway 4D Visualization:
+Above-ground building envelope rendered in true metric scale.
+Ground plane grid with terrain datum.
+Subsurface strata extruded down to bedrock along each duplicated vertex column.
+Color-coded layers: Fill (Warm Brown), Sand/Silt (Tan), Dense Till/Clay (Amber/Olive), Weathered Rock (Slate), Bedrock (Deep Cobalt/Granite), and Groundwater table (Translucent Cyan ribbon).
+Integrated 4D Timeline Slider:
+Scrub through multi-epoch time-series combining above-ground vertex drift (
+) and subsurface groundwater/layer adjustments.
+Visual correlation indicator: displays whether surface tilt correlates with differential settlement in loose soil intervals or groundwater drawdown without falsely asserting causation.
+Subsurface Cross-Section / Stratigraphic Column View:
+An interactive 2D stratigraphic borehole log for each duplicated vertex 
+.
+Side-by-side delta visualization showing baseline vs. current layer depths and SPT/RQD geotechnical parameters.
+6. Implementation Milestones
+Step 1: Define TypeScript interfaces in src/types.ts and src/services/geometryMonitoring.ts for Subsurface Profiles, Layers, Bedrock, Groundwater, and Change Events.
+Step 2: Build SubsurfaceGeologyAdapter to simulate and ingest regional geologic and borehole data, calculating vertical profiles at each duplicated structure vertex.
+Step 3: Implement subsurface baseline initialization, versioning, comparison algorithms, and change event detection in GeometryMonitoringService.
+Step 4: Expose REST API routes in server.ts (/api/structures/:id/subsurface, /api/structures/:id/subsurface/profiles, /api/structures/:id/subsurface/compare, /api/structures/:id/subsurface/timeline, /api/structures/:id/subsurface/refresh).
+Step 5: Wire the daemon runner (triggerDaemonRunNow) and manual trigger to support subsurface data ingestion and evaluation.
+Step 6: Enhance the frontend UI (public/index.html and public/js/watch-structures.js) with the Subsurface Geological Profile panel, interactive 3D/SVG vertical cutaway animation, vertex borehole column logs, and timeline scrubber controls.
+Step 7: Verify and compile the entire application cleanly.

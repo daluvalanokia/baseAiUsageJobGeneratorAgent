@@ -1,0 +1,65 @@
+@model PmPlanInput
+@{
+    ViewData["Title"] = "PM Hub — Generate Program";
+    var programs = ViewBag.Programs as IEnumerable<SmartAgent.Core.Pm.ProgramPlan>;
+}
+<section class="pm-plan">
+    <h1>Multi-Year Program Generation</h1>
+    <p class="lead">
+        Ingest a GitHub repository (any .NET source) or paste prompt requirements.
+        The agent captures agile requirements, spawns one processing thread per
+        RACI role, and splits delivery into a multi-year sprint &amp; budget program.
+    </p>
+
+    <form asp-action="Plan" method="post" class="pm-form">
+        <div asp-validation-summary="All"></div>
+        <div class="pm-grid">
+            <label>Program name
+                <input asp-for="Name" maxlength="80" />
+            </label>
+            <label>GitHub repository URL <span class="hint">(e.g. https://github.com/owner/repo)</span>
+                <input asp-for="GitHubUrl" placeholder="https://github.com/daluvalanokia/smartagent" />
+            </label>
+            <label>…or prompt requirements <span class="hint">(used when no GitHub URL)</span>
+                <textarea asp-for="Prompt" rows="4" placeholder="Build a family safety tracking platform in ASP.NET Core 8 MVC with location history, chat and device management."></textarea>
+            </label>
+            <label>Years
+                <input asp-for="Years" type="number" min="1" max="5" />
+            </label>
+            <label>Team size <span class="hint">(blank = derived from modules)</span>
+                <input asp-for="TeamSize" type="number" min="6" max="200" />
+            </label>
+            <label>Budget cap / year (USD) <span class="hint">(0 = unconstrained)</span>
+                <input asp-for="BudgetCapPerYearUsd" type="number" min="0" step="1000" />
+            </label>
+            <label>Velocity per developer (pts/sprint)
+                <input asp-for="VelocityPerDev" type="number" min="3" max="25" />
+            </label>
+        </div>
+        <button type="submit" class="pm-cta">Generate Program</button>
+    </form>
+
+    @if (programs != null && programs.Any())
+    {
+        <h2>Saved programs</h2>
+        <ul class="pm-programs">
+            @foreach (var p in programs)
+            {
+                <li><a asp-action="Hub" asp-route-slug="@p.Slug">@p.Name</a> — @p.SourceName, @p.Sprints sprints, @p.UserStoryCount stories, budget $@(p.Budget.TotalUsd.ToString("N0"))</li>
+            }
+        </ul>
+    }
+</section>
+<style>
+    .pm-form { max-width: 900px; }
+    .pm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
+    .pm-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #495057; font-weight: 600; }
+    .pm-grid input, .pm-grid textarea { font: inherit; padding: 8px 10px; border: 1px solid #ced4da; border-radius: 6px; }
+    .pm-grid .full { grid-column: 1 / -1; }
+    .hint { font-weight: 400; color: #868e96; font-size: 11px; }
+    .pm-cta { margin-top: 14px; background: #0d6efd; color: #fff; border: 0; padding: 10px 22px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .pm-cta:hover { background: #0b5ed7; }
+    .pm-programs { list-style: none; padding: 0; }
+    .pm-programs li { padding: 6px 0; border-bottom: 1px solid #e9ecef; }
+    .validation-summary-errors { color: #dc3545; }
+</style>

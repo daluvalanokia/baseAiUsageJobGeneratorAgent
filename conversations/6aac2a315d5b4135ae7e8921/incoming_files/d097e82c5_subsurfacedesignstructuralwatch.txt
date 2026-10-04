@@ -1,0 +1,2029 @@
+StructureWatch Guard
+Building Structure Geometry & Change-Monitoring Enhancement
+
+ASP.NET Core / C# MVC • SQL Server spatial schema • Standalone scheduled daemon • Map + satellite/elevation evidence
+
+Prepared from the current StructureWatch Guard interface and the supplied SatViewGuard/StructureWatch applications.
+Existing references: https://aisstructureguardwatch.ai.studio  |  https://satviewguard.base44.app
+
+1. Enhancement objective
+
+Add a persistent building-structure inventory and geometry-baseline subsystem to StructureWatch Guard. The subsystem identifies structures above a configurable height threshold (default 100 m), stores a city/structure/vertex hierarchy, maintains an immutable original geometry baseline and a separately versioned updated geometry, and periodically compares the two. Detected coordinate movement is classified for re-validation rather than being treated automatically as structural failure.
+
+2. Important measurement rule
+
+Map footprints and ordinary satellite imagery should be treated as geospatial evidence, not as guaranteed millimetre-level structural measurements. The comparison engine must store source accuracy, capture time, CRS and confidence. A small coordinate difference should only become a physical millimetre/centimetre movement alert when the underlying source accuracy and processing method support that precision. For high-precision validation, route the structure to a manual 360° review or an engineering survey source such as GNSS, total station, terrestrial LiDAR or an appropriately accurate monitoring system.
+
+3. Functional architecture
+
+Web UI: City → Structures → Structure Detail → Vertex Geometry → Change History → Validation Queue.
+
+MVC API layer: controllers expose city, structure, vertex, comparison and validation operations.
+
+Application services: structure discovery, geometry normalization, source ingestion, coordinate comparison, alert classification and audit logging.
+
+Background daemon: standalone .NET Worker Service executable; invoked continuously, by Windows Task Scheduler, systemd timer, cron, Kubernetes CronJob, or another scheduler.
+
+Data layer: SQL Server with geography/geometry spatial types; Entity Framework Core; optional spatial indexes.
+
+External adapters: OpenStreetMap/Overpass for mapped footprints and node geometry; authoritative city/building-department feeds where available; satellite/imagery provider; elevation/LiDAR provider.
+
+Evidence layer: every imported geometry stores source/provider, source object ID, capture timestamp, CRS, resolution/accuracy metadata and raw-reference URI.
+
+4. User-interface design
+
+4.1 City dashboard
+
+City selector/search and map extent.
+
+Height threshold: default 100 m; configurable per job.
+
+Cards: qualifying structures, structures awaiting validation, geometry changes, source freshness, last daemon run.
+
+Map layers: original footprint, updated footprint, changed vertices, validation-required structures, satellite/elevation overlay.
+
+Status filters: New, Baseline, Updated, Change Detected, Validation Required, Validated, Source Stale, Error.
+
+4.2 Structure inspector
+
+Structure name, structure ID, city ID, address/source reference, floors, measured/estimated height, central coordinate, footprint area.
+
+Edge count and vertex count with a geometry preview.
+
+Original vs updated geometry toggle.
+
+Data-source provenance and confidence panel.
+
+Last baseline capture, last update capture, last comparison, change magnitude and validation status.
+
+Actions: Refresh Source, Rebuild Geometry, Compare Now, Open Vertex Table, Start 360° Validation, Mark Reviewed, View Audit.
+
+4.3 Vertex editor / viewer
+
+One row per structure vertex.
+
+Vertex sequence number and stable structure-vertex ID.
+
+Direction/bearing of the vertex or adjacent edge.
+
+Top X/Y/Z and bottom X/Y/Z where elevation data is available.
+
+Original and updated coordinates side-by-side.
+
+Delta in metres, centimetres and millimetres.
+
+Source and accuracy for each coordinate set.
+
+Do not permit silent overwrite of the original baseline.
+
+4.4 Change-validation queue
+
+Show only structures whose changes exceed configured thresholds or whose source confidence is insufficient.
+
+Columns: city, structure, vertex, delta, source age, source accuracy, capture date, comparison run, status.
+
+Actions: Accept as source update, Reject/noise, Request manual survey, Launch 360° review, Add engineering note.
+
+Every action writes an audit record.
+
+5. Controller / API design
+
+Controller
+
+Route
+
+Action
+
+CitiesController
+
+GET /api/cities
+
+List/search cities and qualifying counts.
+
+CitiesController
+
+GET /api/cities/{cityId}/structures
+
+List structures above threshold; filter/status/paging.
+
+StructuresController
+
+GET /api/structures/{structureId}
+
+Structure details and current geometry summary.
+
+StructuresController
+
+POST /api/structures/discover
+
+Start/queue structure discovery for a city or bounding box.
+
+StructuresController
+
+POST /api/structures/{structureId}/refresh
+
+Acquire latest source data and create an updated version.
+
+StructureVerticesController
+
+GET /api/structures/{structureId}/vertices
+
+Return original/current vertices.
+
+StructureVerticesController
+
+GET /api/structures/{structureId}/vertices/{vertexId}
+
+Return vertex provenance and deltas.
+
+ComparisonsController
+
+POST /api/structures/{structureId}/compare
+
+Compare original/current geometry immediately.
+
+ComparisonsController
+
+GET /api/structures/{structureId}/changes
+
+Return historical geometry changes.
+
+ValidationController
+
+GET /api/validation-queue
+
+List structures requiring review.
+
+ValidationController
+
+POST /api/validation/{id}/decision
+
+Record review/validation decision.
+
+JobsController
+
+GET /api/jobs/status
+
+Daemon/job health and last successful run.
+
+JobsController
+
+POST /api/jobs/run-now
+
+Queue a controlled comparison/import run.
+
+6. Database schema
+
+Recommended SQL Server design. Use GUIDs for application IDs and preserve external provider IDs separately. Use geography for WGS84 longitude/latitude and geometry for projected calculations when a local metric CRS is selected.
+
+Cities
+
+CityId PK, CityName, StateProvince, CountryCode, Latitude, Longitude, HeightThresholdM, QualifyingStructureCount, BuildingCount, LastDiscoveryUtc, CreatedUtc, UpdatedUtc
+
+CityStructures
+
+CityStructureId PK, CityId FK, StructureExternalId, StructureName, Address, NumberOfFloors, HeightM, CenterLatitude, CenterLongitude, CenterGeography, NumberOfEdges, NumberOfVertices, FootprintAreaM2, BaselineVersionId FK, CurrentVersionId FK, Status, CreatedUtc, UpdatedUtc
+
+StructureGeometryVersions
+
+GeometryVersionId PK, CityStructureId FK, VersionType (Original/Updated), Provider, ProviderObjectId, CapturedUtc, CRS, HorizontalAccuracyM, VerticalAccuracyM, SourceResolutionM, GeometryHash, EvidenceUri, IngestionRunId FK, IsAuthoritative, Notes
+
+StructureVertices
+
+StructureVertexId PK, CityStructureId FK, GeometryVersionId FK, VertexSequence, VertexDirectionDeg, TopX, TopY, TopZ, BottomX, BottomY, BottomZ, CoordinateGeography, CoordinateGeometry, SourceNodeId, CreatedUtc
+
+StructureEdges
+
+StructureEdgeId PK, CityStructureId FK, GeometryVersionId FK, EdgeSequence, StartStructureVertexId FK, EndStructureVertexId FK, BearingDeg, LengthM
+
+StructureChangeEvents
+
+ChangeEventId PK, CityStructureId FK, StructureVertexId FK nullable, ComparisonRunId FK, DeltaXmm, DeltaYmm, DeltaZmm, HorizontalDeltaMm, Total3DDeltaMm, ThresholdMm, ConfidenceScore, Classification, RequiresValidation, DetectedUtc
+
+ValidationCases
+
+ValidationCaseId PK, CityStructureId FK, ChangeEventId FK nullable, ValidationType, Status, AssignedTo, OpenedUtc, ReviewedUtc, Decision, ReviewerNotes
+
+IngestionRuns
+
+IngestionRunId PK, CityId FK nullable, Provider, JobType, StartedUtc, CompletedUtc, Status, RecordsRead, RecordsInserted, RecordsUpdated, RecordsRejected, ErrorCount, LogReference
+
+DataSources
+
+DataSourceId PK, ProviderName, ProviderType, EndpointTemplate, TermsReference, DefaultAccuracyM, Active, CreatedUtc
+
+AuditEvents
+
+AuditEventId PK, EntityType, EntityId, Action, OldValueJson, NewValueJson, Actor, CreatedUtc
+
+7. Recommended relational rules
+
+Cities.CityName should not be the sole unique key; use CityId and optionally a country/state composite uniqueness rule.
+
+CityStructures has one stable CityStructureId that never changes when the source provider changes.
+
+StructureGeometryVersions separates the immutable Original baseline from Updated versions. Never overwrite Original coordinates.
+
+StructureVertices is versioned through GeometryVersionId, so the same CityStructureId can have multiple vertex snapshots.
+
+VertexSequence preserves polygon order. For a closed footprint, the first and final coordinate may be the same geometrically, but the logical vertex count should not double-count the closing point.
+
+NumberOfEdges and NumberOfVertices are derived from normalized geometry and stored for fast display; a nightly integrity job can recalculate them.
+
+Use a unique constraint on (CityStructureId, GeometryVersionId, VertexSequence).
+
+Use a unique constraint on (CityStructureId, StructureExternalId, Provider) where provider identity is available.
+
+Store both WGS84 geographic coordinates and a metric projected representation when precise distance comparison is required.
+
+8. Vertex coordinate model
+
+To remove ambiguity from the original requirement, define X/Y as horizontal coordinates and Z as elevation. For WGS84, X=longitude and Y=latitude. For metric calculations, transform to a suitable projected CRS and use easting/northing as X/Y. TopX/TopY/TopZ describe the upper observable point associated with a vertex when a 3D source exists; BottomX/BottomY/BottomZ describe the base/ground point. For ordinary 2D building footprints, Top and Bottom horizontal coordinates may be identical and only Z differs or is unavailable.
+
+9. Data acquisition and API adapter strategy
+
+Implement providers behind an IStructureGeometryProvider interface so the MVC application is not coupled to one mapping vendor.
+
+Provider class
+
+Use
+
+Design note
+
+OpenStreetMap / Overpass
+
+Building footprints, nodes, tags, mapped names and source IDs.
+
+Good baseline/open map source; coverage and height completeness vary.
+
+City / building-department source
+
+Authoritative building identity, permitted height/floor data and official identifiers where available.
+
+Prefer as an authoritative source when legally and technically available.
+
+Satellite imagery provider
+
+Current imagery used for visual/geometric change corroboration.
+
+Use imagery metadata, ground sampling distance and provider terms; imagery alone is not a millimetre structural sensor.
+
+USGS 3DEP / equivalent elevation source
+
+Elevation/terrain/LiDAR-derived information where available.
+
+Useful for U.S. elevation evidence; coverage, acquisition date and accuracy must be stored.
+
+Optional survey / monitoring source
+
+High-precision GNSS, total station, terrestrial LiDAR or other engineering monitoring.
+
+Use when the application needs defensible cm/mm movement evidence.
+
+OpenStreetMap's data model represents building boundaries through ways/nodes, and Overpass can return geometry for selected objects. The Overpass documentation also notes that geometry can be returned directly with 'out geom' and that node coordinates underpin way geometry. USGS 3DEP provides elevation products and source lidar/derived datasets for U.S. areas where coverage exists. These sources should therefore be treated as complementary rather than interchangeable.
+
+10. Background daemon / scheduled comparison
+
+Create a separate .NET Worker Service project, for example: StructureWatch.GeometryDaemon.
+
+Load active cities whose scheduled job is due.
+
+For each city, load structures above the configured height threshold.
+
+For each structure, load Original baseline and the latest Updated geometry version.
+
+Verify geometry hashes, vertex count, sequence and CRS before comparison.
+
+Transform both geometries into the same metric CRS.
+
+Match vertices by stable vertex sequence plus geometry-nearest matching when a source changes the polygon node count.
+
+Calculate ΔX, ΔY, horizontal distance and, where available, ΔZ/3D distance.
+
+Compare each delta against configured thresholds and source uncertainty.
+
+Create StructureChangeEvents only when the difference is material relative to the stated source accuracy.
+
+Create/refresh ValidationCases for material changes or low-confidence results.
+
+Write IngestionRuns and AuditEvents.
+
+Expose job health to the MVC application.
+
+11. Change-detection formula
+
+For metric coordinates:
+
+ΔX = X_updated − X_original
+
+ΔY = Y_updated − Y_original
+
+HorizontalDelta = sqrt(ΔX² + ΔY²)
+
+ΔZ = Z_updated − Z_original (when both Z values are valid)
+
+Total3DDelta = sqrt(ΔX² + ΔY² + ΔZ²)
+
+Recommended decision logic: alert only when measured movement exceeds both the configured movement threshold and the combined uncertainty budget. Otherwise classify the result as 'Within Source Uncertainty' and retain it for trend analysis.
+
+12. Configuration
+
+HeightThresholdM = 100
+
+ComparisonIntervalMinutes = configurable
+
+HorizontalAlertThresholdMm = configurable
+
+VerticalAlertThresholdMm = configurable
+
+MinimumConfidenceScore = configurable
+
+MaximumSourceAgeDays = configurable
+
+RequireManualValidation = true for material changes
+
+MaxStructuresPerRun / MaxCitiesPerRun = configurable
+
+ProviderTimeoutSeconds and retry policy = configurable
+
+RetainRawEvidenceDays / RetainGeometryVersions = configurable
+
+13. Prompt for AI-assisted implementation
+
+You are the senior architect/developer enhancing the existing StructureWatch Guard application at https://aisstructureguardwatch.ai.studio, with the related SatViewGuard application at https://satviewguard.base44.app.
+
+Build a production-oriented ASP.NET Core C# MVC enhancement named Building Structure Geometry Monitoring.
+
+OBJECTIVE
+Create a persistent geospatial inventory for buildings/structures with height > 100 metres by default. Store a city hierarchy, stable CityStructureId, immutable original geometry, versioned updated geometry, one row per structure vertex, and a scheduled comparison daemon.
+
+REQUIREMENTS
+1. ASP.NET Core 8+, C#, MVC, Razor, dependency injection, EF Core and SQL Server spatial support.
+2. Create Cities, CityStructures, StructureGeometryVersions, StructureVertices, StructureEdges, StructureChangeEvents, ValidationCases, IngestionRuns, DataSources and AuditEvents.
+3. Cities must expose city name, qualifying structure count, building count and last discovery timestamp.
+4. CityStructures must contain CityId, stable CityStructureId, external/provider ID, structure name, floors, height, center coordinate, edge count and vertex count.
+5. For every geometry version, create one StructureVertices row per vertex containing StructureVertexId, sequence, direction/bearing, TopX/TopY/TopZ, BottomX/BottomY/BottomZ, source node ID and provenance.
+6. Preserve Original geometry as immutable. Updated geometry is versioned and never overwrites the baseline.
+7. Normalize coordinates. Use WGS84 longitude/latitude for geographic storage and a suitable metric projected CRS for distance calculations.
+8. Implement provider adapters. OpenStreetMap/Overpass may provide mapped footprints/nodes; city/building-department data should be preferred when authoritative; satellite imagery and elevation/LiDAR sources are corroborating sources. Store provider, object ID, capture date, CRS, source resolution and accuracy.
+9. Implement MVC controllers for cities, structures, vertices, comparisons, validation queue and job status.
+10. Add UI for city dashboard, structure inspector, original/current geometry overlay, vertex table, change history and validation queue.
+11. Create a standalone .NET Worker Service daemon. It must run from Task Scheduler, cron, systemd timer, Kubernetes CronJob or continuously.
+12. On each run, read active cities, structures and geometry versions; compare original versus updated coordinates; calculate horizontal and 3D deltas; classify changes; create change events; and create validation cases when thresholds are exceeded.
+13. Do not claim that ordinary satellite imagery can measure millimetre structural movement. Gate alerts by source accuracy and confidence. Route uncertain/material changes to manual 360-degree review or an engineering survey source.
+14. Include idempotency, retry, rate limiting, provider timeouts, audit logging, concurrency control and geometry-hash validation.
+15. Provide EF Core migrations, seed/configuration examples, DTOs, services, interfaces, controllers, Razor views, daemon worker and unit tests.
+16. Provide example SQL queries for city counts, structure retrieval, vertex retrieval, and changed-vertex reporting.
+17. Integrate the enhancement into the existing StructureWatch Guard UI concepts: city selector, 3D structure selection, 360° validation, map/satellite overlay, structural inspector and audit/report views.
+18. Keep hazardous demolition/implosion operations outside this monitoring subsystem. This feature is for geometry inventory, change detection and validation workflow.
+
+DELIVERABLE
+Return a complete implementation plan followed by the project folder structure, database model, API contracts, controller/action definitions, background-worker flow, UI wireframe specification, provider interface contracts, comparison algorithm, configuration model, security model, logging/observability plan, tests and deployment instructions.
+
+14. Suggested project structure
+
+StructureWatch.sln
+
+src/StructureWatch.Web/Controllers
+
+src/StructureWatch.Web/Views
+
+src/StructureWatch.Web/Models
+
+src/StructureWatch.Web/ViewModels
+
+src/StructureWatch.Application/Services
+
+src/StructureWatch.Application/Interfaces
+
+src/StructureWatch.Infrastructure/Data
+
+src/StructureWatch.Infrastructure/Spatial
+
+src/StructureWatch.Infrastructure/Providers/OpenStreetMap
+
+src/StructureWatch.Infrastructure/Providers/Satellite
+
+src/StructureWatch.Infrastructure/Providers/Elevation
+
+src/StructureWatch.GeometryDaemon
+
+tests/StructureWatch.UnitTests
+
+tests/StructureWatch.IntegrationTests
+
+15. Example comparison SQL concept
+
+A production implementation should calculate differences in a metric CRS rather than subtracting latitude/longitude degrees directly. Conceptually, query Original and Updated vertices by CityStructureId + VertexSequence, transform to a common projected CRS, calculate deltas, then insert only qualifying differences into StructureChangeEvents.
+
+Recommended report columns: CityName, CityStructureId, StructureName, VertexSequence, OriginalX, OriginalY, UpdatedX, UpdatedY, DeltaXmm, DeltaYmm, HorizontalDeltaMm, OriginalCapturedUtc, UpdatedCapturedUtc, SourceAccuracyM, ConfidenceScore, Classification.
+
+16. Integrity and validation rules
+
+Reject self-intersecting or invalid building polygons unless explicitly marked as source geometry requiring repair.
+
+Require at least 3 distinct horizontal vertices for a polygon footprint.
+
+Validate that vertex sequence is ordered and edges connect sequential vertices.
+
+Check that stored NumberOfEdges and NumberOfVertices agree with normalized geometry.
+
+Reject impossible coordinates and mismatched CRS metadata.
+
+Keep source capture date with every geometry version.
+
+Do not compare geometries from different CRSs without transformation.
+
+Do not label a change as structural movement when it may be imagery parallax, map revision, geocoding drift, polygon remapping or source-resolution error.
+
+Keep the original baseline immutable and record all baseline replacements as an explicit reviewed version transition.
+
+17. Security and operations
+
+Keep external API keys server-side using ASP.NET Core configuration/secret storage; do not place provider secrets in browser local storage.
+
+Use authentication/authorization roles for Administrator, Data Operator, Reviewer and ReadOnly.
+
+Protect job-control endpoints with authorization and anti-forgery controls where applicable.
+
+Rate-limit external provider calls and cache source responses according to provider terms.
+
+Use structured logs with run ID, city ID, structure ID, provider and correlation ID.
+
+Alert on repeated provider failures, stale source data and daemon inactivity.
+
+18. Acceptance criteria
+
+A city can be discovered and its >100 m structures listed.
+
+Each structure has a stable CityStructureId and source provenance.
+
+Original geometry can be saved once and cannot be silently overwritten.
+
+Updated geometry can be imported as a new version.
+
+Every normalized polygon vertex has a StructureVertexId and ordered coordinates.
+
+Original/current footprints can be overlaid in the UI.
+
+The daemon can run without the web UI and can be scheduled externally.
+
+A test movement produces a deterministic delta and a validation event when the configured threshold and uncertainty criteria are satisfied.
+
+Source uncertainty can suppress false positive movement alerts.
+
+All imports, comparisons and review decisions are auditable.
+
+19. Reference notes
+
+The current StructureWatch Guard interface already exposes city selection, map/3D structure inspection, height bands, structural layout, 360° validation, dynamic data, and a .NET Core MVC solution concept. The enhancement should add persistent geometry/versioning and scheduled change monitoring without duplicating those existing interaction concepts.
+
+OpenStreetMap documents nodes and ways as the core geometry primitives; building boundaries can be represented by closed ways, and Overpass can return geometry for selected objects. USGS 3DEP provides elevation products, lidar-derived data and related standards for U.S. coverage. These sources support the proposed provider-adapter model but do not by themselves establish millimetre structural displacement.
+
+
+StructureWatch Guard – Building Structure Geometry & Change Monitoring Design
+
+Enhanced Section — Subsurface Geology, Foundation Bed & Underground Change Monitoring
+
+1. Purpose and Scope
+
+Extend StructureWatch from above-ground structure geometry and SAR/InSAR deformation monitoring into a vertical digital-twin model that represents the subsurface beneath each monitored structure. The module shall use the existing StructureVertexId as a common spatial reference while preserving the distinction between directly observed geology, borehole/geotechnical observations, geophysical interpretation, regional geological mapping, and inferred/interpolated surfaces.
+
+Capture soil, fill, loose layers, dense layers, weathered rock, competent/bedrock layers, foundation depth and groundwater observations.
+
+Associate subsurface observations with existing structure vertices and nearby boreholes without falsely treating an offset borehole as an exact vertex measurement.
+
+Maintain immutable baseline and versioned current subsurface models.
+
+Compare layer boundaries, thickness, bedrock depth, groundwater observations and model revisions over time.
+
+Animate historical underground conditions in the same 3D scene as the structure, foundation, vertices and surface deformation.
+
+Provide provenance, uncertainty, confidence and observed-versus-inferred status for every underground observation.
+
+2. Core Analytical Requirements
+
+A structure may have multiple subsurface profiles; geology shall not be assumed uniform beneath all vertices.
+
+Each StructureVertexId may act as a vertical reference axis, but each layer boundary must retain its own measured or inferred depth/elevation.
+
+All elevations shall record the applicable vertical datum; all horizontal coordinates shall record the CRS.
+
+Depth and elevation shall be stored in meters internally, with UI conversion to mm/cm/feet/inches as required.
+
+The system shall distinguish physical change from improved geological knowledge. A new borehole or revised geological map shall not automatically be classified as physical underground movement.
+
+Interpolated geological surfaces shall be explicitly labeled as interpolated/inferred and shall retain the source observations used to construct them.
+
+No underground layer shall be invented when supporting observations are unavailable; the system shall represent the condition as UNKNOWN.
+
+Engineering conclusions such as foundation failure, unsafe bearing capacity or causation shall not be automatically inferred from geological change alone.
+
+3. Common Vertical Reference Model
+
+The existing City → CityStructure → GeometryVersion → StructureVertex model becomes the common spatial spine for the above-ground and below-ground digital twin.
+
+Object
+
+Purpose
+
+Key relationship
+
+CityStructure
+
+Monitored structure identity
+
+Parent of all surface and subsurface records
+
+StructureVertex
+
+Stable spatial reference point
+
+Used by surface geometry and subsurface reference axes
+
+SubsurfaceProfile
+
+Vertical underground profile
+
+References CityStructureId and optionally StructureVertexId
+
+Borehole
+
+Direct subsurface investigation location
+
+Associated to structure and optionally linked to nearby vertices
+
+GeologicalLayer
+
+Observed/inferred material interval
+
+Belongs to a profile
+
+BedrockObservation
+
+Explicit bedrock-top observation
+
+References structure/profile/vertex
+
+GroundwaterObservation
+
+Water-level observation
+
+References structure/borehole/vertex
+
+SubsurfaceChangeEvent
+
+Version-to-version change
+
+References baseline/current model and affected layer
+
+4. Database Schema — Core Subsurface Tables
+
+4.1 SubsurfaceProfiles
+
+Column
+
+Type / example
+
+Requirement
+
+SubsurfaceProfileId
+
+BIGINT / GUID
+
+Primary key
+
+CityStructureId
+
+BIGINT / GUID
+
+Required FK
+
+StructureVertexId
+
+BIGINT / GUID, nullable
+
+Vertical reference axis where applicable
+
+ProfileVersionId
+
+BIGINT / GUID
+
+Links to subsurface geometry/model version
+
+SurfaceElevationM
+
+DECIMAL
+
+Observed/reference ground elevation
+
+GroundElevationM
+
+DECIMAL
+
+Ground elevation at profile
+
+FoundationBottomElevationM
+
+DECIMAL, nullable
+
+Foundation bottom elevation
+
+FoundationDepthM
+
+DECIMAL, nullable
+
+Depth below reference ground
+
+TotalInvestigatedDepthM
+
+DECIMAL
+
+Depth actually investigated
+
+ProfileType
+
+ENUM
+
+BOREHOLE, GEOTECHNICAL, GEOLOGICAL_MAP, GEOPHYSICAL, SURVEY, INFERRED, COMPOSITE
+
+ObservationMethod
+
+VARCHAR
+
+Method used
+
+SourceId
+
+FK
+
+Data source/provenance
+
+HorizontalAccuracyM
+
+DECIMAL
+
+Source accuracy
+
+VerticalAccuracyM
+
+DECIMAL
+
+Source accuracy
+
+CapturedUtc
+
+DATETIME2
+
+Observation time
+
+CreatedUtc
+
+DATETIME2
+
+Record creation
+
+IsAuthoritative
+
+BIT
+
+Authority flag
+
+IsInferred
+
+BIT
+
+Inference flag
+
+4.2 SubsurfaceGeologicalLayers
+
+Column
+
+Type / example
+
+Requirement
+
+SubsurfaceLayerId
+
+BIGINT / GUID
+
+Primary key
+
+SubsurfaceProfileId
+
+FK
+
+Required FK
+
+CityStructureId
+
+FK
+
+Denormalized query key
+
+StructureVertexId
+
+FK, nullable
+
+Reference vertex
+
+LayerSequence
+
+INT
+
+Vertical order
+
+TopDepthM
+
+DECIMAL
+
+Depth to top
+
+BottomDepthM
+
+DECIMAL
+
+Depth to bottom
+
+TopElevationM
+
+DECIMAL
+
+Elevation of top
+
+BottomElevationM
+
+DECIMAL
+
+Elevation of bottom
+
+ThicknessM
+
+DECIMAL
+
+Derived/stored thickness
+
+MaterialType
+
+VARCHAR
+
+Fill, clay, sand, gravel, rock, etc.
+
+MaterialClass
+
+ENUM
+
+FILL, TOPSOIL, CLAY, SILT, SAND, GRAVEL, DENSE_SOIL, WEATHERED_ROCK, FRACTURED_ROCK, COMPETENT_ROCK, BEDROCK
+
+GeologicUnit
+
+VARCHAR
+
+Mapped geological unit where available
+
+RockType
+
+VARCHAR, nullable
+
+Rock description
+
+SoilType
+
+VARCHAR, nullable
+
+Soil description
+
+DensityClass
+
+VARCHAR, nullable
+
+Source classification
+
+StrengthClass
+
+VARCHAR, nullable
+
+Source classification
+
+WaterBearing
+
+BIT, nullable
+
+If supported by source
+
+GroundwaterLevelM
+
+DECIMAL, nullable
+
+Associated level
+
+WeatheringClass
+
+VARCHAR, nullable
+
+Rock weathering
+
+FractureClass
+
+VARCHAR, nullable
+
+Rock fracturing
+
+ConfidenceScore
+
+DECIMAL
+
+0–1 or configured scale
+
+SourceId
+
+FK
+
+Provenance
+
+ObservationMethod
+
+VARCHAR
+
+Borehole, map, geophysical, inferred, etc.
+
+CapturedUtc
+
+DATETIME2
+
+Observation date
+
+CreatedUtc
+
+DATETIME2
+
+Record creation
+
+4.3 StructureBedrockObservations
+
+Column
+
+Type / example
+
+Requirement
+
+BedrockObservationId
+
+BIGINT / GUID
+
+Primary key
+
+CityStructureId
+
+FK
+
+Structure
+
+StructureVertexId
+
+FK, nullable
+
+Reference axis
+
+SubsurfaceProfileId
+
+FK
+
+Supporting profile
+
+BedrockTopElevationM
+
+DECIMAL
+
+Observed/inferred top of bedrock
+
+BedrockDepthM
+
+DECIMAL
+
+Depth from ground reference
+
+BedrockType
+
+VARCHAR
+
+Rock type
+
+WeatheringClass
+
+VARCHAR
+
+Weathering condition
+
+FractureClass
+
+VARCHAR
+
+Fracture description
+
+CompetenceClass
+
+ENUM
+
+NONE, VERY_WEAK, WEAK, MODERATE, STRONG, VERY_STRONG
+
+ObservationMethod
+
+VARCHAR
+
+Method
+
+ConfidenceScore
+
+DECIMAL
+
+Confidence
+
+UncertaintyM
+
+DECIMAL
+
+Estimated uncertainty
+
+ObservationDateUtc
+
+DATETIME2
+
+Observation date
+
+SourceId
+
+FK
+
+Provenance
+
+4.4 Boreholes
+
+Column
+
+Type / example
+
+Requirement
+
+BoreholeId
+
+BIGINT / GUID
+
+Primary key
+
+CityStructureId
+
+FK, nullable
+
+Nearest/associated structure
+
+BoreholeExternalId
+
+VARCHAR
+
+Provider identifier
+
+Latitude
+
+DECIMAL
+
+Coordinate
+
+Longitude
+
+DECIMAL
+
+Coordinate
+
+SurfaceElevationM
+
+DECIMAL
+
+Elevation
+
+TotalDepthM
+
+DECIMAL
+
+Investigation depth
+
+DrillingDateUtc
+
+DATETIME2
+
+Date
+
+DrillingMethod
+
+VARCHAR
+
+Method
+
+CoordinateAccuracyM
+
+DECIMAL
+
+Accuracy
+
+ElevationAccuracyM
+
+DECIMAL
+
+Accuracy
+
+SourceId
+
+FK
+
+Provider/source
+
+CreatedUtc
+
+DATETIME2
+
+Record creation
+
+4.5 BoreholeIntervals
+
+Column
+
+Type / example
+
+Requirement
+
+BoreholeIntervalId
+
+BIGINT / GUID
+
+Primary key
+
+BoreholeId
+
+FK
+
+Borehole
+
+Sequence
+
+INT
+
+Vertical order
+
+TopDepthM
+
+DECIMAL
+
+Top depth
+
+BottomDepthM
+
+DECIMAL
+
+Bottom depth
+
+TopElevationM
+
+DECIMAL
+
+Top elevation
+
+BottomElevationM
+
+DECIMAL
+
+Bottom elevation
+
+MaterialType
+
+VARCHAR
+
+Observed material
+
+GeologicUnit
+
+VARCHAR, nullable
+
+Mapped unit
+
+RockType
+
+VARCHAR, nullable
+
+Rock
+
+SoilType
+
+VARCHAR, nullable
+
+Soil
+
+WeatheringClass
+
+VARCHAR, nullable
+
+Rock weathering
+
+FractureClass
+
+VARCHAR, nullable
+
+Rock fracturing
+
+SPTValue
+
+DECIMAL, nullable
+
+If supplied
+
+RQDValue
+
+DECIMAL, nullable
+
+If supplied
+
+WaterLevelM
+
+DECIMAL, nullable
+
+If supplied
+
+SourceConfidence
+
+DECIMAL
+
+Confidence
+
+4.6 StructureSubsurfaceReferences
+
+Column
+
+Type / example
+
+Requirement
+
+ReferenceId
+
+BIGINT / GUID
+
+Primary key
+
+CityStructureId
+
+FK
+
+Structure
+
+StructureVertexId
+
+FK
+
+Vertex reference
+
+BoreholeId
+
+FK
+
+Nearby borehole
+
+HorizontalDistanceM
+
+DECIMAL
+
+Distance from vertex
+
+BearingDeg
+
+DECIMAL
+
+Bearing from vertex
+
+ReferenceType
+
+ENUM
+
+EXACT, NEARBY, INTERPOLATION_SUPPORT
+
+ConfidenceScore
+
+DECIMAL
+
+Association confidence
+
+CreatedUtc
+
+DATETIME2
+
+Record creation
+
+4.7 SubsurfaceMaterialObservations
+
+Column
+
+Type / example
+
+Requirement
+
+MaterialObservationId
+
+BIGINT / GUID
+
+Primary key
+
+CityStructureId
+
+FK
+
+Structure
+
+StructureVertexId
+
+FK, nullable
+
+Reference
+
+SubsurfaceLayerId
+
+FK
+
+Layer
+
+ObservationDateUtc
+
+DATETIME2
+
+Date
+
+MaterialType
+
+VARCHAR
+
+Observed material
+
+TopDepthM
+
+DECIMAL
+
+Top
+
+BottomDepthM
+
+DECIMAL
+
+Bottom
+
+ThicknessM
+
+DECIMAL
+
+Thickness
+
+DensityValue
+
+DECIMAL, nullable
+
+Measured value
+
+MoistureValue
+
+DECIMAL, nullable
+
+Measured value
+
+StrengthValue
+
+DECIMAL, nullable
+
+Measured value
+
+CompactionValue
+
+DECIMAL, nullable
+
+Measured value
+
+ConfidenceScore
+
+DECIMAL
+
+Confidence
+
+SourceId
+
+FK
+
+Source
+
+ObservationMethod
+
+VARCHAR
+
+Method
+
+4.8 GroundwaterObservations
+
+Column
+
+Type / example
+
+Requirement
+
+GroundwaterObservationId
+
+BIGINT / GUID
+
+Primary key
+
+CityStructureId
+
+FK
+
+Structure
+
+BoreholeId
+
+FK, nullable
+
+Observation location
+
+StructureVertexId
+
+FK, nullable
+
+Reference axis
+
+ObservationDateUtc
+
+DATETIME2
+
+Date
+
+WaterLevelElevationM
+
+DECIMAL
+
+Water level elevation
+
+WaterDepthM
+
+DECIMAL
+
+Depth
+
+AquiferCode
+
+VARCHAR, nullable
+
+Provider code
+
+WaterPressure
+
+DECIMAL, nullable
+
+If measured
+
+MeasurementMethod
+
+VARCHAR
+
+Method
+
+UncertaintyM
+
+DECIMAL
+
+Uncertainty
+
+SourceId
+
+FK
+
+Source
+
+5. Subsurface Model Versioning
+
+5.1 SubsurfaceGeometryVersions
+
+Column
+
+Type / example
+
+Requirement
+
+SubsurfaceGeometryVersionId
+
+BIGINT / GUID
+
+Primary key
+
+CityStructureId
+
+FK
+
+Structure
+
+VersionNumber
+
+INT
+
+Monotonic version
+
+VersionType
+
+ENUM
+
+BASELINE, OBSERVATION, SURVEY, UPDATED, INFERRED
+
+SourceId
+
+FK
+
+Provenance
+
+CapturedUtc
+
+DATETIME2
+
+Capture date
+
+CRS
+
+VARCHAR
+
+Horizontal CRS
+
+VerticalDatum
+
+VARCHAR
+
+Required vertical reference
+
+HorizontalAccuracyM
+
+DECIMAL
+
+Accuracy
+
+VerticalAccuracyM
+
+DECIMAL
+
+Accuracy
+
+ModelResolutionM
+
+DECIMAL
+
+Model resolution
+
+ModelMethod
+
+VARCHAR
+
+Interpolation/model method
+
+GeometryHash
+
+VARCHAR
+
+Integrity/version comparison
+
+EvidenceUri
+
+VARCHAR
+
+Source evidence
+
+IsAuthoritative
+
+BIT
+
+Authority
+
+IsActive
+
+BIT
+
+Current model flag
+
+6. Subsurface Change Detection
+
+6.1 SubsurfaceChangeEvents
+
+Column
+
+Type / example
+
+Requirement
+
+SubsurfaceChangeEventId
+
+BIGINT / GUID
+
+Primary key
+
+CityStructureId
+
+FK
+
+Structure
+
+StructureVertexId
+
+FK, nullable
+
+Affected reference
+
+SubsurfaceLayerId
+
+FK, nullable
+
+Affected layer
+
+BaselineVersionId
+
+FK
+
+Baseline
+
+CurrentVersionId
+
+FK
+
+Current
+
+ChangeType
+
+ENUM
+
+Layer appeared/disappeared, boundary shift, thickness change, bedrock change, groundwater change, data refinement, etc.
+
+OriginalTopDepthM
+
+DECIMAL, nullable
+
+Baseline
+
+CurrentTopDepthM
+
+DECIMAL, nullable
+
+Current
+
+OriginalBottomDepthM
+
+DECIMAL, nullable
+
+Baseline
+
+CurrentBottomDepthM
+
+DECIMAL, nullable
+
+Current
+
+OriginalThicknessM
+
+DECIMAL, nullable
+
+Baseline
+
+CurrentThicknessM
+
+DECIMAL, nullable
+
+Current
+
+DepthChangeM
+
+DECIMAL, nullable
+
+Calculated
+
+ThicknessChangeM
+
+DECIMAL, nullable
+
+Calculated
+
+BedrockDepthChangeM
+
+DECIMAL, nullable
+
+Calculated
+
+GroundwaterChangeM
+
+DECIMAL, nullable
+
+Calculated
+
+ConfidenceScore
+
+DECIMAL
+
+Confidence
+
+UncertaintyM
+
+DECIMAL
+
+Uncertainty
+
+Classification
+
+ENUM
+
+PHYSICAL_CHANGE, DATA_REFINEMENT, SOURCE_CONFLICT, NEW_OBSERVATION, INTERPOLATION_CHANGE, UNKNOWN
+
+RequiresValidation
+
+BIT
+
+Review flag
+
+DetectedUtc
+
+DATETIME2
+
+Detection date
+
+7. Existing Surface/Satellite Schema Integration
+
+The subsurface module shall integrate with the existing StructureWatch surface schema rather than creating a parallel structure identity. CityStructureId remains stable across providers. StructureGeometryVersions and StructureVertices remain the surface geometry baseline/current model. SatelliteMovementObservations and StructureChangeEvents remain the surface deformation pathway.
+
+Existing object
+
+Subsurface integration
+
+Cities
+
+Select monitored cities and qualifying structures.
+
+CityStructures
+
+Parent identity for underground model.
+
+StructureGeometryVersions
+
+Provides the surface version and reference footprint.
+
+StructureVertices
+
+Shared spatial reference for subsurface vertical axes.
+
+StructureEdges
+
+Supports 3D building/footprint visualization.
+
+SatelliteMovementObservations
+
+Surface deformation time series.
+
+StructureChangeEvents
+
+Surface change/validation events.
+
+ValidationCases
+
+Common engineering/manual review workflow.
+
+DataSources
+
+Provider and provenance registry.
+
+IngestionRuns
+
+Tracks geology/borehole/groundwater imports.
+
+AuditEvents
+
+Tracks model changes and user decisions.
+
+8. Provider and API Integration Objects
+
+Interface/service
+
+Purpose
+
+ISubsurfaceGeologyProvider
+
+Regional geological map and geological-unit retrieval.
+
+IBoreholeProvider
+
+Borehole and interval retrieval.
+
+IGeophysicalProvider
+
+Geophysical observations/model products.
+
+IGroundwaterProvider
+
+Groundwater/water-level observations.
+
+ISubsurfaceModelService
+
+Build/version the composite underground model.
+
+IBedrockModelService
+
+Construct and compare bedrock surfaces.
+
+ISubsurfaceChangeService
+
+Detect version-to-version underground changes.
+
+IGeologyCorrelationService
+
+Correlate surface deformation with subsurface observations without asserting causation.
+
+ISubsurfaceAnimationService
+
+Prepare historical 3D underground scenes/timeline frames.
+
+9. Suggested API Endpoints
+
+HTTP
+
+Endpoint
+
+Purpose
+
+GET
+
+/api/structures/{structureId}/subsurface
+
+Current composite underground model
+
+GET
+
+/api/structures/{structureId}/subsurface/profiles
+
+Profiles by vertex/source
+
+GET
+
+/api/structures/{structureId}/subsurface/layers
+
+Layer intervals
+
+GET
+
+/api/structures/{structureId}/bedrock
+
+Bedrock observations/surface
+
+GET
+
+/api/structures/{structureId}/boreholes
+
+Nearby/associated boreholes
+
+GET
+
+/api/structures/{structureId}/groundwater
+
+Groundwater history
+
+POST
+
+/api/structures/{structureId}/subsurface/refresh
+
+Run source refresh/import
+
+POST
+
+/api/structures/{structureId}/subsurface/compare
+
+Compare baseline/current model
+
+GET
+
+/api/structures/{structureId}/subsurface/changes
+
+Change events
+
+GET
+
+/api/structures/{structureId}/subsurface/timeline
+
+Animation/time-series data
+
+GET
+
+/api/structures/{structureId}/subsurface/3d
+
+3D model payload
+
+POST
+
+/api/subsurface/jobs/{jobId}/rebuild
+
+Rebuild model from approved sources
+
+10. Operational Workflow
+
+Load active CityStructures and their current StructureGeometryVersion.
+
+Use StructureVertices to construct structure-specific subsurface reference axes and area of interest.
+
+Discover regional geology, boreholes, geotechnical records, geophysical products and groundwater observations.
+
+Normalize coordinates, horizontal CRS and vertical datum.
+
+Import direct observations first; retain source identifiers and accuracy.
+
+Associate nearby boreholes to structure vertices using distance/bearing rather than silently treating them as exact vertex measurements.
+
+Build versioned geological layer profiles.
+
+Generate bedrock and layer-boundary surfaces only where sufficient observations exist; label interpolated regions.
+
+Compare the new model to the previous approved model.
+
+Classify differences as physical change, data refinement, source conflict, new observation, interpolation change or unknown.
+
+Create SubsurfaceChangeEvents and ValidationCases where review is warranted.
+
+Expose the underground model and historical versions to the 3D UI.
+
+11. 3D UI and Animation Requirements
+
+Use the same StructureVertexId values to render vertical reference columns from the structure surface down through the subsurface.
+
+Display building, foundation, soil/loose layers, dense layers, weathered rock, competent rock, bedrock and groundwater as independently toggleable layers.
+
+Allow rotate, pan, zoom, depth slicing and vertical exaggeration.
+
+Display vertical exaggeration explicitly, e.g. 5×, so users do not mistake visualization scaling for actual geology.
+
+Provide a timeline slider that changes the active subsurface geometry/model version.
+
+Animate layer boundaries, bedrock surfaces, groundwater observations and detected changes.
+
+Show observation points/boreholes and their actual offsets from vertices.
+
+Use different visual treatment for observed versus inferred/interpolated surfaces.
+
+Synchronize the underground scene with the existing surface satellite/SAR deformation timeline.
+
+12. Subsurface Time-Machine Data Contract
+
+Timeline object
+
+Required data
+
+Model frame
+
+SubsurfaceGeometryVersionId, captured date, source
+
+Layer frame
+
+Layer ID, top/bottom depth/elevation, material, confidence
+
+Bedrock frame
+
+Bedrock top depth/elevation, rock type, uncertainty
+
+Groundwater frame
+
+Water level/depth, date, uncertainty
+
+Change frame
+
+Change event, magnitude, classification, confidence
+
+Evidence frame
+
+Borehole/source observation used by the model
+
+13. Correlation with Surface SAR/InSAR
+
+StructureWatch may correlate surface deformation observations with subsurface observations for investigation. It shall not automatically infer causation. For example, a surface LOS displacement trend occurring during a groundwater-level change or near a revised layer boundary can be presented as a temporal/spatial correlation requiring review.
+
+Surface observation
+
+Subsurface observation
+
+System output
+
+LOS displacement trend
+
+Groundwater change
+
+TEMPORAL CORRELATION FOR REVIEW
+
+LOS displacement trend
+
+Layer boundary revision
+
+SOURCE/MODEL REVIEW
+
+LOS displacement trend
+
+Independent borehole-confirmed change
+
+POTENTIAL CORRELATION
+
+No reliable SAR signal
+
+New geological data
+
+SUBSURFACE UPDATE ONLY
+
+Low-confidence inferred geology
+
+Surface movement
+
+INSUFFICIENT SUBSURFACE EVIDENCE
+
+14. Data Quality and Safety Constraints
+
+Regional geological maps are contextual data and shall not be represented as building-specific measured depth profiles.
+
+A new geological interpretation shall not be interpreted as physical movement unless independent evidence supports that conclusion.
+
+All measurements must retain uncertainty and source quality.
+
+No alert shall be generated solely because an inferred/interpolated boundary changed.
+
+Borehole observations shall preserve their actual location and investigation depth.
+
+Conflicting sources shall be retained rather than silently overwritten.
+
+Original/authoritative records shall be immutable; corrections create a new version with provenance.
+
+Engineering validation remains necessary for decisions involving foundation capacity, structural safety or suspected subsidence.
+
+15. Recommended Project Structure Additions
+
+src/StructureWatch.Application/Services/Subsurface
+
+src/StructureWatch.Application/Services/Deformation
+
+src/StructureWatch.Infrastructure/Providers/Geology
+
+src/StructureWatch.Infrastructure/Providers/Boreholes
+
+src/StructureWatch.Infrastructure/Providers/Groundwater
+
+src/StructureWatch.Infrastructure/Spatial/Subsurface
+
+src/StructureWatch.GeometryDaemon/SubsurfaceJobs
+
+src/StructureWatch.Web/Controllers/SubsurfaceController.cs
+
+src/StructureWatch.Web/ViewModels/SubsurfaceViewModels
+
+tests/StructureWatch.SubSurface.UnitTests
+
+tests/StructureWatch.SubSurface.IntegrationTests
+
+16. Acceptance Criteria
+
+A monitored structure can display its original/current surface geometry and corresponding underground model in one 3D scene.
+
+Every subsurface observation is traceable to a source and observation method.
+
+The same StructureVertexId can be used to inspect the surface point and its underground reference profile.
+
+Nearby boreholes can be associated to vertices with explicit distance/bearing.
+
+Layer top/bottom depth and elevation can be compared between model versions.
+
+Bedrock depth can be displayed and animated across historical observations.
+
+Groundwater observations can be displayed as a time series and spatial layer.
+
+The system distinguishes physical change from model refinement/new information.
+
+Interpolated geological surfaces are visibly identified as inferred.
+
+Surface SAR/InSAR displacement and underground changes can be viewed together without automatically asserting causation.
+
+The daemon can ingest, version, compare and audit subsurface data using the same operational framework as surface monitoring.
+
+17. Consolidated StructureWatch Digital-Twin Model
+
+The enhanced architecture creates a vertical digital twin: Cities → Structures → Surface Geometry/Vertices → Foundation → Subsurface Profiles → Geological Layers → Bedrock → Groundwater, with Satellite/InSAR deformation and subsurface change events feeding a common validation workflow. StructureVertexId is the common spatial reference, while version IDs, source IDs, uncertainty and observation methods preserve the scientific distinction between measured, modeled and inferred information.
+
+Cities
+  └── CityStructures
+       ├── StructureGeometryVersions
+       │     └── StructureVertices
+       │
+       ├── SatelliteMovementObservations
+       ├── StructureChangeEvents
+       │
+       ├── SubsurfaceGeometryVersions
+       ├── SubsurfaceProfiles
+       │     └── SubsurfaceGeologicalLayers
+       ├── StructureBedrockObservations
+       ├── Boreholes
+       │     └── BoreholeIntervals
+       ├── StructureSubsurfaceReferences
+       ├── SubsurfaceMaterialObservations
+       ├── GroundwaterObservations
+       └── SubsurfaceChangeEvents
+
+StructureWatch Guard – Building Structure Geometry & Change Monitoring Design

@@ -1,0 +1,2879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MvcReshunyasanga Multi-Year Delivery Programme — PM Hub</title>
+<style>
+/* ── PM Hub shell (reference-grade layout) ─────────────────────────── */
+* { box-sizing: border-box; }
+.pm-shell { display: flex; min-height: 100vh; background: #f9fafb; color: #1f2937;
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+.pm-sidebar { width: 240px; background: #0b172a; color: #e5e7eb; flex-shrink: 0;
+  display: flex; flex-direction: column; padding: 18px 0; }
+.pm-brand { padding: 0 20px 14px; border-bottom: 1px solid #1f2a44; margin-bottom: 10px; }
+.pm-brand h1 { color: #fff; font-size: 17px; margin: 0 0 2px; letter-spacing: .2px; }
+.pm-brand span { font-size: 10.5px; letter-spacing: 1.6px; color: #93a4bd; text-transform: uppercase; }
+.pm-nav { display: flex; flex-direction: column; gap: 1px; flex: 1; }
+.pm-nav a { color: #cbd5e1; text-decoration: none; font-size: 13.5px; padding: 9px 20px;
+  border-left: 3px solid transparent; }
+.pm-nav a:hover { background: #13223c; color: #fff; }
+.pm-nav a.active { background: #1a3a63; border-left-color: #3b82f6; color: #fff; font-weight: 600; }
+.pm-foot { padding: 12px 20px 0; border-top: 1px solid #1f2a44; font-size: 11.5px; color: #7c8ca6; line-height: 1.7; }
+.pm-foot b { color: #e5e7eb; }
+.pm-main { flex: 1; padding: 26px 34px; max-width: 1400px; }
+.pm-main h1 { font-size: 22px; margin: 0 0 4px; color: #111827; }
+.pm-sub { color: #6b7280; font-size: 13px; margin: 0 0 20px; }
+.pm-main h2 { font-size: 15px; margin: 22px 0 10px; color: #111827; }
+
+/* KPI + cards */
+.pm-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 22px; }
+.pm-kpi { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 10px; text-align: center; }
+.pm-kpi b { display: block; font-size: 24px; }
+.pm-kpi span { font-size: 10.5px; letter-spacing: 1px; color: #2563eb; font-weight: 600; }
+.pm-kpi.green span { color: #059669; }
+.pm-kpi.red b { color: #dc2626; }
+.pm-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+.pm-card h3 { margin: 0 0 10px; font-size: 13.5px; }
+.pm-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 1000px) { .pm-cols { grid-template-columns: 1fr; } }
+
+/* tables */
+.pm-tbl { width: 100%; border-collapse: collapse; background: #fff; font-size: 12.5px; }
+.pm-tbl th { text-align: left; color: #6b7280; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .5px; padding: 8px 10px; border-bottom: 2px solid #e5e7eb; }
+.pm-tbl td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+.pm-tbl tr:hover td { background: #f8fafc; }
+
+/* badges + chips */
+.pm-badge { display: inline-block; padding: 1.5px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 600; }
+.pm-badge.must { background: #fee2e2; color: #b91c1c; }
+.pm-badge.should { background: #ffedd5; color: #c2410c; }
+.pm-badge.could { background: #fef3c7; color: #a16207; }
+.pm-badge.milestone { background: #e5e7eb; color: #b91c1c; font-weight: 700; }
+.pm-badge.rel { background: #fee2e2; color: #cf1322; }
+.pm-badge.open { background: #fee2e2; color: #b91c1c; }
+.pm-badge.progress { background: #ffedd5; color: #c2410c; }
+.pm-badge.resolved { background: #dcfce7; color: #15803d; }
+.pm-badge.major { background: #ffedd5; color: #c2410c; }
+.pm-badge.minor { background: #fef9c3; color: #a16207; }
+.pm-badge.trivial { background: #f1f5f9; color: #64748b; }
+.pm-chip { display: inline-block; padding: 1px 7px; border-radius: 4px; color: #fff; font-size: 10.5px; font-weight: 700; margin-right: 3px; }
+
+/* gantt */
+.gantt { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; }
+.gantt-quarters { display: flex; margin-bottom: 6px; }
+.gantt-q { border-left: 1px solid #e5e7eb; padding: 3px 6px; font-size: 10.5px; color: #6b7280; font-weight: 600; }
+.gantt-row { display: flex; align-items: center; height: 22px; border-left: 1px solid #e5e7eb; position: relative; }
+.gantt-row:nth-child(odd) { background: #f9fafb; }
+.gantt-label { width: 220px; flex-shrink: 0; font-size: 11px; color: #374151; padding-left: 8px; }
+.gantt-track { flex: 1; position: relative; height: 100%; }
+.gantt-bar { position: absolute; top: 4px; height: 14px; border-radius: 3px; }
+.gantt-diamond { position: absolute; top: 3px; font-size: 14px; color: #cf1322; line-height: 1; }
+
+/* sprint detail tabs */
+.pm-tabs { display: flex; gap: 2px; border-bottom: 2px solid #e5e7eb; margin: 12px 0 16px; }
+.pm-tabs span { padding: 7px 14px; font-size: 12.5px; color: #1890ff; font-weight: 600; }
+.pm-tabs span.active { border-bottom: 2px solid #1890ff; margin-bottom: -2px; }
+.pm-tabs a { padding: 7px 14px; font-size: 12.5px; color: #6b7280; text-decoration: none; }
+.pm-tabs a:hover { color: #1890ff; }
+
+/* code blocks */
+.pm-code { background: #f6f8fa; border: 1px solid #e5e7eb; border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px;
+  padding: 12px 14px; white-space: pre-wrap; line-height: 1.55; color: #24292e; max-height: 420px; overflow: auto; }
+.db-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 1000px) { .db-cols { grid-template-columns: 1fr; } }
+.db-panel h4 { margin: 0 0 6px; font-size: 12px; }
+.dep-pill { display: inline-block; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a;
+  border-radius: 999px; padding: 2px 10px; font-size: 11px; margin: 0 4px 4px 0; }
+
+/* list panel (sprint picker) */
+.pm-picker { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
+.pm-list { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; max-height: 74vh; overflow: auto; }
+.pm-list a { display: block; padding: 9px 14px; border-bottom: 1px solid #f1f5f9; text-decoration: none; color: #1f2937; }
+.pm-list a:hover { background: #f8fafc; }
+.pm-list a.active { background: #e6f7ff; border-left: 3px solid #1890ff; }
+.pm-list .t { font-size: 12.5px; font-weight: 600; }
+.pm-list .d { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+/* releases timeline */
+.rel-timeline { border-left: 3px solid #e5e7eb; margin-left: 8px; padding-left: 22px; }
+.rel-card { position: relative; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+  padding: 14px 16px; margin-bottom: 16px; }
+.rel-card::before { content: "◆"; position: absolute; left: -30px; top: 12px; color: #dc2626; font-size: 15px; }
+.checklist { list-style: none; padding: 0; margin: 8px 0 0; }
+.checklist li { font-size: 12px; color: #374151; padding: 2.5px 0; }
+.checklist li::before { content: "☐ "; color: #9ca3af; }
+.seq-step { display: flex; gap: 8px; font-size: 12px; padding: 3px 0; }
+.seq-step .arrow { color: #9ca3af; }
+
+.pm-nav-link { cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="pm-shell">
+  <aside class="pm-sidebar">
+    <div class="pm-brand">
+      <h1>MvcReshunyasanga Multi-Year Delivery Programme</h1>
+      <span>2-Year Agile Plan</span>
+    </div>
+    <nav class="pm-nav">
+        <a href="#tab-overview" class="pm-nav-link active" data-tab="overview">Overview</a>
+        <a href="#tab-gantt" class="pm-nav-link" data-tab="gantt">Gantt Chart</a>
+        <a href="#tab-sprints" class="pm-nav-link" data-tab="sprints">Sprints</a>
+        <a href="#tab-teams" class="pm-nav-link" data-tab="teams">Teams</a>
+        <a href="#tab-requirements" class="pm-nav-link" data-tab="requirements">Requirements</a>
+        <a href="#tab-designdocs" class="pm-nav-link" data-tab="designdocs">Design Docs</a>
+        <a href="#tab-dbscripts" class="pm-nav-link" data-tab="dbscripts">Database Scripts</a>
+        <a href="#tab-testcases" class="pm-nav-link" data-tab="testcases">Test Cases</a>
+        <a href="#tab-issues" class="pm-nav-link" data-tab="issues">Issues</a>
+        <a href="#tab-releases" class="pm-nav-link" data-tab="releases">Releases</a>
+    </nav>
+    <div class="pm-foot">
+            <b>● MS Enterprise</b><br />
+            52 Sprints · 104 Weeks<br />
+            26 Team Members
+        </div>
+  </aside>
+  <main class="pm-main">
+<section class="pm-tab" id="tab-overview">
+        <header>
+    <h1>MvcReshunyasanga Multi-Year Delivery Programme — 2-Year Agile Delivery Programme</h1>
+    <p class="pm-sub">
+        GitHub: daluvalanokia/mvcreshunyasanga
+        | ASP.NET Core 8.0 MVC
+        | SQL Server 2019 &#x2B; Oracle 19c
+        | 52 Sprints | 5 Squads | 26 Team Members
+    </p>
+        <p class="pm-sub">branch HEAD, 163 files analyzed | generated in 70ms</p>
+</header>
+
+<div class="pm-kpis">
+    <div class="pm-kpi"><b>52</b><span>SPRINTS</span></div>
+    <div class="pm-kpi"><b>104</b><span>WEEKS</span></div>
+    <div class="pm-kpi"><b>26</b><span>TEAM MEMBERS</span></div>
+    <div class="pm-kpi"><b>103</b><span>STORY POINTS</span></div>
+    <div class="pm-kpi"><b>16</b><span>USER STORIES</span></div>
+    <div class="pm-kpi green"><b>111</b><span>TEST CASES</span></div>
+</div>
+
+<div class="pm-cols">
+    <div class="pm-card">
+        <h3>Quarter Schedule</h3>
+        <table class="pm-tbl">
+            <thead><tr><th>Quarter</th><th>Theme</th><th>Sprints</th><th>Weeks</th><th>Milestone</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><b>Q1</b></td>
+                    <td>Foundation &amp; Auth</td>
+                    <td>1–7</td>
+                    <td>1–14</td>
+                    <td>
+                            <span class="pm-badge rel">Alpha</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Q2</b></td>
+                    <td>Core Domain</td>
+                    <td>8–14</td>
+                    <td>15–28</td>
+                    <td>
+                            <span class="pm-badge rel">Beta 1</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Q3</b></td>
+                    <td>Integration &amp; API</td>
+                    <td>15–21</td>
+                    <td>29–42</td>
+                    <td>
+                            <span class="pm-badge rel">Beta 2</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Q4</b></td>
+                    <td>Hardening &amp; RC</td>
+                    <td>22–28</td>
+                    <td>43–56</td>
+                    <td>
+                            <span class="pm-badge rel">RC1 / Year 1 Release</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Q5</b></td>
+                    <td>Scale &amp; Optimization (Year 2)</td>
+                    <td>29–34</td>
+                    <td>57–68</td>
+                    <td>
+                            <span class="pm-badge rel">Y2 Beta</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Q6</b></td>
+                    <td>Advanced Features (Year 2)</td>
+                    <td>35–40</td>
+                    <td>69–80</td>
+                    <td>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Q7</b></td>
+                    <td>Platform Extensions (Year 2)</td>
+                    <td>41–46</td>
+                    <td>81–92</td>
+                    <td>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Q8</b></td>
+                    <td>Sustain &amp; GA (Year 2)</td>
+                    <td>47–52</td>
+                    <td>93–104</td>
+                    <td>
+                            <span class="pm-badge rel">GA Release</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pm-card">
+        <h3>Squad Domains</h3>
+        <table class="pm-tbl">
+            <thead><tr><th>Squad</th><th>Domain</th><th>Epics</th><th>Members</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><span class="pm-chip" style="background:#2563EB">A</span></td>
+                    <td>components, db</td>
+                    <td>3</td>
+                    <td>8</td>
+                </tr>
+                <tr>
+                    <td><span class="pm-chip" style="background:#16A34A">B</span></td>
+                    <td>components, api-spec, routes</td>
+                    <td>3</td>
+                    <td>7</td>
+                </tr>
+                <tr>
+                    <td><span class="pm-chip" style="background:#0D9488">C</span></td>
+                    <td>MVCSolutionBase, lib</td>
+                    <td>2</td>
+                    <td>7</td>
+                </tr>
+                <tr>
+                    <td><span class="pm-chip" style="background:#4F46E5">D</span></td>
+                    <td>api-client-react, routes</td>
+                    <td>2</td>
+                    <td>8</td>
+                </tr>
+                <tr>
+                    <td><span class="pm-chip" style="background:#EA580C">E</span></td>
+                    <td>api-zod, components</td>
+                    <td>2</td>
+                    <td>8</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    <div class="pm-card">
+        <h3>● Platform Architecture — Microsoft Enterprise Stack</h3>
+        <div style="margin-bottom:10px">
+                <span class="dep-pill">Microsoft Azure</span>
+                <span class="dep-pill">IIS</span>
+                <span class="dep-pill">Docker</span>
+                <span class="dep-pill">Kubernetes</span>
+            <span class="dep-pill">C#</span>
+            <span class="dep-pill">SQL Server 2019</span>
+        </div>
+        <div class="pm-cols">
+            <div>
+                <h4 style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Web Layer</h4>
+                <ul style="font-size:12px;padding-left:18px;margin:4px 0 10px"> <li>ASP.NET Core 8.0 MVC</li>  <li>Razor Views (.cshtml)</li>  <li>Cookie/JWT Authentication</li>  <li>SignalR Hubs</li> </ul>
+                <h4 style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Service Layer</h4>
+                <ul style="font-size:12px;padding-left:18px;margin:4px 0 10px"> <li>Domain services per module</li>  <li>Validation pipeline</li>  <li>Notification service</li>  <li>Mapping profiles</li> </ul>
+            </div>
+            <div>
+                <h4 style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Data Layer</h4>
+                <ul style="font-size:12px;padding-left:18px;margin:4px 0 10px"> <li>EF Core DbContext</li>  <li>SQL Server 2019 (prod)</li>  <li>Oracle 19c (alt)</li>  <li>DB_PROVIDER env switch</li>  <li>8 MVC controllers</li> </ul>
+                <h4 style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Domain Tables</h4>
+                <ul style="font-size:12px;padding-left:18px;margin:4px 0 10px"> <li>discover_request (1 columns)</li>  <li>import_request (4 columns)</li>  <li>shunya_sangha_db_context (7 columns)</li>  <li>chat_message (6 columns)</li> </ul>
+            </div>
+        </div>
+        <p style="font-size:11.5px;color:#6b7280;margin:8px 0 0"><b>Best for:</b> Enterprises on the Microsoft ecosystem, ERP/CRM/internal systems, AD integration</p>
+    </div>
+
+<div class="pm-cols">
+    <div class="pm-card">
+        <h3>Budget — $1,025,180 total (uncapped)</h3>
+        <table class="pm-tbl">
+            <thead><tr><th>Year</th><th>Cost</th><th>Within cap</th></tr></thead>
+            <tbody>
+            <tr><td>2-year program</td><td>$1,025,180</td>
+                <td>&#x2705; yes</td></tr>
+            </tbody>
+        </table>
+        <table class="pm-tbl" style="margin-top:10px">
+            <thead><tr><th>Role</th><th>Cost</th></tr></thead>
+            <tbody>
+                <tr><td>Developer</td><td>$417,300</td></tr>
+                <tr><td>QA Engineer</td><td>$101,920</td></tr>
+                <tr><td>Product Owner</td><td>$92,378</td></tr>
+                <tr><td>Dev Lead</td><td>$74,802</td></tr>
+                <tr><td>Solution Architect</td><td>$69,966</td></tr>
+                <tr><td>Scrum Master</td><td>$66,300</td></tr>
+                <tr><td>DevOps Engineer</td><td>$65,702</td></tr>
+                <tr><td>Business Analyst</td><td>$34,528</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="pm-card">
+        <h3>Role-Threaded Governor Outputs</h3>
+        <table class="pm-tbl">
+            <thead><tr><th>Role</th><th>Deliverable (threaded)</th></tr></thead>
+            <tbody>
+                <tr><td><b>Business Analyst</b></td><td>Captured 16 user stories across 12 epics (103 story points). Top backlog areas: Foundation &amp; Auth; components core domain; MVCSolutionBase core domain; api-cli&#x2026;</td></tr>
+                <tr><td><b>Data Engineer</b></td><td>Data workstreams: ingestion contracts per module, reporting marts after core domain quarters; no production data in dev/stage environments.</td></tr>
+                <tr><td><b>Database Admin</b></td><td>Database plan: versioned migrations per module, seed data per environment, backup/restore drills each release quarter; schema reviews in Architecture &amp; Design &#x2026;</td></tr>
+                <tr><td><b>Dev Lead</b></td><td>Implementation plan: 8 large stories split across squads; velocity target 120 pts/sprint. Definition of done: code review &#x2B; tests &#x2B; docs per story.</td></tr>
+                <tr><td><b>DevOps Engineer</b></td><td>Pipelines: build &#x2192; test &#x2192; package &#x2192; deploy per sprint; environments dev/stage/prod; release trains at each quarter milestone with rollback runbooks.</td></tr>
+                <tr><td><b>Developer</b></td><td>Squad assignments: 5 squads, each owning its module epics end to end (RACI: Responsible in Implementation, Consulted in Testing &amp; QA).</td></tr>
+                <tr><td><b>Product Owner</b></td><td>Roadmap: 2-year program, 26 sprints/year. Releases: Alpha (Q1), Beta 1 (Q2), Beta 2 (Q3), RC1/Year 1 (Q4), then scale, advanced features and GA at program end.&#x2026;</td></tr>
+                <tr><td><b>QA Engineer</b></td><td>Execution: automated suites wired into CI from sprint 1; 2 high-risk stories get exploratory test passes before merge.</td></tr>
+                <tr><td><b>QA Lead</b></td><td>Test strategy: 206 test cases estimated (unit &#x2B; integration per module, acceptance per story). Every 6th sprint is a stabilization sprint at 50% capacity.</td></tr>
+                <tr><td><b>Scrum Master</b></td><td>Cadence: 2-week sprints, 52 total. Ceremonies: planning, daily standup, review, retro. Unplanned stories spill to the next sprint; risk log reviewed weekly wit&#x2026;</td></tr>
+                <tr><td><b>Senior Developer</b></td><td>Standards: .NET 8, MVC, async-first, DI everywhere; code review gate per pull request; spike budget inside foundation epics for unknowns.</td></tr>
+                <tr><td><b>Solution Architect</b></td><td>Module decomposition: MVCSolutionBase, api-client-react, api-spec, api-zod, components, db, lib, routes. Layering: domain &#x2192; services &#x2192; MVC/API. Every epic maps&#x2026;</td></tr>
+                <tr><td><b>Technical Writer</b></td><td>Deliverables: README per module, API reference each release, runbooks with GA handover; release notes at every quarter milestone (Informed on release managemen&#x2026;</td></tr>
+                <tr><td><b>UI/UX Designer</b></td><td>Design docs: MVC view inventory for 8 modules; wireframes per epic theme; design system tokens shared across squads.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    </section>
+<section class="pm-tab" id="tab-gantt" hidden>
+        <header>
+    <h1>Gantt Chart — 52 Sprints / 104 Weeks</h1>
+    <p class="pm-sub">Each bar = 1 sprint (2 weeks) · colored by lead squad · milestones shown as diamonds</p>
+</header>
+
+<div class="gantt">
+    <div class="gantt-quarters">
+            <div class="gantt-q" style="width:13.46%">Q1 &#xB7; Alpha</div>
+            <div class="gantt-q" style="width:13.46%">Q2 &#xB7; Beta 1</div>
+            <div class="gantt-q" style="width:13.46%">Q3 &#xB7; Beta 2</div>
+            <div class="gantt-q" style="width:13.46%">Q4 &#xB7; RC1 / Year 1 Release</div>
+            <div class="gantt-q" style="width:11.54%">Q5 &#xB7; Y2 Beta</div>
+            <div class="gantt-q" style="width:11.54%">Q6 </div>
+            <div class="gantt-q" style="width:11.54%">Q7 </div>
+            <div class="gantt-q" style="width:11.54%">Q8 &#xB7; GA Release</div>
+    </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Solution bootstrap &amp; repository s&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:0.00%;width:1.92%;background:#2563EB"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; founda&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:1.92%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; founda&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:3.85%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; founda&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:5.77%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; founda&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:7.69%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; founda&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:9.62%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; founda&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:11.54%;width:1.92%;background:#475569"></div>
+                    <span class="gantt-diamond" style="left:12.861538461538461538461538462.ToString("F2")%">◆</span>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; core d&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:13.46%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; core d&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:15.38%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; core d&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:17.31%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; core d&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:19.23%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; core d&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:21.15%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; core d&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:23.08%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; core d&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:25.00%;width:1.92%;background:#475569"></div>
+                    <span class="gantt-diamond" style="left:26.323076923076923076923076923.ToString("F2")%">◆</span>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; integr&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:26.92%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; integr&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:28.85%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; integr&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:30.77%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; integr&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:32.69%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; integr&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:34.62%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; integr&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:36.54%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; integr&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:38.46%;width:1.92%;background:#475569"></div>
+                    <span class="gantt-diamond" style="left:39.784615384615384615384615385.ToString("F2")%">◆</span>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; harden&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:40.38%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; harden&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:42.31%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; harden&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:44.23%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; harden&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:46.15%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; harden&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:48.08%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; harden&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:50.00%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; harden&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:51.92%;width:1.92%;background:#475569"></div>
+                    <span class="gantt-diamond" style="left:53.246153846153846153846153846.ToString("F2")%">◆</span>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:53.85%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:55.77%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:57.69%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:59.62%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:61.54%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:63.46%;width:1.92%;background:#475569"></div>
+                    <span class="gantt-diamond" style="left:64.784615384615384615384615385.ToString("F2")%">◆</span>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanc&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:65.38%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanc&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:67.31%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanc&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:69.23%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanc&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:71.15%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanc&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:73.08%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanc&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:75.00%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; platfo&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:76.92%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; platfo&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:78.85%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; platfo&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:80.77%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; platfo&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:82.69%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; platfo&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:84.62%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; platfo&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:86.54%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustai&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:88.46%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustai&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:90.38%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustai&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:92.31%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustai&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:94.23%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustai&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:96.15%;width:1.92%;background:#475569"></div>
+            </div>
+        </div>
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustai&#x2026;</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:98.08%;width:1.92%;background:#475569"></div>
+                    <span class="gantt-diamond" style="left:99.4.ToString("F2")%">◆</span>
+            </div>
+        </div>
+</div>
+
+    </section>
+<section class="pm-tab" id="tab-sprints" hidden>
+        <header>
+    <h1>Sprints</h1>
+    <p class="pm-sub">52 two-week sprints across 8 quarters — select a sprint for full engineering detail</p>
+</header>
+
+<div class="pm-picker">
+    <div class="pm-list">
+            <a href="#tab-overview">
+                <div class="t">Sprint 1 — Solution bootstrap &amp; repository structure</div>
+                <div class="d">
+                    Q1 · 103 pts · Weeks 1–2
+                    <span class="pm-chip" style="background:#2563EB">A</span>
+                        <span class="pm-badge milestone">Alpha</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 2 — Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">
+                    Q1 · 0 pts · Weeks 3–4
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Alpha</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 3 — Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">
+                    Q1 · 0 pts · Weeks 5–6
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Alpha</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 4 — Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">
+                    Q1 · 0 pts · Weeks 7–8
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Alpha</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 5 — Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">
+                    Q1 · 0 pts · Weeks 9–10
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Alpha</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 6 — Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">
+                    Q1 · 0 pts · Weeks 11–12
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Alpha</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 7 — Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">
+                    Q1 · 0 pts · Weeks 13–14
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Alpha</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 8 — Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">
+                    Q2 · 0 pts · Weeks 15–16
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 1</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 9 — Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">
+                    Q2 · 0 pts · Weeks 17–18
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 1</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 10 — Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">
+                    Q2 · 0 pts · Weeks 19–20
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 1</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 11 — Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">
+                    Q2 · 0 pts · Weeks 21–22
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 1</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 12 — Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">
+                    Q2 · 0 pts · Weeks 23–24
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 1</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 13 — Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">
+                    Q2 · 0 pts · Weeks 25–26
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 1</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 14 — Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">
+                    Q2 · 0 pts · Weeks 27–28
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 1</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 15 — Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">
+                    Q3 · 0 pts · Weeks 29–30
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 2</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 16 — Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">
+                    Q3 · 0 pts · Weeks 31–32
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 2</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 17 — Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">
+                    Q3 · 0 pts · Weeks 33–34
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 2</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 18 — Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">
+                    Q3 · 0 pts · Weeks 35–36
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 2</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 19 — Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">
+                    Q3 · 0 pts · Weeks 37–38
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 2</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 20 — Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">
+                    Q3 · 0 pts · Weeks 39–40
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 2</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 21 — Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">
+                    Q3 · 0 pts · Weeks 41–42
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Beta 2</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 22 — Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">
+                    Q4 · 0 pts · Weeks 43–44
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">RC1 / Year 1 Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 23 — Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">
+                    Q4 · 0 pts · Weeks 45–46
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">RC1 / Year 1 Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 24 — Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">
+                    Q4 · 0 pts · Weeks 47–48
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">RC1 / Year 1 Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 25 — Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">
+                    Q4 · 0 pts · Weeks 49–50
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">RC1 / Year 1 Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 26 — Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">
+                    Q4 · 0 pts · Weeks 51–52
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">RC1 / Year 1 Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 27 — Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">
+                    Q4 · 0 pts · Weeks 53–54
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">RC1 / Year 1 Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 28 — Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">
+                    Q4 · 0 pts · Weeks 55–56
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">RC1 / Year 1 Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 29 — Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">
+                    Q5 · 0 pts · Weeks 57–58
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Y2 Beta</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 30 — Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">
+                    Q5 · 0 pts · Weeks 59–60
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Y2 Beta</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 31 — Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">
+                    Q5 · 0 pts · Weeks 61–62
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Y2 Beta</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 32 — Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">
+                    Q5 · 0 pts · Weeks 63–64
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Y2 Beta</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 33 — Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">
+                    Q5 · 0 pts · Weeks 65–66
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Y2 Beta</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 34 — Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">
+                    Q5 · 0 pts · Weeks 67–68
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">Y2 Beta</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 35 — Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">
+                    Q6 · 0 pts · Weeks 69–70
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 36 — Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">
+                    Q6 · 0 pts · Weeks 71–72
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 37 — Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">
+                    Q6 · 0 pts · Weeks 73–74
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 38 — Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">
+                    Q6 · 0 pts · Weeks 75–76
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 39 — Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">
+                    Q6 · 0 pts · Weeks 77–78
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 40 — Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">
+                    Q6 · 0 pts · Weeks 79–80
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 41 — Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">
+                    Q7 · 0 pts · Weeks 81–82
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 42 — Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">
+                    Q7 · 0 pts · Weeks 83–84
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 43 — Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">
+                    Q7 · 0 pts · Weeks 85–86
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 44 — Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">
+                    Q7 · 0 pts · Weeks 87–88
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 45 — Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">
+                    Q7 · 0 pts · Weeks 89–90
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 46 — Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">
+                    Q7 · 0 pts · Weeks 91–92
+                    <span class="pm-chip" style="background:#475569">H</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 47 — Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">
+                    Q8 · 0 pts · Weeks 93–94
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">GA Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 48 — Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">
+                    Q8 · 0 pts · Weeks 95–96
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">GA Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 49 — Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">
+                    Q8 · 0 pts · Weeks 97–98
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">GA Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 50 — Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">
+                    Q8 · 0 pts · Weeks 99–100
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">GA Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 51 — Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">
+                    Q8 · 0 pts · Weeks 101–102
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">GA Release</span>
+                </div>
+            </a>
+            <a href="#tab-overview">
+                <div class="t">Sprint 52 — Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">
+                    Q8 · 0 pts · Weeks 103–104
+                    <span class="pm-chip" style="background:#475569">H</span>
+                        <span class="pm-badge milestone">GA Release</span>
+                </div>
+            </a>
+    </div>
+    <div class="pm-card" style="min-height:300px">
+        <h3>Sprint explorer</h3>
+        <p style="color:#6b7280;font-size:13px">Select a sprint from the list to open its stories, tests, issues,
+            code artifacts, detailed design (DDD) and database scripts.</p>
+    </div>
+</div>
+
+    </section>
+<section class="pm-tab" id="tab-teams" hidden>
+        <header>
+    <h1>Teams & Org Structure</h1>
+    <p class="pm-sub">26 team members across 5 squads</p>
+</header>
+
+<div class="pm-kpis">
+    <div class="pm-kpi"><b>12</b><span>DEVELOPERS</span></div>
+    <div class="pm-kpi"><b>5</b><span>QA ENGINEERS</span></div>
+    <div class="pm-kpi"><b>1</b><span>BUSINESS ANALYSTS</span></div>
+    <div class="pm-kpi"><b>7</b><span>MGMT & LEADERSHIP</span></div>
+    <div class="pm-kpi"><b>5</b><span>SQUADS</span></div>
+    <div class="pm-kpi red"><b>26</b><span>TOTAL PROGRAMME</span></div>
+</div>
+
+<div class="pm-cols" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr))">
+        <div class="pm-card">
+            <h3><span class="pm-chip" style="background:#2563EB">A</span> Squad A</h3>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 10px">components, db</p>
+            <table class="pm-tbl">
+                <thead><tr><th>Member</th><th>Role</th><th>Rate</th></tr></thead>
+                <tbody>
+                    <tr><td>Product Owner 01</td><td>Product Owner</td><td>$95/hr</td></tr>
+                    <tr><td>QA Lead 06</td><td>QA Lead</td><td>$95/hr</td></tr>
+                    <tr><td>Data Engineer 11</td><td>Data Engineer</td><td>$90/hr</td></tr>
+                    <tr><td>Developer 16</td><td>Developer</td><td>$75/hr</td></tr>
+                    <tr><td>QA Engineer 21</td><td>QA Engineer</td><td>$70/hr</td></tr>
+                    <tr><td>Developer 26</td><td>Developer</td><td>$75/hr</td></tr>
+                    <tr><td>Scrum Master 02</td><td>Scrum Master</td><td>$85/hr</td></tr>
+                    <tr><td>Solution Architect 03</td><td>Solution Architect</td><td>$115/hr</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pm-card">
+            <h3><span class="pm-chip" style="background:#16A34A">B</span> Squad B</h3>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 10px">components, api-spec, routes</p>
+            <table class="pm-tbl">
+                <thead><tr><th>Member</th><th>Role</th><th>Rate</th></tr></thead>
+                <tbody>
+                    <tr><td>Scrum Master 02</td><td>Scrum Master</td><td>$85/hr</td></tr>
+                    <tr><td>DevOps Engineer 07</td><td>DevOps Engineer</td><td>$95/hr</td></tr>
+                    <tr><td>Technical Writer 12</td><td>Technical Writer</td><td>$60/hr</td></tr>
+                    <tr><td>Developer 17</td><td>Developer</td><td>$75/hr</td></tr>
+                    <tr><td>Developer 22</td><td>Developer</td><td>$75/hr</td></tr>
+                    <tr><td>Product Owner 01</td><td>Product Owner</td><td>$95/hr</td></tr>
+                    <tr><td>Solution Architect 03</td><td>Solution Architect</td><td>$115/hr</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pm-card">
+            <h3><span class="pm-chip" style="background:#0D9488">C</span> Squad C</h3>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 10px">MVCSolutionBase, lib</p>
+            <table class="pm-tbl">
+                <thead><tr><th>Member</th><th>Role</th><th>Rate</th></tr></thead>
+                <tbody>
+                    <tr><td>Solution Architect 03</td><td>Solution Architect</td><td>$115/hr</td></tr>
+                    <tr><td>Database Admin 08</td><td>Database Admin</td><td>$90/hr</td></tr>
+                    <tr><td>Developer 13</td><td>Developer</td><td>$75/hr</td></tr>
+                    <tr><td>QA Engineer 18</td><td>QA Engineer</td><td>$70/hr</td></tr>
+                    <tr><td>Developer 23</td><td>Developer</td><td>$75/hr</td></tr>
+                    <tr><td>Product Owner 01</td><td>Product Owner</td><td>$95/hr</td></tr>
+                    <tr><td>Scrum Master 02</td><td>Scrum Master</td><td>$85/hr</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pm-card">
+            <h3><span class="pm-chip" style="background:#4F46E5">D</span> Squad D</h3>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 10px">api-client-react, routes</p>
+            <table class="pm-tbl">
+                <thead><tr><th>Member</th><th>Role</th><th>Rate</th></tr></thead>
+                <tbody>
+                    <tr><td>Dev Lead 04</td><td>Dev Lead</td><td>$105/hr</td></tr>
+                    <tr><td>UI/UX Designer 09</td><td>UI/UX Designer</td><td>$80/hr</td></tr>
+                    <tr><td>Developer 14</td><td>Developer</td><td>$75/hr</td></tr>
+                    <tr><td>Developer 19</td><td>Developer</td><td>$75/hr</td></tr>
+                    <tr><td>QA Engineer 24</td><td>QA Engineer</td><td>$70/hr</td></tr>
+                    <tr><td>Product Owner 01</td><td>Product Owner</td><td>$95/hr</td></tr>
+                    <tr><td>Scrum Master 02</td><td>Scrum Master</td><td>$85/hr</td></tr>
+                    <tr><td>Solution Architect 03</td><td>Solution Architect</td><td>$115/hr</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pm-card">
+            <h3><span class="pm-chip" style="background:#EA580C">E</span> Squad E</h3>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 10px">api-zod, components</p>
+            <table class="pm-tbl">
+                <thead><tr><th>Member</th><th>Role</th><th>Rate</th></tr></thead>
+                <tbody>
+                    <tr><td>Senior Developer 05</td><td>Senior Developer</td><td>$95/hr</td></tr>
+                    <tr><td>Business Analyst 10</td><td>Business Analyst</td><td>$80/hr</td></tr>
+                    <tr><td>QA Engineer 15</td><td>QA Engineer</td><td>$70/hr</td></tr>
+                    <tr><td>Developer 20</td><td>Developer</td><td>$75/hr</td></tr>
+                    <tr><td>Developer 25</td><td>Developer</td><td>$75/hr</td></tr>
+                    <tr><td>Product Owner 01</td><td>Product Owner</td><td>$95/hr</td></tr>
+                    <tr><td>Scrum Master 02</td><td>Scrum Master</td><td>$85/hr</td></tr>
+                    <tr><td>Solution Architect 03</td><td>Solution Architect</td><td>$115/hr</td></tr>
+                </tbody>
+            </table>
+        </div>
+</div>
+
+<div class="pm-card">
+    <h3>Program Roster by Role</h3>
+    <table class="pm-tbl">
+        <thead><tr><th>Role</th><th>Headcount</th><th>Cost share</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>Developer</td><td>10</td>
+                <td>$417,300</td>
+            </tr>
+            <tr>
+                <td>QA Engineer</td><td>4</td>
+                <td>$101,920</td>
+            </tr>
+            <tr>
+                <td>Product Owner</td><td>1</td>
+                <td>$92,378</td>
+            </tr>
+            <tr>
+                <td>Scrum Master</td><td>1</td>
+                <td>$66,300</td>
+            </tr>
+            <tr>
+                <td>Solution Architect</td><td>1</td>
+                <td>$69,966</td>
+            </tr>
+            <tr>
+                <td>Dev Lead</td><td>1</td>
+                <td>$74,802</td>
+            </tr>
+            <tr>
+                <td>Senior Developer</td><td>1</td>
+                <td>$33,098</td>
+            </tr>
+            <tr>
+                <td>QA Lead</td><td>1</td>
+                <td>$33,098</td>
+            </tr>
+            <tr>
+                <td>DevOps Engineer</td><td>1</td>
+                <td>$65,702</td>
+            </tr>
+            <tr>
+                <td>Database Admin</td><td>1</td>
+                <td>$9,360</td>
+            </tr>
+            <tr>
+                <td>UI/UX Designer</td><td>1</td>
+                <td>$7,072</td>
+            </tr>
+            <tr>
+                <td>Business Analyst</td><td>1</td>
+                <td>$34,528</td>
+            </tr>
+            <tr>
+                <td>Data Engineer</td><td>1</td>
+                <td>$9,360</td>
+            </tr>
+            <tr>
+                <td>Technical Writer</td><td>1</td>
+                <td>$10,296</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+    </section>
+<section class="pm-tab" id="tab-requirements" hidden>
+        <header>
+    <h1>Requirements — Full Story Backlog</h1>
+    <p class="pm-sub">16 of 16 stories shown · MoSCoW priority · squad ownership</p>
+</header>
+
+<div class="pm-card">
+    <table class="pm-tbl">
+        <thead>
+        <tr><th>ID</th><th>Sprint</th><th>Title</th><th>As a</th><th>Priority</th><th>Points</th><th>Risk</th><th>Squad</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>US-001</b></td>
+                <td>S01</td>
+                <td>Solution bootstrap &amp; repository structure</td>
+                <td>developer</td>
+                <td><span class="pm-badge must">Must</span></td>
+                <td>8</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#2563EB">A</span></td>
+            </tr>
+            <tr>
+                <td><b>US-002</b></td>
+                <td>S01</td>
+                <td>Authentication &amp; user management</td>
+                <td>product owner</td>
+                <td><span class="pm-badge must">Must</span></td>
+                <td>13</td>
+                <td>High</td>
+                <td><span class="pm-chip" style="background:#2563EB">A</span></td>
+            </tr>
+            <tr>
+                <td><b>US-003</b></td>
+                <td>S01</td>
+                <td>components domain model &amp; services</td>
+                <td>user</td>
+                <td><span class="pm-badge must">Must</span></td>
+                <td>13</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#2563EB">A</span></td>
+            </tr>
+            <tr>
+                <td><b>US-004</b></td>
+                <td>S01</td>
+                <td>MVCSolutionBase domain model &amp; services</td>
+                <td>user</td>
+                <td><span class="pm-badge must">Must</span></td>
+                <td>13</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#0D9488">C</span></td>
+            </tr>
+            <tr>
+                <td><b>US-005</b></td>
+                <td>S01</td>
+                <td>MVCSolutionBase MVC views &amp; controllers</td>
+                <td>user</td>
+                <td><span class="pm-badge must">Must</span></td>
+                <td>8</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#0D9488">C</span></td>
+            </tr>
+            <tr>
+                <td><b>US-006</b></td>
+                <td>S01</td>
+                <td>api-client-react domain model &amp; services</td>
+                <td>user</td>
+                <td><span class="pm-badge must">Must</span></td>
+                <td>3</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#4F46E5">D</span></td>
+            </tr>
+            <tr>
+                <td><b>US-007</b></td>
+                <td>S01</td>
+                <td>api-zod domain model &amp; services</td>
+                <td>user</td>
+                <td><span class="pm-badge should">Should</span></td>
+                <td>3</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#EA580C">E</span></td>
+            </tr>
+            <tr>
+                <td><b>US-008</b></td>
+                <td>S01</td>
+                <td>db domain model &amp; services</td>
+                <td>user</td>
+                <td><span class="pm-badge should">Should</span></td>
+                <td>3</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#2563EB">A</span></td>
+            </tr>
+            <tr>
+                <td><b>US-009</b></td>
+                <td>S01</td>
+                <td>api-spec domain model &amp; services</td>
+                <td>user</td>
+                <td><span class="pm-badge should">Should</span></td>
+                <td>2</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#16A34A">B</span></td>
+            </tr>
+            <tr>
+                <td><b>US-010</b></td>
+                <td>S01</td>
+                <td>lib domain model &amp; services</td>
+                <td>user</td>
+                <td><span class="pm-badge could">Could</span></td>
+                <td>1</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#0D9488">C</span></td>
+            </tr>
+            <tr>
+                <td><b>US-011</b></td>
+                <td>S01</td>
+                <td>lib MVC views &amp; controllers</td>
+                <td>user</td>
+                <td><span class="pm-badge could">Could</span></td>
+                <td>1</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#0D9488">C</span></td>
+            </tr>
+            <tr>
+                <td><b>US-012</b></td>
+                <td>S01</td>
+                <td>routes domain model &amp; services</td>
+                <td>user</td>
+                <td><span class="pm-badge could">Could</span></td>
+                <td>1</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#4F46E5">D</span></td>
+            </tr>
+            <tr>
+                <td><b>US-013</b></td>
+                <td>S01</td>
+                <td>Database schema, migrations &amp; seed data</td>
+                <td>database admin</td>
+                <td><span class="pm-badge should">Should</span></td>
+                <td>8</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#2563EB">A</span></td>
+            </tr>
+            <tr>
+                <td><b>US-014</b></td>
+                <td>S01</td>
+                <td>Automated test suites per module</td>
+                <td>qa lead</td>
+                <td><span class="pm-badge should">Should</span></td>
+                <td>8</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#2563EB">A</span></td>
+            </tr>
+            <tr>
+                <td><b>US-015</b></td>
+                <td>S01</td>
+                <td>Security review &amp; performance hardening</td>
+                <td>operations</td>
+                <td><span class="pm-badge should">Should</span></td>
+                <td>13</td>
+                <td>High</td>
+                <td><span class="pm-chip" style="background:#4F46E5">D</span></td>
+            </tr>
+            <tr>
+                <td><b>US-016</b></td>
+                <td>S01</td>
+                <td>GA release &amp; operations handover</td>
+                <td>operations</td>
+                <td><span class="pm-badge could">Could</span></td>
+                <td>5</td>
+                <td>Medium</td>
+                <td><span class="pm-chip" style="background:#4F46E5">D</span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="pm-card">
+    <h3>Epics</h3>
+    <table class="pm-tbl">
+        <thead><tr><th>Key</th><th>Epic</th><th>Module</th><th>Theme</th><th>Stories</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><b>E01</b></td>
+                <td>Foundation &amp; Auth — Solution bootstrap, CI/CD, environments, identity and access management</td>
+                <td>components</td>
+                <td>Foundation</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td><b>E02</b></td>
+                <td>components core domain — Implement the components domain model, services and contracts (54 source files in scope)</td>
+                <td>components</td>
+                <td>Core</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><b>E03</b></td>
+                <td>MVCSolutionBase core domain — Implement the MVCSolutionBase domain model, services and contracts (45 source files in scope)</td>
+                <td>MVCSolutionBase</td>
+                <td>UI</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td><b>E04</b></td>
+                <td>api-client-react core domain — Implement the api-client-react domain model, services and contracts (6 source files in scope)</td>
+                <td>api-client-react</td>
+                <td>Core</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><b>E05</b></td>
+                <td>api-zod core domain — Implement the api-zod domain model, services and contracts (6 source files in scope)</td>
+                <td>api-zod</td>
+                <td>Core</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><b>E06</b></td>
+                <td>db core domain — Implement the db domain model, services and contracts (5 source files in scope)</td>
+                <td>db</td>
+                <td>Core</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><b>E07</b></td>
+                <td>api-spec core domain — Implement the api-spec domain model, services and contracts (3 source files in scope)</td>
+                <td>api-spec</td>
+                <td>Core</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><b>E08</b></td>
+                <td>lib core domain — Implement the lib domain model, services and contracts (2 source files in scope)</td>
+                <td>lib</td>
+                <td>UI</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td><b>E09</b></td>
+                <td>routes core domain — Implement the routes domain model, services and contracts (2 source files in scope)</td>
+                <td>routes</td>
+                <td>Core</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><b>E10</b></td>
+                <td>Data &amp; persistence — Schema management, migrations, seed data and database scripts across the platform</td>
+                <td>components</td>
+                <td>Data</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><b>E11</b></td>
+                <td>Testing &amp; QA — Test strategy: unit, integration and acceptance coverage per squad domain</td>
+                <td>components</td>
+                <td>QA</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><b>E12</b></td>
+                <td>Hardening &amp; release — Performance hardening, security review, documentation and the GA release train</td>
+                <td>routes</td>
+                <td>Release</td>
+                <td>2</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+    </section>
+<section class="pm-tab" id="tab-designdocs" hidden>
+        <header>
+    <h1>Design Docs — HLD + DDD per sprint</h1>
+    <p class="pm-sub">High-level and detailed design, pseudo-code and sequence diagrams grounded in captured source</p>
+</header>
+
+<div class="pm-picker">
+    <div class="pm-list">
+            <a class="active" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Solution bootstrap &amp; repository structure</div>
+                <div class="d">Q1 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">Q1 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">Q1 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">Q1 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">Q1 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">Q1 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; foundation &amp; auth readiness</div>
+                <div class="d">Q1 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">Q2 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">Q2 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">Q2 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">Q2 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">Q2 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">Q2 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; core domain readiness</div>
+                <div class="d">Q2 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">Q3 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">Q3 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">Q3 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">Q3 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">Q3 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">Q3 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; integration &amp; api readiness</div>
+                <div class="d">Q3 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">Q4 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">Q4 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">Q4 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">Q4 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">Q4 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">Q4 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; hardening &amp; rc readiness</div>
+                <div class="d">Q4 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">Q5 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">Q5 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">Q5 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">Q5 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">Q5 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</div>
+                <div class="d">Q5 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">Q6 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">Q6 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">Q6 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">Q6 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">Q6 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; advanced features (year 2) readiness</div>
+                <div class="d">Q6 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">Q7 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">Q7 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">Q7 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">Q7 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">Q7 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; platform extensions (year 2) readiness</div>
+                <div class="d">Q7 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">Q8 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">Q8 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">Q8 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">Q8 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">Q8 · componentsModule</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</div>
+                <div class="d">Q8 · componentsModule</div>
+            </a>
+    </div>
+
+    <div>
+        <div class="pm-card">
+            <h3>Sprint 1 — HLD: componentsModule</h3>
+                <p style="font-size:12.5px;margin:0 0 8px">Deliver components capability as an incremental, regression-free addition: Solution bootstrap &amp; repository structure; Authentication &amp; user management; components domain model &amp; services</p>
+                <p style="font-size:11px;color:#6b7280;margin:6px 0 2px"><b>COMPONENTS</b></p>
+                <ul style="font-size:12px;padding-left:18px;margin:4px 0"> <li>BadgeProps (Component)</li>  <li>ButtonProps (Component)</li>  <li>SheetContentProps (Component)</li> </ul>
+                <p style="font-size:11px;color:#6b7280;margin:6px 0 2px"><b>EXTERNAL DEPENDENCIES</b></p>
+                    <span class="dep-pill">. ./src/index.ts</span>
+                    <span class="dep-pill">./schema ./src/schema/index.ts</span>
+                    <span class="dep-pill">@hookform/resolvers ^3.10.0</span>
+                    <span class="dep-pill">@radix-ui/react-accordion ^1.2.12</span>
+                <p style="font-size:11px;color:#6b7280;margin:6px 0 2px"><b>NFRS</b></p>
+                <ul style="font-size:12px;padding-left:18px;margin:4px 0"> <li>&lt; 500ms API response time (p95)</li>  <li>All endpoints work identically on primary and secondary DB providers</li>  <li>No regression in prior sprint features (CI gate)</li> </ul>
+        </div>
+
+            <div class="pm-card">
+                <h3>DDD + Pseudo-code</h3>
+                <pre class="pm-code">// grounded in artifacts/mockup-sandbox/src/components/ui/badge.tsx&#xA;public async Task&lt;IActionResult&gt; Handle(...)&#xA;{&#xA;    validate(input);                        // guard clauses&#xA;    var entity = await _componentsService.LoadAsync(id);&#xA;    if (entity is null) return NotFound();&#xA;    await _componentsService.ApplyAsync(entity, input);&#xA;    await _repository.SaveChangesAsync();&#xA;    return Ok(entity);&#xA;}</pre>
+                <h4 style="margin-top:10px;font-size:12px">Sequence</h4>
+                    <div class="seq-step">
+                        <b>Client</b><span class="arrow">→</span><b>BadgeProps</b>
+                        <span style="color:#6b7280">(HTTP request)</span>
+                    </div>
+                    <div class="seq-step">
+                        <b>BadgeProps</b><span class="arrow">→</span><b>componentsService</b>
+                        <span style="color:#6b7280">(validated command)</span>
+                    </div>
+                    <div class="seq-step">
+                        <b>componentsService</b><span class="arrow">→</span><b>Repository / DbContext</b>
+                        <span style="color:#6b7280">(domain operation)</span>
+                    </div>
+                    <div class="seq-step">
+                        <b>Repository / DbContext</b><span class="arrow">→</span><b>SQL Server 2019</b>
+                        <span style="color:#6b7280">(SQL)</span>
+                    </div>
+                    <div class="seq-step">
+                        <b>SQL Server 2019</b><span class="arrow">→</span><b>Client</b>
+                        <span style="color:#6b7280">(result) &#x21A9;</span>
+                    </div>
+                <h4 style="margin-top:10px;font-size:12px">Data Flow & Error Handling</h4>
+                <p style="font-size:12px;margin:4px 0">BadgeProps &#x2192; componentsService &#x2192; Repository &#x2192; SQL Server 2019 (mirrored on Oracle 19c) — Guard-clause validation returns 400; unauthenticated requests return 401/403; persistence failures roll back the unit of work and surface a typed error; all exceptions logged with a correlation id</p>
+                <h4 style="margin-top:10px;font-size:12px">Config Dependencies</h4>
+                    <span class="dep-pill">BASE_PATH</span>
+                    <span class="dep-pill">DATABASE_URL</span>
+                    <span class="dep-pill">GEMINI_API_KEY</span>
+                    <span class="dep-pill">LOG_LEVEL</span>
+                    <span class="dep-pill">NODE_ENV</span>
+                    <span class="dep-pill">PORT</span>
+            </div>
+    </div>
+</div>
+
+    </section>
+<section class="pm-tab" id="tab-dbscripts" hidden>
+        <header>
+    <h1>Database Scripts</h1>
+    <p class="pm-sub">
+        MS Enterprise · SQL Server 2019 + Oracle 19c
+        · 52 migrations
+    </p>
+</header>
+
+<div class="pm-picker">
+    <div class="pm-list">
+            <a class="active" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 001_components</div>
+                <div class="d">Q1 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 002_components</div>
+                <div class="d">Q1 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 003_components</div>
+                <div class="d">Q1 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 004_components</div>
+                <div class="d">Q1 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 005_components</div>
+                <div class="d">Q1 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 006_foundation__auth_hardening</div>
+                <div class="d">Q1 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 007_components</div>
+                <div class="d">Q1 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 008_components</div>
+                <div class="d">Q2 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 009_components</div>
+                <div class="d">Q2 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 010_components</div>
+                <div class="d">Q2 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 011_components</div>
+                <div class="d">Q2 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 012_core_domain_hardening</div>
+                <div class="d">Q2 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 013_components</div>
+                <div class="d">Q2 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 014_components</div>
+                <div class="d">Q2 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 015_components</div>
+                <div class="d">Q3 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 016_components</div>
+                <div class="d">Q3 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 017_components</div>
+                <div class="d">Q3 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 018_integration__api_hardening</div>
+                <div class="d">Q3 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 019_components</div>
+                <div class="d">Q3 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 020_components</div>
+                <div class="d">Q3 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 021_components</div>
+                <div class="d">Q3 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 022_components</div>
+                <div class="d">Q4 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 023_components</div>
+                <div class="d">Q4 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 024_hardening__rc_hardening</div>
+                <div class="d">Q4 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 025_components</div>
+                <div class="d">Q4 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 026_components</div>
+                <div class="d">Q4 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 027_components</div>
+                <div class="d">Q4 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 028_components</div>
+                <div class="d">Q4 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 029_components</div>
+                <div class="d">Q5 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 030_scale__optimization_year_2_hardening</div>
+                <div class="d">Q5 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 031_components</div>
+                <div class="d">Q5 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 032_components</div>
+                <div class="d">Q5 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 033_components</div>
+                <div class="d">Q5 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 034_components</div>
+                <div class="d">Q5 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 035_components</div>
+                <div class="d">Q6 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 036_advanced_features_year_2_hardening</div>
+                <div class="d">Q6 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 037_components</div>
+                <div class="d">Q6 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 038_components</div>
+                <div class="d">Q6 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 039_components</div>
+                <div class="d">Q6 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 040_components</div>
+                <div class="d">Q6 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 041_components</div>
+                <div class="d">Q7 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 042_platform_extensions_year_2_hardening</div>
+                <div class="d">Q7 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 043_components</div>
+                <div class="d">Q7 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 044_components</div>
+                <div class="d">Q7 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 045_components</div>
+                <div class="d">Q7 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 046_components</div>
+                <div class="d">Q7 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 047_components</div>
+                <div class="d">Q8 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 048_sustain__ga_year_2_hardening</div>
+                <div class="d">Q8 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 049_components</div>
+                <div class="d">Q8 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 050_components</div>
+                <div class="d">Q8 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 051_components</div>
+                <div class="d">Q8 · forward &#x2B; rollback</div>
+            </a>
+            <a class="" href="#tab-overview">
+                <div class="t">S@s.Number.ToString("D2") 052_components</div>
+                <div class="d">Q8 · forward &#x2B; rollback</div>
+            </a>
+    </div>
+
+    <div>
+            <div class="pm-card">
+                <h3>001_components · Forward Migration</h3>
+                <div class="db-cols">
+                    <div class="db-panel">
+                        <h4 style="color:#1e3a8a">SQL Server (Primary)</h4>
+                        <pre class="pm-code">CREATE TABLE [discover_request] (&#xA;    [id] INT IDENTITY(1,1) PRIMARY KEY,&#xA;    [query] NVARCHAR(100),&#xA;    [created_at] DATETIME2 DEFAULT GETUTCDATE()&#xA;);&#xA;GO&#xA;CREATE TABLE [import_request] (&#xA;    [id] INT IDENTITY(1,1) PRIMARY KEY,&#xA;    [title] NVARCHAR(100),&#xA;    [language] NVARCHAR(100),&#xA;    [type] NVARCHAR(100),&#xA;    [lines] NVARCHAR(200),&#xA;    [created_at] DATETIME2 DEFAULT GETUTCDATE()&#xA;);&#xA;GO&#xA;CREATE TABLE [shunya_sangha_db_context] (&#xA;    [id] INT IDENTITY(1,1) PRIMARY KEY,&#xA;    [users] NVARCHAR(200),&#xA;    [library_items] NVARCHAR(200),&#xA;    [events] NVARCHAR(200),&#xA;    [sessions] NVARCHAR(200),&#xA;    [chat_messages] NVARCHAR(200),&#xA;    [records] NVARCHAR(200),&#xA;    [global_configs] NVARCHAR(200),&#xA;    [created_at] DATETIME2 DEFAULT GETUTCDATE()&#xA;);&#xA;GO&#xA;CREATE TABLE [chat_message] (&#xA;    [id] INT IDENTITY(1,1) PRIMARY KEY,&#xA;    [event_id] NVARCHAR(100),&#xA;    [sender_id] NVARCHAR(100),&#xA;    [sender_name] NVARCHAR(100),&#xA;    [text] NVARCHAR(100),&#xA;    [timestamp] DATETIME2,&#xA;    [created_at] DATETIME2 DEFAULT GETUTCDATE()&#xA;);</pre>
+                    </div>
+                    <div class="db-panel">
+                        <h4 style="color:#7c2d12">Oracle (Alternate)</h4>
+                        <pre class="pm-code">CREATE TABLE discover_request (&#xA;    id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,&#xA;    query VARCHAR2(100),&#xA;    created_at TIMESTAMP DEFAULT SYSTIMESTAMP&#xA;);&#xA;CREATE TABLE import_request (&#xA;    id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,&#xA;    title VARCHAR2(100),&#xA;    language VARCHAR2(100),&#xA;    type VARCHAR2(100),&#xA;    lines VARCHAR2(200),&#xA;    created_at TIMESTAMP DEFAULT SYSTIMESTAMP&#xA;);&#xA;CREATE TABLE shunya_sangha_db_context (&#xA;    id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,&#xA;    users VARCHAR2(200),&#xA;    library_items VARCHAR2(200),&#xA;    events VARCHAR2(200),&#xA;    sessions VARCHAR2(200),&#xA;    chat_messages VARCHAR2(200),&#xA;    records VARCHAR2(200),&#xA;    global_configs VARCHAR2(200),&#xA;    created_at TIMESTAMP DEFAULT SYSTIMESTAMP&#xA;);&#xA;CREATE TABLE chat_message (&#xA;    id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,&#xA;    event_id VARCHAR2(100),&#xA;    sender_id VARCHAR2(100),&#xA;    sender_name VARCHAR2(100),&#xA;    text VARCHAR2(100),&#xA;    timestamp TIMESTAMP,&#xA;    created_at TIMESTAMP DEFAULT SYSTIMESTAMP&#xA;);</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="pm-card">
+                <h3>Rollback</h3>
+                <div class="db-cols">
+                    <div class="db-panel">
+                        <h4 style="color:#1e3a8a">Primary rollback</h4>
+                        <pre class="pm-code">DROP TABLE IF EXISTS [discover_request];&#xA;DROP TABLE IF EXISTS [import_request];&#xA;DROP TABLE IF EXISTS [shunya_sangha_db_context];&#xA;DROP TABLE IF EXISTS [chat_message];</pre>
+                    </div>
+                    <div class="db-panel">
+                        <h4 style="color:#7c2d12">Alternate rollback</h4>
+                        <pre class="pm-code">DROP TABLE discover_request;&#xA;DROP TABLE import_request;&#xA;DROP TABLE shunya_sangha_db_context;&#xA;DROP TABLE chat_message;</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="pm-card">
+                <h3>Seed DML</h3>
+                <pre class="pm-code">INSERT INTO [discover_request] ([query]) SELECT &#x27;seed-query&#x27; WHERE NOT EXISTS (SELECT 1 FROM [discover_request]);&#xA;INSERT INTO [import_request] ([title]) SELECT &#x27;seed-title&#x27; WHERE NOT EXISTS (SELECT 1 FROM [import_request]);&#xA;INSERT INTO [shunya_sangha_db_context] ([users]) SELECT &#x27;seed-users&#x27; WHERE NOT EXISTS (SELECT 1 FROM [shunya_sangha_db_context]);&#xA;INSERT INTO [chat_message] ([id]) SELECT &#x27;seed-id&#x27; WHERE NOT EXISTS (SELECT 1 FROM [chat_message]);</pre>
+            </div>
+    </div>
+</div>
+
+    </section>
+<section class="pm-tab" id="tab-testcases" hidden>
+        <header>
+    <h1>Test Cases</h1>
+    <p class="pm-sub">95 unit tests + 16 system tests across all 52 sprints</p>
+</header>
+
+<div class="pm-kpis">
+    <div class="pm-kpi"><b>95</b><span>UNIT TESTS</span></div>
+    <div class="pm-kpi green"><b>16</b><span>SYSTEM TESTS</span></div>
+    <div class="pm-kpi"><b>8</b><span>CLASSES COVERED</span></div>
+    <div class="pm-kpi"><b>206</b><span>TOTAL CASES</span></div>
+</div>
+
+<div class="pm-card">
+    <h3>Unit Tests (all sprints)</h3>
+    <table class="pm-tbl">
+        <thead><tr><th>ID</th><th>Sprint</th><th>Class</th><th>Method</th><th>Scenario</th><th>Expected</th></tr></thead>
+        <tbody>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>BadgeProps</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>BadgeProps</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>ButtonProps</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>ButtonProps</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>BadgeProps</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>BadgeProps</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>ButtonProps</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>ButtonProps</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>BadgeProps</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>BadgeProps</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>ButtonProps</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>ButtonProps</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-005</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-006</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-007</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-008</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-009</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-010</b></td><td>1-0</td><td>AuthController</td><td>Logout</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-011</b></td><td>1-0</td><td>AuthController</td><td>Logout</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-012</b></td><td>1-0</td><td>AuthController</td><td>Logout</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-005</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-006</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-007</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-008</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-009</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-010</b></td><td>1-0</td><td>AuthController</td><td>Logout</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-011</b></td><td>1-0</td><td>AuthController</td><td>Logout</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-012</b></td><td>1-0</td><td>AuthController</td><td>Logout</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>ApiError</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>ApiError</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>ResponseParseError</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>ResponseParseError</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>HealthStatus</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>HealthStatus</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>BadgeProps</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>BadgeProps</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>ButtonProps</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>ButtonProps</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-005</b></td><td>1-0</td><td>DbContext / Repository</td><td>Write then read</td><td>Provider parity &#x2014; primary DB</td><td>Record persisted and retrievable</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>BadgeProps</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>BadgeProps</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>ButtonProps</td><td>primary action</td><td>Happy path &#x2014; valid input</td><td>Expected output</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>ButtonProps</td><td>primary action</td><td>Edge case &#x2014; boundary input</td><td>Handled without exception</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-005</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-006</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-005</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-006</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-007</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-008</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-009</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-010</b></td><td>1-0</td><td>AuthController</td><td>Logout</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-011</b></td><td>1-0</td><td>AuthController</td><td>Logout</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-012</b></td><td>1-0</td><td>AuthController</td><td>Logout</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-005</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-006</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-007</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-008</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-009</b></td><td>1-0</td><td>AuthController</td><td>Login</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-010</b></td><td>1-0</td><td>AuthController</td><td>Logout</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-001</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+            <tr><td><b>UT-S01-002</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Authorization check &#x2014; insufficient role</td><td>403 Forbidden</td></tr>
+            <tr><td><b>UT-S01-003</b></td><td>1-0</td><td>AdminController</td><td>Index</td><td>Invalid input &#x2014; missing required field</td><td>400 with validation error</td></tr>
+            <tr><td><b>UT-S01-004</b></td><td>1-0</td><td>AdminController</td><td>CreateEvent</td><td>Happy path &#x2014; valid input, authenticated user</td><td>200 OK with expected payload</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="pm-card">
+    <h3>System Tests (all sprints)</h3>
+    <table class="pm-tbl">
+        <thead><tr><th>ID</th><th>Feature</th><th>Precondition</th><th>Steps</th><th>Expected</th><th>Env</th></tr></thead>
+        <tbody>
+            <tr><td><b>ST-S01-001</b></td><td>Solution bootstrap &amp; repository structure</td><td>Authenticated user with access to components; staging deployed on both database providers</td><td>Navigate to components screens &#x2192; exercise &quot;Solution bootstrap &amp; repository structure&quot; &#x2192; verify acceptance criteria</td><td>Solution builds on .NET 8</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-002</b></td><td>Authentication &amp; user management</td><td>Authenticated user with access to components; staging deployed on both database providers</td><td>Navigate to components screens &#x2192; exercise &quot;Authentication &amp; user management&quot; &#x2192; verify acceptance criteria</td><td>Login/logout works for all roles</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-003</b></td><td>components domain model &amp; services</td><td>Authenticated user with access to components; staging deployed on both database providers</td><td>Navigate to components screens &#x2192; exercise &quot;components domain model &amp; services&quot; &#x2192; verify acceptance criteria</td><td>Domain model for components implemented</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-004</b></td><td>MVCSolutionBase domain model &amp; services</td><td>Authenticated user with access to MVCSolutionBase; staging deployed on both database providers</td><td>Navigate to MVCSolutionBase screens &#x2192; exercise &quot;MVCSolutionBase domain model &amp; services&quot; &#x2192; verify acceptance criteria</td><td>Domain model for MVCSolutionBase implemented</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-005</b></td><td>MVCSolutionBase MVC views &amp; controllers</td><td>Authenticated user with access to MVCSolutionBase; staging deployed on both database providers</td><td>Navigate to MVCSolutionBase screens &#x2192; exercise &quot;MVCSolutionBase MVC views &amp; controllers&quot; &#x2192; verify acceptance criteria</td><td>Views render with model validation</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-006</b></td><td>api-client-react domain model &amp; services</td><td>Authenticated user with access to api-client-react; staging deployed on both database providers</td><td>Navigate to api-client-react screens &#x2192; exercise &quot;api-client-react domain model &amp; services&quot; &#x2192; verify acceptance criteria</td><td>Domain model for api-client-react implemented</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-007</b></td><td>api-zod domain model &amp; services</td><td>Authenticated user with access to api-zod; staging deployed on both database providers</td><td>Navigate to api-zod screens &#x2192; exercise &quot;api-zod domain model &amp; services&quot; &#x2192; verify acceptance criteria</td><td>Domain model for api-zod implemented</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-008</b></td><td>Database schema, migrations &amp; seed data</td><td>Authenticated user with access to components; staging deployed on both database providers</td><td>Navigate to components screens &#x2192; exercise &quot;Database schema, migrations &amp; seed data&quot; &#x2192; verify acceptance criteria</td><td>Migrations run on SQL Server</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-009</b></td><td>Automated test suites per module</td><td>Authenticated user with access to components; staging deployed on both database providers</td><td>Navigate to components screens &#x2192; exercise &quot;Automated test suites per module&quot; &#x2192; verify acceptance criteria</td><td>Unit tests per module</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-010</b></td><td>db domain model &amp; services</td><td>Authenticated user with access to db; staging deployed on both database providers</td><td>Navigate to db screens &#x2192; exercise &quot;db domain model &amp; services&quot; &#x2192; verify acceptance criteria</td><td>Domain model for db implemented</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-011</b></td><td>Security review &amp; performance hardening</td><td>Authenticated user with access to routes; staging deployed on both database providers</td><td>Navigate to routes screens &#x2192; exercise &quot;Security review &amp; performance hardening&quot; &#x2192; verify acceptance criteria</td><td>Security checklist cleared</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-012</b></td><td>api-spec domain model &amp; services</td><td>Authenticated user with access to api-spec; staging deployed on both database providers</td><td>Navigate to api-spec screens &#x2192; exercise &quot;api-spec domain model &amp; services&quot; &#x2192; verify acceptance criteria</td><td>Domain model for api-spec implemented</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-013</b></td><td>GA release &amp; operations handover</td><td>Authenticated user with access to routes; staging deployed on both database providers</td><td>Navigate to routes screens &#x2192; exercise &quot;GA release &amp; operations handover&quot; &#x2192; verify acceptance criteria</td><td>GA build signed off</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-014</b></td><td>lib domain model &amp; services</td><td>Authenticated user with access to lib; staging deployed on both database providers</td><td>Navigate to lib screens &#x2192; exercise &quot;lib domain model &amp; services&quot; &#x2192; verify acceptance criteria</td><td>Domain model for lib implemented</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-015</b></td><td>lib MVC views &amp; controllers</td><td>Authenticated user with access to lib; staging deployed on both database providers</td><td>Navigate to lib screens &#x2192; exercise &quot;lib MVC views &amp; controllers&quot; &#x2192; verify acceptance criteria</td><td>Views render with model validation</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+            <tr><td><b>ST-S01-016</b></td><td>routes domain model &amp; services</td><td>Authenticated user with access to routes; staging deployed on both database providers</td><td>Navigate to routes screens &#x2192; exercise &quot;routes domain model &amp; services&quot; &#x2192; verify acceptance criteria</td><td>Domain model for routes implemented</td><td>Staging &#x2014; primary &#x2B; secondary DB</td></tr>
+        </tbody>
+    </table>
+</div>
+
+    </section>
+<section class="pm-tab" id="tab-issues" hidden>
+        <header>
+    <h1>Issue Register</h1>
+    <p class="pm-sub">52 total defects logged across all sprints</p>
+</header>
+
+<div class="pm-kpis">
+    <div class="pm-kpi red"><b>42</b><span>OPEN</span></div>
+    <div class="pm-kpi"><b>9</b><span>IN PROGRESS</span></div>
+    <div class="pm-kpi green"><b>1</b><span>RESOLVED</span></div>
+    <div class="pm-kpi"><b>52</b><span>TOTAL</span></div>
+</div>
+
+<div class="pm-card">
+    <table class="pm-tbl">
+        <thead>
+        <tr><th>ID</th><th>Sprint</th><th>Severity</th><th>Component</th><th>Description</th><th>Reporter</th><th>Assignee</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>BUG-S01-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Edge case in components identified during Sprint 1 testing (source: Solution bootstrap &amp; repository structure)</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge resolved">Resolved</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S02-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 2 foundation &amp; auth testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge progress">In Progress</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S03-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 3 foundation &amp; auth testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S04-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 4 foundation &amp; auth testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S05-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 5 foundation &amp; auth testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S06-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 6 foundation &amp; auth testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge progress">In Progress</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S07-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 7 foundation &amp; auth testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S08-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 8 core domain testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S09-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 9 core domain testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S10-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 10 core domain testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S11-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 11 core domain testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S12-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 12 core domain testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge progress">In Progress</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S13-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 13 core domain testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S14-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 14 core domain testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S15-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 15 integration &amp; api testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S16-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 16 integration &amp; api testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S17-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 17 integration &amp; api testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S18-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 18 integration &amp; api testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge progress">In Progress</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S19-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 19 integration &amp; api testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S20-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 20 integration &amp; api testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S21-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 21 integration &amp; api testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S22-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 22 hardening &amp; rc testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S23-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 23 hardening &amp; rc testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S24-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 24 hardening &amp; rc testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge progress">In Progress</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S25-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 25 hardening &amp; rc testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S26-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 26 hardening &amp; rc testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S27-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 27 hardening &amp; rc testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S28-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 28 hardening &amp; rc testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S29-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 29 scale &amp; optimization (year 2) testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S30-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 30 scale &amp; optimization (year 2) testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge progress">In Progress</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S31-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 31 scale &amp; optimization (year 2) testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S32-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 32 scale &amp; optimization (year 2) testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S33-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 33 scale &amp; optimization (year 2) testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S34-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 34 scale &amp; optimization (year 2) testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S35-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 35 advanced features (year 2) testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S36-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 36 advanced features (year 2) testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge progress">In Progress</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S37-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 37 advanced features (year 2) testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S38-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 38 advanced features (year 2) testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S39-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 39 advanced features (year 2) testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S40-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 40 advanced features (year 2) testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S41-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 41 platform extensions (year 2) testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S42-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 42 platform extensions (year 2) testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge progress">In Progress</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S43-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 43 platform extensions (year 2) testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S44-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 44 platform extensions (year 2) testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S45-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 45 platform extensions (year 2) testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S46-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 46 platform extensions (year 2) testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S47-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 47 sustain &amp; ga (year 2) testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S48-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 48 sustain &amp; ga (year 2) testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge progress">In Progress</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S49-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 49 sustain &amp; ga (year 2) testing</td>
+                <td>QA2</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S50-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 50 sustain &amp; ga (year 2) testing</td>
+                <td>QA3</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S51-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 51 sustain &amp; ga (year 2) testing</td>
+                <td>QA4</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+            <tr>
+                <td><b>BUG-S52-001</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge minor">Minor</span></td>
+                <td>components</td>
+                <td>Minor edge case identified during Sprint 52 sustain &amp; ga (year 2) testing</td>
+                <td>QA1</td>
+                <td>Squad A</td>
+                <td><span class="pm-badge open">Open</span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+    </section>
+<section class="pm-tab" id="tab-releases" hidden>
+        <header>
+    <h1>Release Milestones</h1>
+    <p class="pm-sub">6 key milestones across the 2-year programme</p>
+</header>
+
+<div class="rel-timeline">
+        <div class="rel-card">
+            <h3 style="margin:0 0 4px;font-size:15px">Alpha</h3>
+            <span class="pm-badge" style="background:#eff6ff;color:#1e3a8a">Sprint 7</span>
+            <span class="pm-badge" style="background:#f1f5f9;color:#4b5563">Week 14</span>
+            <p style="background:#f8fafc;border-radius:6px;padding:6px 10px;font-size:12px;margin:8px 0 0">Foundation &amp; Auth</p>
+            <p style="font-size:11px;color:#6b7280;margin:8px 0 2px"><b>GO/NO-GO CRITERIA</b></p>
+            <ul class="checklist">
+                    <li>All quarter stories accepted</li>
+                    <li>Health/response check &lt; 200ms</li>
+                    <li>Migration scripts run clean on both DB providers</li>
+                    <li>Container image built and deployed</li>
+                    <li>80% unit test coverage on foundation modules</li>
+            </ul>
+        </div>
+        <div class="rel-card">
+            <h3 style="margin:0 0 4px;font-size:15px">Beta 1</h3>
+            <span class="pm-badge" style="background:#eff6ff;color:#1e3a8a">Sprint 14</span>
+            <span class="pm-badge" style="background:#f1f5f9;color:#4b5563">Week 28</span>
+            <p style="background:#f8fafc;border-radius:6px;padding:6px 10px;font-size:12px;margin:8px 0 0">Core Domain</p>
+            <p style="font-size:11px;color:#6b7280;margin:8px 0 2px"><b>GO/NO-GO CRITERIA</b></p>
+            <ul class="checklist">
+                    <li>Quarter features tested on both DB providers</li>
+                    <li>Regression suite passed</li>
+                    <li>Performance benchmark meets SLO</li>
+                    <li>Rollback scripts tested</li>
+                    <li>No open Critical bugs</li>
+            </ul>
+        </div>
+        <div class="rel-card">
+            <h3 style="margin:0 0 4px;font-size:15px">Beta 2</h3>
+            <span class="pm-badge" style="background:#eff6ff;color:#1e3a8a">Sprint 21</span>
+            <span class="pm-badge" style="background:#f1f5f9;color:#4b5563">Week 42</span>
+            <p style="background:#f8fafc;border-radius:6px;padding:6px 10px;font-size:12px;margin:8px 0 0">Integration &amp; API</p>
+            <p style="font-size:11px;color:#6b7280;margin:8px 0 2px"><b>GO/NO-GO CRITERIA</b></p>
+            <ul class="checklist">
+                    <li>Quarter features tested on both DB providers</li>
+                    <li>Regression suite passed</li>
+                    <li>Performance benchmark meets SLO</li>
+                    <li>Rollback scripts tested</li>
+                    <li>No open Critical bugs</li>
+            </ul>
+        </div>
+        <div class="rel-card">
+            <h3 style="margin:0 0 4px;font-size:15px">RC1 / Year 1 Release</h3>
+            <span class="pm-badge" style="background:#eff6ff;color:#1e3a8a">Sprint 28</span>
+            <span class="pm-badge" style="background:#f1f5f9;color:#4b5563">Week 56</span>
+            <p style="background:#f8fafc;border-radius:6px;padding:6px 10px;font-size:12px;margin:8px 0 0">Hardening &amp; RC</p>
+            <p style="font-size:11px;color:#6b7280;margin:8px 0 2px"><b>GO/NO-GO CRITERIA</b></p>
+            <ul class="checklist">
+                    <li>All year stories accepted</li>
+                    <li>Full regression &#x2B; load test passed</li>
+                    <li>Security review completed</li>
+                    <li>Release notes and runbook drafted</li>
+                    <li>Operations sign-off</li>
+            </ul>
+        </div>
+        <div class="rel-card">
+            <h3 style="margin:0 0 4px;font-size:15px">Y2 Beta</h3>
+            <span class="pm-badge" style="background:#eff6ff;color:#1e3a8a">Sprint 34</span>
+            <span class="pm-badge" style="background:#f1f5f9;color:#4b5563">Week 68</span>
+            <p style="background:#f8fafc;border-radius:6px;padding:6px 10px;font-size:12px;margin:8px 0 0">Scale &amp; Optimization (Year 2)</p>
+            <p style="font-size:11px;color:#6b7280;margin:8px 0 2px"><b>GO/NO-GO CRITERIA</b></p>
+            <ul class="checklist">
+                    <li>All program stories accepted</li>
+                    <li>24h soak test green</li>
+                    <li>Monitoring and alerting live</li>
+                    <li>Support handbook published</li>
+                    <li>Executive GO sign-off</li>
+            </ul>
+        </div>
+        <div class="rel-card">
+            <h3 style="margin:0 0 4px;font-size:15px">GA Release</h3>
+            <span class="pm-badge" style="background:#eff6ff;color:#1e3a8a">Sprint 52</span>
+            <span class="pm-badge" style="background:#f1f5f9;color:#4b5563">Week 104</span>
+            <p style="background:#f8fafc;border-radius:6px;padding:6px 10px;font-size:12px;margin:8px 0 0">Sustain &amp; GA (Year 2)</p>
+            <p style="font-size:11px;color:#6b7280;margin:8px 0 2px"><b>GO/NO-GO CRITERIA</b></p>
+            <ul class="checklist">
+                    <li>All program stories accepted</li>
+                    <li>24h soak test green</li>
+                    <li>Monitoring and alerting live</li>
+                    <li>Support handbook published</li>
+                    <li>Executive GO sign-off</li>
+            </ul>
+        </div>
+</div>
+
+    </section>
+  </main>
+</div>
+<script>
+document.querySelectorAll('.pm-nav-link').forEach(function (a) {
+  a.addEventListener('click', function (e) {
+    e.preventDefault();
+    var id = a.getAttribute('data-tab');
+    document.querySelectorAll('.pm-tab').forEach(function (s) { s.hidden = (s.id !== 'tab-' + id); });
+    document.querySelectorAll('.pm-nav-link').forEach(function (n) { n.classList.toggle('active', n === a); });
+    history.replaceState(null, '', '#tab-' + id);
+    window.scrollTo(0, 0);
+  });
+});
+var open = (location.hash || '#tab-overview').slice(5);
+var link = document.querySelector('.pm-nav-link[data-tab="' + open + '"]');
+if (link) link.click();
+</script>
+</body>
+</html>

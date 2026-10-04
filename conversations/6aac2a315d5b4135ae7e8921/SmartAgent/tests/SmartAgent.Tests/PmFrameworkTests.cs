@@ -162,6 +162,64 @@ public class PmFrameworkTests : IDisposable
         Assert.Contains(reportLines, l => l.StartsWith("# LanesSpawned=") && l.Contains("LanesRecycled="));
     }
 
+
+    [Fact]
+    public void Source_review_produces_class_grounded_feature_slices()
+    {
+        var analyzer = new SourceAnalyzer();
+        var snapshot = new SourceSnapshot
+        {
+            SourceType = SourceType.GitHub, SourceName = "owner/repo", SourceDetail = "branch main, 3 files analyzed",
+            Files = new List<SourceFile>
+            {
+                new() { Path = "r/src/App/Controllers/LibraryController.cs", Content =
+                    "public class LibraryController { public IActionResult Index() => View(); public IActionResult Create() => View(); }" },
+                new() { Path = "r/src/App/Models/Book.cs", Content =
+                    "public class Book { public string Title { get; set; } public int Pages { get; set; } }" },
+                new() { Path = "r/src/App/Services/LoanService.cs", Content =
+                    "public class LoanService { public bool Renew(int id) => true; }" }
+            }
+        };
+        var ingestor = new RequirementIngestor();
+        var (epics, stories) = ingestor.FromSource(snapshot, analyzer.Classes(snapshot));
+
+        // controller class becomes a feature-slice story with method-named acceptance criteria
+        Assert.Contains(stories, s => s.Title.Contains("LibraryController"));
+        Assert.Contains(stories, s => s.AcceptanceCriteria.Any(ac => ac.Contains("Index")));
+        // entity and service types are reviewed too
+        Assert.Contains(stories, s => s.Title.Contains("Book"));
+        Assert.Contains(stories, s => s.Title.Contains("LoanService"));
+        // integration contract story per module
+        Assert.Contains(stories, s => s.Title.Contains("integration & contract tests"));
+    }
+
+    [Fact]
+    public async Task Program_resolves_backlog_into_populated_sprints_across_horizon()
+    {
+        var ingestor = new RequirementIngestor();
+        var planner = new SprintPlanner();
+        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner);
+        var options = new PmOptions { Name = "Spread Programme", Years = 2, TeamSize = 18 };
+
+        var plan = await governor.GenerateAsync(Snapshot(), options, Path.Combine(_root, "spread"));
+
+        // stories are not dumped into the first sprint: they spread across the horizon
+        var populated = plan.SprintPlans.Where(s => s.StoryKeys.Count > 0).ToList();
+        Assert.True(populated.Count >= 5, $"expected backlog spread across sprints, got {populated.Count} populated sprints");
+        Assert.True(plan.SprintPlans[0].StoryKeys.Count <= 3, "sprint 1 should not hold the whole backlog");
+        Assert.All(plan.SprintPlans, s => Assert.True(s.StoryKeys.Count <= 5, $"sprint {s.Number} overloaded"));
+
+        // release-theme stories ride the tail sprints, after the delivery train
+        var lastPopulated = plan.SprintPlans.Last(s => s.StoryKeys.Count > 0).Number;
+        var releaseStories = plan.Stories.Where(s => plan.Epics.First(e => e.Key == s.EpicKey).Theme == "Release").Select(s => s.Key).ToList();
+        Assert.All(releaseStories, key =>
+            Assert.Contains(plan.SprintPlans.Skip(plan.SprintPlans.Count - 4), sp => sp.StoryKeys.Contains(key)));
+
+        // every sprint keeps a goal (delivery or stabilization) and budget
+        Assert.All(plan.SprintPlans, s => Assert.False(string.IsNullOrWhiteSpace(s.Goal)));
+        Assert.All(plan.SprintPlans, s => Assert.True(s.BudgetUsd > 0));
+    }
+
     [Fact]
     public void Budget_cap_flags_overruns()
     {

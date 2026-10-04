@@ -21,8 +21,9 @@ public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor inge
     {
         var modules = ingestor.DetectModules(snapshot);
         var resources = planner.Roster(options.TeamSize, modules.Count);
+        var classes = new SourceAnalyzer().Classes(snapshot);   // deep source review input
         var (epics, stories) = snapshot.SourceType == SourceType.GitHub || snapshot.Files.Count > 0
-            ? ingestor.FromSource(snapshot)
+            ? ingestor.FromSource(snapshot, classes)
             : ingestor.FromPrompt(snapshot.SourceDetail);
         var squads = planner.FormSquads(resources, epics);
 

@@ -37,9 +37,23 @@ public sealed partial class RequirementIngestor
         return modules.Count > 0 ? modules : new List<string> { "Core Platform" };
     }
 
-    /// <summary>Captures the agile backlog: epics + stories from a source snapshot.</summary>
+    /// <summary>Max class-grounded feature-slice stories per module.</summary>
+    private const int MaxSliceStoriesPerModule = 4;
+    /// <summary>Max file-cluster stories per module (asset-heavy modules without classes).</summary>
+    private const int MaxFileStoriesPerModule = 3;
+    /// <summary>Cap on the generated backlog (keeps the plan reference-grade but bounded).</summary>
+    private const int MaxStories = 150;
+
+    /// <summary>
+    /// Captures the agile backlog: epics + stories from a source snapshot.
+    /// When class analysis is supplied, every module is reviewed in depth:
+    /// controllers, services and domain types become feature-slice stories
+    /// with acceptance criteria naming their actual methods, and asset-heavy
+    /// modules (views, function components, schemas) become file-grounded
+    /// stories — so requirements resolve the real source, not a summary.
+    /// </summary>
     public (IReadOnlyList<PmEpic> Epics, IReadOnlyList<PmStory> Stories) FromSource(
-        SourceSnapshot snapshot)
+        SourceSnapshot snapshot, IReadOnlyList<PmClassInfo>? classes = null)
     {
         var modules = DetectModules(snapshot);
         var epics = new List<PmEpic>();
@@ -79,28 +93,119 @@ public sealed partial class RequirementIngestor
             "access is governed end to end", 13, 95, "High",
             new[] { "Login/logout works for all roles", "Roles enforced server-side", "Password reset flow" });
 
-        // one epic per detected module: core domain then integration
+        // one epic per detected module: domain + in-depth source review
         var priority = 90;
         foreach (var module in modules)
         {
-            var fileCount = snapshot.Files.Count(f =>
-                ModuleOf(f.Path).Equals(module, StringComparison.OrdinalIgnoreCase));
-            var isUi = snapshot.Files.Any(f => f.Path.Contains(module, StringComparison.OrdinalIgnoreCase)
-                && (f.Path.EndsWith(".cshtml") || f.Path.Contains("Controller", StringComparison.OrdinalIgnoreCase)
-                    || f.Path.Contains("Views/", StringComparison.OrdinalIgnoreCase)));
+            if (stories.Count >= MaxStories) break;
+            var moduleFiles = snapshot.Files
+                .Where(f => ModuleOf(f.Path).Equals(module, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            var fileCount = moduleFiles.Count;
+            var isUi = moduleFiles.Any(f =>
+                f.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase)
+                || f.Path.EndsWith(".tsx", StringComparison.OrdinalIgnoreCase)
+                || f.Path.Contains("Controller", StringComparison.OrdinalIgnoreCase)
+                || f.Path.Contains("Views/", StringComparison.OrdinalIgnoreCase));
             var theme = isUi ? "UI" : "Core";
+            var moduleClasses = (classes ?? Array.Empty<PmClassInfo>())
+                .Where(c => c.Module.Equals(module, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(c => c.Methods.Count).ThenBy(c => c.Name).ToList();
+            var controllers = moduleClasses.Where(c => c.Kind is "Controller" or "Hub").ToList();
+            var entities = moduleClasses.Where(c => c.Kind == "Entity").ToList();
+            var services = moduleClasses.Where(c => c.Kind is "Service" or "Other" && c.Methods.Count > 0).ToList();
+            var profile = moduleClasses.Count > 0
+                ? $"{fileCount} source files, {moduleClasses.Count} analyzed types "
+                  + $"({controllers.Count} controllers, {entities.Count} domain types, {services.Count} service types)"
+                : $"{fileCount} source files";
             AddEpic($"{module} core domain", module, theme,
-                $"Implement the {module} domain model, services and contracts ({fileCount} source files in scope)");
+                $"Implement the {module} domain model, services and contracts ({profile} in scope)");
             var points = ClampFibonacci((int)Math.Ceiling(fileCount / 2.0));
             AddStory(epics[^1], $"{module} domain model & services",
                 "user", $"working {module} domain logic with persistence",
                 $"{module} functionality is delivered incrementally", points, priority, "Medium",
                 new[] { $"Domain model for {module} implemented", $"Unit tests cover core rules", "API/UI consumes the domain" });
+            var isMvc = moduleFiles.Any(f => f.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase));
             if (isUi)
-                AddStory(epics[^1], $"{module} MVC views & controllers",
-                    "user", $"MVC screens for {module} with validation",
+                AddStory(epics[^1],
+                    isMvc ? $"{module} MVC views & controllers" : $"{module} UI screens & interaction",
+                    "user", $"{(isMvc ? "MVC screens" : "UI screens")} for {module} with validation",
                     $"{module} is usable end to end", ClampFibonacci(points / 2), priority - 5, "Medium",
                     new[] { $"Views render with model validation", "Auth guards all actions", "Navigation and error states handled" });
+
+            // ── in-depth review: class-grounded feature slices ──
+            var p = priority - 2;
+            foreach (var cls in controllers.Take(3).Concat(entities).Concat(services).Take(MaxSliceStoriesPerModule))
+            {
+                if (stories.Count >= MaxStories) break;
+                var methods = cls.Methods.Count > 0 ? cls.Methods : new List<string> { "primary action" };
+                var points2 = ClampFibonacci(1 + methods.Count);
+                string title; string want; string[] ac;
+                if (cls.Kind is "Controller" or "Hub")
+                {
+                    title = $"{cls.Name} endpoints & behavior";
+                    want = $"{cls.Name} fully working ({string.Join(", ", methods.Take(3))})";
+                    ac = new[]
+                    {
+                        $"{methods[0]} returns the expected result for valid input",
+                        $"{methods[Math.Min(1, methods.Count - 1)]} enforces authorization and validation",
+                        "Invalid input maps to 400/403 with clear error bodies"
+                    };
+                }
+                else if (cls.Kind == "Entity")
+                {
+                    title = $"{cls.Name} persistence & validation";
+                    want = $"{cls.Name} persisted with enforced invariants";
+                    ac = new[]
+                    {
+                        $"{cls.Name} round-trips through persistence identically",
+                        "Constraint violations surface as validation errors",
+                        $"Consume sites validated against {cls.Name} contract"
+                    };
+                }
+                else
+                {
+                    title = $"{cls.Name} service logic";
+                    want = $"{cls.Name} rules implemented ({string.Join(", ", methods.Take(3))})";
+                    ac = new[]
+                    {
+                        $"{methods[0]} returns the expected result for valid input",
+                        "Invalid input is rejected without side effects",
+                        "Repeat calls stay idempotent"
+                    };
+                }
+                AddStory(epics[^1], title, "user", want, $"{cls.Name} is production-grade",
+                    points2, Math.Max(15, p), cls.Kind == "Controller" ? "High" : "Medium", ac);
+                p -= 2;
+            }
+
+            // ── asset-heavy modules: file-grounded stories (function components, schemas, views) ──
+            if (moduleClasses.Count < 4)
+                foreach (var f in moduleFiles
+                             .Where(f => IsCodePath(f.Path) && !IsTestPath(f.Path))
+                             .OrderByDescending(f => f.Content.Length)
+                             .Take(MaxFileStoriesPerModule))
+                {
+                    if (stories.Count >= MaxStories) break;
+                    var topic = FeatureName(f.Path);
+                    AddStory(epics[^1], $"{topic} ({module}) implementation", "user",
+                        $"{topic} implemented and integrated into {module}",
+                        $"{module} delivers {topic.ToLowerInvariant()} end to end",
+                        ClampFibonacci(3 + f.Content.Length / 4000), Math.Max(15, p), "Medium",
+                        new[] { $"{topic} behavior implemented per the source contract",
+                                "Edge cases and error states handled",
+                                "Covered by unit + integration tests" });
+                    p -= 2;
+                }
+
+            // ── integration & contract story per module ──
+            AddStory(epics[^1], $"{module} integration & contract tests",
+                "qa lead", $"integration suite proving {module} contracts end to end",
+                $"{module} regressions surface before release", 5, Math.Max(15, priority - 8), "Medium",
+                new[] { $"{module} contracts asserted against consumers",
+                        "Critical paths integration-tested in CI",
+                        "Contract drift breaks the build" });
+
             priority = Math.Max(20, priority - 10);
         }
 
@@ -173,6 +278,35 @@ public sealed partial class RequirementIngestor
     private static readonly string[] SupportFolders =
         { "artifacts", "attached_assets", "assets", "docs", "documentation", "scripts",
           "tools", "test", "tests", "e2e", "coverage", "dist", "build" };
+
+
+    private static bool IsCodePath(string path) =>
+        path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith(".ts", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith(".tsx", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith(".js", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith(".py", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith(".java", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsTestPath(string path) =>
+        path.Contains("test", StringComparison.OrdinalIgnoreCase)
+        && (path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".ts", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".tsx", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>A human feature name from a file path ("ui/alert-dialog.tsx" → "Alert dialog UI component").</summary>
+    private static string FeatureName(string path)
+    {
+        var name = Path.GetFileNameWithoutExtension(path);
+        var words = Regex.Replace(Regex.Replace(name, "(?<=[a-z0-9])([A-Z])", " $1"), "[-_.]+", " ").Trim();
+        if (words.Length == 0) words = "feature";
+        words = char.ToUpperInvariant(words[0]) + words[1..];
+        var kind = path.EndsWith(".tsx", StringComparison.OrdinalIgnoreCase) ? "UI component"
+            : path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase) ? "view"
+            : path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ? "handler"
+            : "module";
+        return $"{words} {kind}";
+    }
 
     /// <summary>Module of a source path: product folder only (vendors/support folders excluded).</summary>
     private static string ModuleOf(string path)

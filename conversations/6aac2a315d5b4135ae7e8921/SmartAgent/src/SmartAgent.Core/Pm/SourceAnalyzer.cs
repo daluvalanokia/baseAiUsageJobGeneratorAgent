@@ -192,13 +192,13 @@ public sealed partial class SourceAnalyzer
         int sprintNo, int startSeq)
     {
         var moduleClasses = classes.Where(c => c.Module.Equals(story.Module, StringComparison.OrdinalIgnoreCase)).ToList();
-        if (moduleClasses.Count == 0) moduleClasses = classes.Take(2).ToList();
+        if (moduleClasses.Count == 0) moduleClasses = classes.Take(3).ToList();
         var cases = new List<PmUnitTestCase>();
         var seq = startSeq;
-        foreach (var cls in moduleClasses.Take(2))
+        foreach (var cls in moduleClasses.Take(3))
         {
             var methods = cls.Methods.Count > 0 ? cls.Methods : new List<string> { "primary action" };
-            foreach (var method in methods.Take(2))
+            foreach (var method in methods.Take(3))
             {
                 cases.AddRange(cls.Kind switch
                 {

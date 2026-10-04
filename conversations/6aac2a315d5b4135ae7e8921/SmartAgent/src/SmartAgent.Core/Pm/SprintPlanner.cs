@@ -78,21 +78,36 @@ public sealed partial class SprintPlanner
         var quarters = BuildQuarters(quarterCount, sprintCount);
         var sprints = BuildSprints(sprintCount, quarters, start, options.SprintLengthWeeks);
 
-        // fill sprints: stories by priority (desc), stabilization sprints at 50%
-        var ordered = stories.OrderByDescending(s => s.Priority).ThenBy(s => s.Risk == "High" ? 0 : 1).ThenBy(s => s.Key).ToList();
+        // ── even, squad-aware distribution across the multi-year horizon ──
+        // Priority order is preserved (foundation early, hardening last) while
+        // stories are placed proportionally across delivery sprints, so the
+        // whole program resolves into populated sprints instead of one
+        // overloaded sprint. Stabilization sprints (every 6th) stay clear and
+        // the final sprints carry the hardening/release train.
+        var themeOf = epics.ToDictionary(e => e.Key, e => e.Theme, StringComparer.Ordinal);
+        var squadOf = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var squad in squads)
+            foreach (var eKey in squad.EpicKeys)
+                if (!squadOf.ContainsKey(eKey)) squadOf[eKey] = squad.Key;
+        foreach (var e in epics)
+            if (!squadOf.ContainsKey(e.Key)) squadOf[e.Key] = e.Squad;   // fallback for shared/unassigned epics
+        var delivery = stories
+            .Where(s => themeOf.GetValueOrDefault(s.EpicKey, "Core") != "Release")
+            .OrderByDescending(s => s.Priority).ThenBy(s => s.Risk == "High" ? 0 : 1).ThenBy(s => s.Key)
+            .ToList();
+        var releaseTrain = stories
+            .Where(s => themeOf.GetValueOrDefault(s.EpicKey, "Core") == "Release")
+            .ToList();
+        var reserveCount = Math.Clamp(sprints.Count / 13, 1, 4);          // tail sprints: hardening/release train
+        var eligible = Enumerable.Range(0, sprints.Count - reserveCount)
+            .Where(i => i % 6 != 5)                                        // skip stabilization sprints
+            .ToList();
         var assignments = sprints.Select(_ => new List<PmStory>()).ToList();
-        var cursor = 0;
-        for (var i = 0; i < sprints.Count && cursor < ordered.Count; i++)
-        {
-            var capacity = i % 6 == 5 ? velocity / 2 : velocity;    // every 6th sprint = stabilization
-            var used = 0;
-            while (cursor < ordered.Count && used + ordered[cursor].Points <= capacity)
-            {
-                assignments[i].Add(ordered[cursor]);
-                used += ordered[cursor].Points;
-                cursor++;
-            }
-        }
+        for (var j = 0; j < delivery.Count; j++)
+            assignments[eligible[Math.Min(eligible.Count - 1, j * eligible.Count / Math.Max(1, delivery.Count))]].Add(delivery[j]);
+        var reserve = Enumerable.Range(sprints.Count - reserveCount, reserveCount).ToList();
+        for (var j = 0; j < releaseTrain.Count && reserve.Count > 0; j++)
+            assignments[reserve[Math.Min(reserve.Count - 1, j * reserve.Count / Math.Max(1, releaseTrain.Count))]].Add(releaseTrain[j]);
 
         // RACI-weighted engagement & budget
         var engagement = resources.ToDictionary(r => r.Key,
@@ -103,7 +118,6 @@ public sealed partial class SprintPlanner
         {
             var q = quarters.First(q => sprints[i].Number >= q.SprintFrom && sprints[i].Number <= q.SprintTo);
             var planned = assignments[i];
-            var remaining = ordered.Skip(cursor).Where(s => !planned.Contains(s)).ToList();
             sprintPlans.Add(sprints[i] with
             {
                 StoryKeys = planned.Select(s => s.Key).ToList(),
@@ -111,7 +125,8 @@ public sealed partial class SprintPlanner
                 CapacityPoints = i % 6 == 5 ? velocity / 2 : velocity,
                 BudgetUsd = sprintBudget,
                 Goal = planned.Count > 0
-                    ? $"Deliver {planned.Count} stories ({planned.Sum(s => s.Points)} pts): {planned[0].Module} — {Truncate(planned[0].Title, 60)}"
+                    ? $"Squads {string.Join("+", planned.Select(x => squadOf.GetValueOrDefault(x.EpicKey, "A")).Distinct())}: "
+                     + $"deliver {planned.Count} stories ({planned.Sum(s => s.Points)} pts) — {planned[0].Module}: {Truncate(planned[0].Title, 60)}"
                     : $"Stabilization, hardening & {q.Theme.ToLowerInvariant()} readiness",
                 Release = q.Release
             });

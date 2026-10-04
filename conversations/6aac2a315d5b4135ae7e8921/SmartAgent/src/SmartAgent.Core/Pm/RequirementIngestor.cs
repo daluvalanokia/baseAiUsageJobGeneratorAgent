@@ -53,6 +53,347 @@ public sealed partial class RequirementIngestor
     /// stories — so requirements resolve the real source, not a summary.
     /// </summary>
     public (IReadOnlyList<PmEpic> Epics, IReadOnlyList<PmStory> Stories) FromSource(
+        SourceSnapshot snapshot, IReadOnlyList<PmClassInfo>? classes = null, PmAppProfile? profile = null)
+    {
+        // capability-driven capture: the app's own controllers/hubs/entities name
+        // the epics, so requirements follow core functionality, not folder names
+        if (profile is { Capabilities.Count: >= 2 })
+            return FromCapabilities(snapshot, profile);
+        return FromModules(snapshot, classes);
+    }
+
+    /// <summary>Splits a PascalCase name into words ("LiveSession" → "Live session").</summary>
+    private static string WordsOf(string name) =>
+        Regex.Replace(name, "(?<=[a-z0-9])([A-Z])", " $1").Trim().ToLowerInvariant();
+
+    /// <summary>The user persona a capability serves, by keyword.</summary>
+    private static string PersonaOf(string feature)
+    {
+        var f = feature.ToLowerInvariant();
+        if (f.Contains("auth") || f.Contains("login") || f.Contains("account")) return "user";
+        if (f.Contains("admin") || f.Contains("govern") || f.Contains("member")
+            || f.Contains("config") || f.Contains("setting") || f.Contains("role")) return "administrator";
+        if (f.Contains("librar") || f.Contains("catalog") || f.Contains("collection")
+            || f.Contains("scripture") || f.Contains("text")) return "curator";
+        if (f.Contains("event") || f.Contains("session") || f.Contains("live")
+            || f.Contains("stage") || f.Contains("chat")) return "participant";
+        if (f.Contains("record") || f.Contains("archive") || f.Contains("history")) return "archivist";
+        if (f.Contains("dashboard") || f.Contains("report") || f.Contains("analytic")) return "member";
+        return "user";
+    }
+
+    /// <summary>Action verbs implied by a capability's real methods.</summary>
+    private static string VerbsOf(IReadOnlyList<string> methods)
+    {
+        var verbs = new List<string>();
+        foreach (var m in methods)
+        {
+            var verb = m.ToLowerInvariant() switch
+            {
+                var x when x.Contains("index") || x.Contains("list") || x.Contains("all") => "browse",
+                var x when x.Contains("create") || x.Contains("add") || x.Contains("new") || x.Contains("upload") => "create",
+                var x when x.Contains("edit") || x.Contains("update") => "edit",
+                var x when x.Contains("delete") || x.Contains("remove") => "delete",
+                var x when x.Contains("login") || x.Contains("signin") => "log in",
+                var x when x.Contains("logout") || x.Contains("signout") => "log out",
+                var x when x.Contains("switch") => "switch users",
+                var x when x.Contains("search") || x.Contains("find") || x.Contains("filter") => "search",
+                var x when x.Contains("view") || x.Contains("detail") || x.Contains("show") || x.Contains("get") => "view",
+                var x when x.Contains("join") || x.Contains("connect") => "join",
+                var x when x.Contains("send") || x.Contains("post") || x.Contains("broadcast") => "send",
+                var x when x.Contains("plan") || x.Contains("schedule") => "schedule",
+                var x when x.Contains("import") => "import",
+                var x when x.Contains("export") => "export",
+                _ => null
+            };
+            if (verb != null && !verbs.Contains(verb)) verbs.Add(verb);
+            if (verbs.Count >= 5) break;
+        }
+        if (verbs.Count == 0) return "use";
+        return verbs.Count == 1 ? verbs[0]
+            : string.Join(", ", verbs[..^1]) + " and " + verbs[^1];
+    }
+
+    /// <summary>The domain noun a capability works on: its entities, else its feature name.</summary>
+    private static string NounOf(PmCapability cap) =>
+        cap.Entities.Count > 0
+            ? string.Join(", ", cap.Entities.Take(2).Select(e => WordsOf(e) + "s"))
+            : WordsOf(cap.Feature) + "s";
+
+    /// <summary>Capability-driven backlog: every epic is one core capability of
+    /// the app (its controller/hub/entities), every story names the real
+    /// action methods, views and domain entities from the source.</summary>
+    private (IReadOnlyList<PmEpic> Epics, IReadOnlyList<PmStory> Stories) FromCapabilities(
+        SourceSnapshot snapshot, PmAppProfile profile)
+    {
+        var epics = new List<PmEpic>();
+        var stories = new List<PmStory>();
+        var storyNo = 0;
+        void AddEpic(PmEpic e) { epics.Add(e); }
+        void AddStory(PmEpic epic, string title, string asA, string want, string soThat,
+            int points, int priority, string risk, string[] ac,
+            string layer = "", string phase = "build", string module = "")
+        {
+            storyNo++;
+            stories.Add(new PmStory { Key = $"US-{storyNo:D3}", EpicKey = epic.Key, Title = title,
+                AsA = asA, IWant = want, SoThat = soThat, Points = points, Priority = priority,
+                Risk = risk, Module = module.Length > 0 ? module : epic.Module,
+                TestCaseCount = Math.Max(2, points * 2),
+                AcceptanceCriteria = ac, Layer = layer, Phase = phase });
+        }
+        var appWords = WordsOf(profile.AppName);
+        var platforms = string.Join(", ", profile.Platforms);
+
+        // ── E01 foundation, grounded in the app's own identity ──
+        var foundation = new PmEpic { Key = "E01", Name = "Foundation & platform",
+            Module = profile.Root, Theme = "Foundation",
+            Description = $"Bootstrap {profile.AppName}: solution skeleton, authentication and tooling"
+                + (profile.Purpose.Length > 0 ? $" — {profile.Purpose}" : "")
+                + (platforms.Length > 0 ? $" Platform: {platforms}." : "") };
+        AddEpic(foundation);
+        AddStory(foundation, $"{profile.AppName} solution bootstrap & repository structure",
+            "developer", "a versioned, buildable solution skeleton with CI",
+            "every squad starts from green", 8, 100, "Medium",
+            new[] { "Solution builds cleanly on the target framework", "CI pipeline green on main",
+                    "README documents the build and run steps" },
+            "Framework", "framework");
+
+        var authCap = profile.Capabilities.FirstOrDefault(c =>
+            c.Feature.Contains("auth", StringComparison.OrdinalIgnoreCase)
+            || c.Feature.Contains("login", StringComparison.OrdinalIgnoreCase)
+            || c.Feature.Contains("account", StringComparison.OrdinalIgnoreCase));
+        if (authCap != null)
+            AddStory(foundation, $"Authentication & access control ({authCap.Class})",
+                "user", $"working sign-in flows: {VerbsOf(authCap.Methods)}",
+                "access to the platform is governed end to end", 13, 95, "High",
+                new[] { string.Join(", ", authCap.Methods.Take(4)) + " all behave per the source contract",
+                        "Sessions/roles enforced server-side on every guarded action",
+                        "Invalid credentials and expired sessions redirect safely" },
+                "Framework", "framework");
+        else
+            AddStory(foundation, "Authentication & user management",
+                "product owner", "authentication with role-based access for all user personas",
+                "access is governed end to end", 13, 95, "High",
+                new[] { "Login/logout works for all roles", "Roles enforced server-side", "Password reset flow" },
+                "Framework", "framework");
+        AddStory(foundation, "Base framework code generation & tooling",
+            "developer", "scaffolding, shared libraries and code-generation templates",
+            "every module is generated from the same base", 8, 92, "Medium",
+            new[] { "Module templates generate a working vertical slice",
+                    "Shared validation, logging and error handling are wired in",
+                    "Generated code passes lint and build gates" },
+            "Framework", "framework");
+
+        // ── one epic per core capability, stories grounded in its real source ──
+        var priority = 90;
+        foreach (var cap in profile.Capabilities)
+        {
+            if (cap == authCap) continue;    // shipped in the foundation epic
+            if (stories.Count >= MaxStories) break;
+            var feature = cap.Feature;
+            var featureWords = WordsOf(feature);
+            var noun = NounOf(cap);
+            var persona = PersonaOf(feature);
+            var verbs = cap.Methods.Count > 0 ? VerbsOf(cap.Methods) : "manage";
+            var evidence = (cap.Class.Length > 0 ? $"{cap.Class} (" + string.Join(", ", cap.Methods.Take(4)) + ")" : "")
+                + (cap.Views.Count > 0 ? $"; views: {string.Join(", ", cap.Views)}" : "")
+                + (cap.Entities.Count > 0 ? $"; entities: {string.Join(", ", cap.Entities)}" : "");
+            var epic = new PmEpic { Key = $"E{epics.Count + 1:D2}",
+                Name = char.ToUpperInvariant(featureWords[0]) + featureWords[1..],
+                Module = feature, Theme = cap.Views.Count > 0 ? "UI" : "Core",
+                Description = $"{char.ToUpperInvariant(featureWords[0]) + featureWords[1..]} capability of {profile.AppName}"
+                    + (evidence.Length > 0 ? $" — resolved from source: {evidence}" : "") };
+            AddEpic(epic);
+
+            if (cap.Kind == "Hub")
+            {
+                AddStory(epic, $"{feature} real-time session sync",
+                    persona, $"live {featureWords} state broadcast to every connected client",
+                    $"all participants see the same {featureWords} state at once",
+                    ClampFibonacci(5 + cap.Methods.Count), priority, "High",
+                    new[] { $"{cap.Class} broadcasts state changes to all connected clients",
+                            "Late joiners and reconnects receive the current state",
+                            "Concurrent updates stay consistent across clients" },
+                    "Server");
+            }
+            else if (cap.Kind is "Entities" or "Services")
+            {
+                foreach (var entity in cap.Entities.Take(3))
+                {
+                    AddStory(epic, $"{entity} persistence & invariants",
+                        persona, $"{WordsOf(entity)}s stored with enforced validation",
+                        $"{appWords} data stays consistent", ClampFibonacci(3), Math.Max(20, priority - 5), "Medium",
+                        new[] { $"{entity} round-trips through persistence identically",
+                                "Constraint violations surface as validation errors",
+                                $"Consumers of {entity} validated against its contract" },
+                        cap.Kind == "Entities" ? "Data Adapter" : "Server");
+                }
+            }
+            else
+            {
+                // end-to-end flows through the controller's real actions
+                AddStory(epic, $"{feature}: {verbs} {noun} end to end",
+                    persona, $"the {featureWords} workflows ({verbs}) working per the source behavior",
+                    $"{appWords} delivers the {featureWords} workflow end to end",
+                    ClampFibonacci(2 + cap.Methods.Count), priority,
+                    cap.Methods.Count > 4 ? "High" : "Medium",
+                    cap.Methods.Take(3).Select(m => $"{m} behaves per the source contract").Concat(new[]
+                        { "Authorization and validation enforced on every action",
+                          "Error paths return correct status codes" }).ToArray(),
+                    "Controllers");
+
+                foreach (var entity in cap.Entities.Take(2))
+                    AddStory(epic, $"{entity} persistence & invariants",
+                        persona, $"{WordsOf(entity)}s stored with enforced validation",
+                        $"{appWords} data stays consistent", ClampFibonacci(3), Math.Max(20, priority - 3), "Medium",
+                        new[] { $"{entity} round-trips through persistence identically",
+                                "Constraint violations surface as validation errors",
+                                "Seed data covers representative records" },
+                        "Data Adapter");
+
+                if (cap.Views.Count > 0)
+                    AddStory(epic, $"{feature} screens ({string.Join(", ", cap.Views.Take(4))})",
+                        persona, $"the {featureWords} screens rendered per the source views",
+                        $"{persona}s can complete every {featureWords} task from the UI",
+                        ClampFibonacci(2 + cap.Views.Count), Math.Max(20, priority - 4), "Medium",
+                        new[] { string.Join(", ", cap.Views) + " render with model validation",
+                                "Auth guards every screen and action",
+                                "Navigation and error states handled" },
+                        "Frontend");
+
+                if (cap.Entities.Count > 0)
+                    AddStory(epic, $"{feature} schema, migrations & seeds",
+                        "database admin", $"versioned DDL and seeds for the {featureWords} tables",
+                        $"{featureWords} environments rebuild deterministically", 5, Math.Max(20, priority - 6), "Medium",
+                        new[] { $"Tables and constraints scripted for {string.Join(", ", cap.Entities)}",
+                                "Seed data idempotent", "Rollback documented" },
+                        "Database");
+
+                AddStory(epic, $"{feature} integration & contract tests",
+                    "qa lead", $"an integration suite proving the {featureWords} contracts end to end",
+                    $"{featureWords} regressions surface before release", 5, Math.Max(15, priority - 8), "Medium",
+                    new[] { $"{cap.Class} contracts asserted against consumers",
+                            "Critical paths integration-tested in CI",
+                            "Contract drift breaks the build" }, "Server");
+            }
+            priority = Math.Max(20, priority - 8);
+        }
+
+        // ── secondary source roots: consolidate, don't feature-ify ──
+        foreach (var (root, files) in profile.OtherRoots)
+        {
+            if (stories.Count >= MaxStories) break;
+            var epic = new PmEpic { Key = $"E{epics.Count + 1:D2}", Name = $"{root} platform consolidation",
+                Module = root, Theme = "Core",
+                Description = $"Consolidate the {root} source root ({files} files) into the primary "
+                    + $"{profile.AppName} platform — replace what is legacy, keep what is load-bearing" };
+            AddEpic(epic);
+            AddStory(epic, $"{root} audit: what is live, legacy or duplicated",
+                "solution architect", $"an inventory of every {root} capability still in use",
+                "the consolidation is evidence-based, not guesswork", 5, 45, "Medium",
+                new[] { $"All {root} entry points and consumers inventoried",
+                        "Live vs replaceable parts classified with evidence",
+                        "Findings reviewed with the product owner" }, "Server");
+            AddStory(epic, $"Migrate live {root} capabilities into {profile.AppName}",
+                "developer", $"in-use {root} functionality delivered by the primary platform",
+                "one platform serves every user", 13, 42, "High",
+                new[] { $"Live {root} features reachable in the primary app",
+                        "Data migrated losslessly where applicable",
+                        "Cutover verified with parity tests" });
+            AddStory(epic, $"Decommission retired {root} surface",
+                "operations", $"dead {root} code paths removed with regression cover",
+                "maintenance cost drops", 8, 38, "Medium",
+                new[] { $"Retired {root} paths deleted", "No consumer references remain",
+                        "Regression suite green after removal" }, "Server");
+        }
+
+        // ── enhancement wave: the repository's own commit patterns, mapped to capabilities ──
+        var patterns = new SourceAnalyzer().ChangePatterns(snapshot).Take(10).ToList();
+        var enhanceEpic = new PmEpic { Key = $"E{epics.Count + 1:D2}", Name = "Field & enhancement waves",
+            Module = profile.Root, Theme = "Core",
+            Description = $"Year-2 enhancement waves derived from the repository's own commit history "
+                + $"({snapshot.History.Count} commits reviewed), each mapped to the capability it evolves" };
+        AddEpic(enhanceEpic);
+        var enhancePriority = 52;
+        foreach (var pattern in patterns.Where(p => p.Commits >= 1))
+        {
+            if (stories.Count >= MaxStories) break;
+            // map the pattern's touched paths to the capability it evolves
+            var capOfPattern = profile.Capabilities.FirstOrDefault(c =>
+                pattern.Examples.Any(x => x.Contains($"/{c.Feature}", StringComparison.OrdinalIgnoreCase)
+                    || x.Contains(c.Feature, StringComparison.OrdinalIgnoreCase)))
+                ?? profile.Capabilities.FirstOrDefault(c => c.Root.Equals(pattern.Module, StringComparison.OrdinalIgnoreCase));
+            var target = capOfPattern != null ? WordsOf(capOfPattern.Feature) : pattern.Module.ToLowerInvariant();
+            var headline = pattern.Headline.Length > 70 ? pattern.Headline[..67] + "..." : pattern.Headline;
+            AddStory(enhanceEpic, $"Enhance {target}: {headline}",
+                "user", $"the '{headline}' change pattern carried into the rebuild",
+                $"{target} keeps evolving the way the source did", ClampFibonacci(3 + pattern.Commits),
+                Math.Max(30, enhancePriority), "Medium",
+                new[] { $"Change wave mirrors the source pattern '{headline}' ({pattern.Commits} commits touched {pattern.Layer.ToLowerInvariant()} code)",
+                        $"Touched paths covered: {string.Join(", ", pattern.Examples.Take(2))}",
+                        $"Regression tests prove the enhanced {pattern.Layer.ToLowerInvariant()} behavior",
+                        "Frontend, server and database components updated together" },
+                pattern.Layer, "enhance", capOfPattern?.Feature ?? pattern.Module);
+            enhancePriority -= 2;
+        }
+        foreach (var cap in profile.Capabilities.Where(c => c.Entities.Count > 0).Take(3))
+        {
+            if (stories.Count >= MaxStories) break;
+            AddStory(enhanceEpic, $"Extend {WordsOf(cap.Feature)} data model: new fields end to end",
+                "product owner", $"additional fields on {NounOf(cap)} across db, server and UI",
+                $"{WordsOf(cap.Feature)} grows without schema drift", 8, Math.Max(30, enhancePriority), "Medium",
+                new[] { $"New columns added via versioned migration ({string.Join(", ", cap.Entities)})",
+                        "Server validation and data adapter mapping updated for the new fields",
+                        "Frontend forms display and edit the new fields",
+                        "Existing data migrates losslessly" },
+                "Database", "enhance", cap.Feature);
+            enhancePriority -= 2;
+        }
+
+        // ── data & persistence epic ──
+        var dataEpic = new PmEpic { Key = $"E{epics.Count + 1:D2}", Name = "Data & persistence",
+            Module = profile.Root, Theme = "Data",
+            Description = "Schema management, migrations, seed data and database scripts across the platform"
+                + (platforms.Length > 0 ? $" (platform: {platforms})" : "") };
+        AddEpic(dataEpic);
+        AddStory(dataEpic, "Database schema, migrations & seed data",
+            "database admin", "versioned migrations with seeded reference data",
+            "environments can be rebuilt deterministically", 8, 60, "Medium",
+            new[] { "Migrations run on the platform database", "Seed data idempotent", "Rollback documented" },
+            "Database", "build");
+
+        // ── QA epic ──
+        var qaEpic = new PmEpic { Key = $"E{epics.Count + 1:D2}", Name = "Testing & QA",
+            Module = profile.Root, Theme = "QA",
+            Description = $"Test strategy: unit, integration and acceptance coverage per capability of {profile.AppName}" };
+        AddEpic(qaEpic);
+        AddStory(qaEpic, "Automated test suites per capability",
+            "qa lead", "unit + integration suites wired into CI",
+            "regressions surface before release", 8, 55, "Medium",
+            new[] { "Unit tests per capability", "Integration tests for critical paths", "Coverage reported in CI" },
+            "Server", "build");
+
+        // ── release epic ──
+        var relEpic = new PmEpic { Key = $"E{epics.Count + 1:D2}", Name = "Hardening & release",
+            Module = profile.Root, Theme = "Release",
+            Description = $"Performance hardening, security review, documentation and the GA release train for {profile.AppName}" };
+        AddEpic(relEpic);
+        AddStory(relEpic, "Security review & performance hardening",
+            "operations", "security pass and load-tested release candidates",
+            "the platform is production-ready", 13, 40, "High",
+            new[] { "Security checklist cleared", "Load test meets SLO", "Runbook published" },
+            "Framework", "release");
+        AddStory(relEpic, "GA release & operations handover",
+            "operations", "GA release with monitoring and handover documentation",
+            "operations can run the platform", 5, 35, "Medium",
+            new[] { "GA build signed off", "Monitoring dashboards live", "Handover doc accepted" },
+            "Framework", "release");
+
+        return (epics, stories);
+    }
+
+    /// <summary>Legacy folder-module flow (kept for sources without detectable capabilities).</summary>
+    private (IReadOnlyList<PmEpic> Epics, IReadOnlyList<PmStory> Stories) FromModules(
         SourceSnapshot snapshot, IReadOnlyList<PmClassInfo>? classes = null)
     {
         var modules = DetectModules(snapshot);

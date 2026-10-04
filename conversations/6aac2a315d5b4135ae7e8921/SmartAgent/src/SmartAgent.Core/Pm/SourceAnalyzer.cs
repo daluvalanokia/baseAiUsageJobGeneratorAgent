@@ -28,6 +28,33 @@ public sealed record PmTableInfo
 /// artifacts, HLD, DDD with sequence steps, implementation checklists) are
 /// derived deterministically so the same source always yields the same plan.
 /// </summary>
+/// <summary>One user-facing capability extracted from the application source
+/// (a controller, SignalR hub or domain entity group with its actual methods, views and entities).</summary>
+public sealed record PmCapability
+{
+    public required string Feature { get; init; }                // "Library", "Live sessions"
+    public required string Kind { get; init; }                   // Controller | Hub | Entities | Services
+    public required string Root { get; init; }                   // application root folder
+    public string Class { get; init; } = "";                    // controller/hub class name
+    public IReadOnlyList<string> Methods { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> Views { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> Entities { get; init; } = Array.Empty<string>();
+    public int FileCount { get; init; }
+}
+
+/// <summary>The profiled application behind a source snapshot: what the app
+/// actually does (readme title/purpose), its platform, the capabilities its
+/// controllers/hubs/entities expose, and any secondary source roots.</summary>
+public sealed record PmAppProfile
+{
+    public required string AppName { get; init; }                // readme title
+    public required string Purpose { get; init; }                // readme purpose sentence
+    public required string Root { get; init; }                   // dominant application folder
+    public required IReadOnlyList<PmCapability> Capabilities { get; init; }
+    public IReadOnlyList<string> Platforms { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<(string Root, int Files)> OtherRoots { get; init; } = Array.Empty<(string, int)>();
+}
+
 public sealed partial class SourceAnalyzer
 {
     /// <summary>Captures classes with their public methods from source files.</summary>
@@ -406,6 +433,151 @@ public sealed partial class SourceAnalyzer
     }
 
     // ─── platform helpers ───────────────────────────────────────────────
+
+
+    // ─────────────────────────────────────────────────────────────
+    //  Application capability profiling: resolve what the source
+    //  app actually DOES (controllers, hubs, entities, views) into
+    //  named user-facing capabilities, so requirements follow the
+    //  product's core functionality instead of its folder names.
+    // ─────────────────────────────────────────────────────────────
+
+    private static readonly string[] AppMarkers =
+        { "Controllers", "Hubs", "Models", "Areas", "Pages", "controllers", "hubs", "models", "pages" };
+
+    /// <summary>Application root of a source path: the folder that owns the app's
+    /// Controllers/Models/Hubs content; falls back to the top folder.</summary>
+    private static string AppRootOf(string path)
+    {
+        var parts = path.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        for (var i = 1; i < parts.Length; i++)
+            if (Array.Exists(AppMarkers, m => parts[i].Equals(m, StringComparison.OrdinalIgnoreCase)))
+                return parts[i - 1];
+        return parts.Length > 0 ? parts[0] : "app";
+    }
+
+    /// <summary>Profiles the dominant application: title + purpose from the
+    /// readme, one capability per controller/hub with its real methods,
+    /// views and entities, and the platform footprint (SignalR, EF Core...).</summary>
+    public PmAppProfile? ProfileApp(SourceSnapshot snapshot, IReadOnlyList<PmClassInfo>? classes = null)
+    {
+        classes ??= Classes(snapshot);
+        var contentBy = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var f in snapshot.Files) contentBy.TryAdd(f.Path, f.Content);
+
+        var rootGroups = classes
+            .Where(c => c.Kind is "Controller" or "Hub" or "Entity" or "Service")
+            .GroupBy(c => AppRootOf(c.File))
+            .OrderByDescending(g => g.Count(c => c.Kind is "Controller" or "Hub"))
+            .ThenByDescending(g => g.Count())
+            .ToList();
+        if (rootGroups.Count == 0) return null;
+        var root = rootGroups[0].Key;
+        var rootClasses = rootGroups[0].ToList();
+
+        var fileCountByRoot = snapshot.Files
+            .Where(f => !Array.Exists(VendorPrefixes, v => f.Path.Split('/')[0].StartsWith(v, StringComparison.OrdinalIgnoreCase)))
+            .GroupBy(f => AppRootOf(f.Path))
+            .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+
+        // controllers → capabilities with their real action methods
+        var capabilities = new List<PmCapability>();
+        var claimed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var c in rootClasses.Where(c => c.Kind is "Controller" or "Hub")
+                     .OrderByDescending(c => c.Methods.Count))
+        {
+            var feature = c.Name.Replace("Controller", "", StringComparison.OrdinalIgnoreCase)
+                .Replace("Hub", "", StringComparison.OrdinalIgnoreCase);
+            var views = snapshot.Files
+                .Where(f => f.Path.Contains($"/Views/{feature}/", StringComparison.OrdinalIgnoreCase)
+                            && f.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
+                .Select(f => Path.GetFileNameWithoutExtension(f.Path)).Distinct().ToList();
+            var content = contentBy.GetValueOrDefault(c.File) ?? "";
+            var entities = rootClasses.Where(e => e.Kind == "Entity"
+                    && (e.Name.StartsWith(feature, StringComparison.OrdinalIgnoreCase)
+                        || content.Contains(e.Name, StringComparison.OrdinalIgnoreCase)))
+                .Select(e => e.Name).ToList();
+            foreach (var e in entities) claimed.Add(e);
+            capabilities.Add(new PmCapability
+            {
+                Feature = feature, Kind = c.Kind, Root = root, Class = c.Name,
+                Methods = c.Methods, Views = views, Entities = entities,
+                FileCount = Math.Max(1, fileCountByRoot.GetValueOrDefault(root, 1) / 4 + views.Count + entities.Count)
+            });
+        }
+        // unclaimed domain entities → one data-model capability
+        var freeEntities = rootClasses.Where(c => c.Kind == "Entity" && !claimed.Contains(c.Name))
+            .Select(c => c.Name).ToList();
+        if (freeEntities.Count > 0)
+            capabilities.Add(new PmCapability
+            {
+                Feature = "Domain data model", Kind = "Entities", Root = root,
+                Entities = freeEntities, FileCount = freeEntities.Count
+            });
+        // services → one capability
+        var services = rootClasses.Where(c => c.Kind == "Service").Select(c => c.Name).ToList();
+        if (services.Count > 0)
+            capabilities.Add(new PmCapability
+            {
+                Feature = "Application services", Kind = "Services", Root = root,
+                Entities = services, FileCount = services.Count
+            });
+
+        // readme title + purpose
+        var readme = snapshot.Files
+            .Where(f => Regex.IsMatch(Path.GetFileName(f.Path), @"^(readme|replit|about|overview)\.md$", RegexOptions.IgnoreCase)
+                        && f.Path.Split('/').Length <= 3)
+            .OrderBy(f => f.Path.Split('/').Length).FirstOrDefault();
+        string appName = "", purpose = "";
+        if (readme != null)
+        {
+            var lines = readme.Content.Split('\n');
+            var title = lines.FirstOrDefault(l => l.StartsWith("#") && l.Trim('#').Trim().Length > 3)
+                        ?? lines.FirstOrDefault(l => l.Trim().Length is > 3 and < 90);
+            if (title != null) appName = title.Trim().TrimStart('#').Trim();
+            // first substantial paragraph (>= 40 chars) is the app's purpose statement
+            var paragraphs = new List<string>();
+            var current = new List<string>();
+            foreach (var line in lines)
+            {
+                var t = line.Trim();
+                if (t.Length == 0)
+                {
+                    if (current.Count > 0) { paragraphs.Add(string.Join(" ", current)); current.Clear(); }
+                }
+                else if (!t.StartsWith("#")) current.Add(t);
+            }
+            if (current.Count > 0) paragraphs.Add(string.Join(" ", current));
+            purpose = paragraphs.FirstOrDefault(p => p.Length >= 40)
+                      ?? paragraphs.OrderByDescending(p => p.Length).FirstOrDefault() ?? "";
+            if (purpose.Length > 240) purpose = purpose[..237] + "...";
+        }
+        if (appName.Length == 0) appName = root;
+
+        // platform footprint
+        var sample = string.Join("\n", snapshot.Files.Take(120).Select(f => f.Content));
+        var platforms = new List<string>();
+        if (Regex.IsMatch(sample, @"Microsoft\.AspNetCore\.SignalR|Hubs/", RegexOptions.IgnoreCase)) platforms.Add("SignalR real-time");
+        if (Regex.IsMatch(sample, @"EntityFrameworkCore|DbContext", RegexOptions.IgnoreCase)) platforms.Add("EF Core");
+        if (Regex.IsMatch(sample, "SQLite", RegexOptions.IgnoreCase)) platforms.Add("SQLite");
+        if (Regex.IsMatch(sample, "MongoDB|IMongoClient", RegexOptions.IgnoreCase)) platforms.Add("MongoDB");
+        if (Regex.IsMatch(sample, "Redis|IDatabase", RegexOptions.IgnoreCase)) platforms.Add("Redis");
+        if (Regex.IsMatch(sample, "Identity|ApplicationUser", RegexOptions.IgnoreCase)) platforms.Add("Identity");
+
+        var otherRoots = fileCountByRoot
+            .Where(kv => !kv.Key.Equals(root, StringComparison.OrdinalIgnoreCase)
+                         && !Array.Exists(SupportFolders, sf => kv.Key.Equals(sf, StringComparison.OrdinalIgnoreCase)))
+            .Where(kv => kv.Value >= 3)
+            .OrderByDescending(kv => kv.Value).Take(2)
+            .Select(kv => (kv.Key, kv.Value)).ToList();
+
+        if (capabilities.Count < 2) return null;    // not enough signal → legacy module flow
+        return new PmAppProfile
+        {
+            AppName = appName, Purpose = purpose, Root = root,
+            Capabilities = capabilities, Platforms = platforms, OtherRoots = otherRoots
+        };
+    }
 
     private PmPlatform MsPlatform(SourceSnapshot snapshot, string fx)
     {

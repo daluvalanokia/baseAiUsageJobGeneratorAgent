@@ -39,7 +39,25 @@ public sealed record PmCapability
     public IReadOnlyList<string> Methods { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> Views { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> Entities { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<PmEntityDetail> EntityDetails { get; init; } = Array.Empty<PmEntityDetail>();
+    public IReadOnlyList<PmViewDetail> ViewDetails { get; init; } = Array.Empty<PmViewDetail>();
     public int FileCount { get; init; }
+}
+
+/// <summary>An entity with its actual fields (property + CLR type) extracted from the source model.</summary>
+public sealed record PmEntityDetail
+{
+    public required string Name { get; init; }
+    public IReadOnlyList<string> Fields { get; init; } = Array.Empty<string>();    // "Title (string)"
+}
+
+/// <summary>A view (cshtml/razor) with its actual input fields and wired behaviors.</summary>
+public sealed record PmViewDetail
+{
+    public required string Name { get; init; }             // "Library/Create.cshtml"
+    public required string Feature { get; init; }          // "Library"
+    public IReadOnlyList<string> Fields { get; init; } = Array.Empty<string>();    // form fields
+    public IReadOnlyList<string> Behaviors { get; init; } = Array.Empty<string>();  // "POST Create", "SignalR SendChatMessage"
 }
 
 /// <summary>The profiled application behind a source snapshot: what the app
@@ -482,6 +500,8 @@ public sealed partial class SourceAnalyzer
 
         // controllers → capabilities with their real action methods
         var capabilities = new List<PmCapability>();
+        var entityDetails = EntityDetailsOf(snapshot, classes);
+        var viewDetails = ViewDetailsOf(snapshot);
         var claimed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var c in rootClasses.Where(c => c.Kind is "Controller" or "Hub")
                      .OrderByDescending(c => c.Methods.Count))
@@ -502,6 +522,8 @@ public sealed partial class SourceAnalyzer
             {
                 Feature = feature, Kind = c.Kind, Root = root, Class = c.Name,
                 Methods = c.Methods, Views = views, Entities = entities,
+                EntityDetails = entityDetails.Where(d => entities.Contains(d.Name)).ToList(),
+                ViewDetails = viewDetails.Where(v => v.Feature.Equals(feature, StringComparison.OrdinalIgnoreCase)).ToList(),
                 FileCount = Math.Max(1, fileCountByRoot.GetValueOrDefault(root, 1) / 4 + views.Count + entities.Count)
             });
         }
@@ -512,7 +534,9 @@ public sealed partial class SourceAnalyzer
             capabilities.Add(new PmCapability
             {
                 Feature = "Domain data model", Kind = "Entities", Root = root,
-                Entities = freeEntities, FileCount = freeEntities.Count
+                Entities = freeEntities,
+                EntityDetails = entityDetails.Where(d => freeEntities.Contains(d.Name)).ToList(),
+                FileCount = freeEntities.Count
             });
         // services → one capability
         var services = rootClasses.Where(c => c.Kind == "Service").Select(c => c.Name).ToList();
@@ -577,6 +601,74 @@ public sealed partial class SourceAnalyzer
             AppName = appName, Purpose = purpose, Root = root,
             Capabilities = capabilities, Platforms = platforms, OtherRoots = otherRoots
         };
+    }
+
+
+    // ─────────────────────────────────────────────────────────────
+    //  Field-level detail extraction: entities with their actual
+    //  properties, views with their actual form fields and wired
+    //  behaviors — the raw material for detailed, specific
+    //  requirements connecting views, fields and behavior.
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>Entity models with their real fields: for each entity class,
+    /// every public property with its CLR type ("Title (string)").</summary>
+    public IReadOnlyList<PmEntityDetail> EntityDetailsOf(SourceSnapshot snapshot, IReadOnlyList<PmClassInfo>? classes = null)
+    {
+        classes ??= Classes(snapshot);
+        var contentBy = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var f in snapshot.Files) contentBy.TryAdd(f.Path, f.Content);
+        var details = new List<PmEntityDetail>();
+        foreach (var c in classes.Where(x => x.Kind == "Entity"))
+        {
+            if (!contentBy.TryGetValue(c.File, out var content)) continue;
+            var classMatch = ClassRegex().Matches(content).Cast<Match>()
+                .FirstOrDefault(m => m.Groups["name"].Value == c.Name);
+            if (classMatch == null) continue;
+            var body = ExtractBalanced(classMatch.Index, content);
+            var fields = ColumnRegex().Matches(body).Cast<Match>()
+                .Select(x => $"{x.Groups["col"].Value} ({x.Groups["type"].Value.Trim()})")
+                .Distinct().Take(12).ToList();
+            if (fields.Count > 0 && !details.Any(d => d.Name == c.Name))
+                details.Add(new PmEntityDetail { Name = c.Name, Fields = fields });
+        }
+        return details;
+    }
+
+    /// <summary>Views with their real form fields (asp-for/name inputs) and
+    /// behaviors (form posts, fetches, SignalR invokes, in-feature links).</summary>
+    public IReadOnlyList<PmViewDetail> ViewDetailsOf(SourceSnapshot snapshot)
+    {
+        var result = new List<PmViewDetail>();
+        foreach (var f in snapshot.Files.Where(x =>
+                     x.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase)
+                     || x.Path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)))
+        {
+            var parts = f.Path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            string feature = parts.Length > 1 ? parts[^2] : "";
+            var viewName = Path.GetFileName(f.Path);
+            if (feature.Length == 0 || viewName.StartsWith("_", StringComparison.Ordinal)) continue;
+
+            var fields = new List<string>();
+            foreach (Match m in InputFieldRegex().Matches(f.Content))
+                fields.Add(m.Groups["f"].Success ? m.Groups["f"].Value : m.Groups["f2"].Value);
+            fields = fields.Select(v => v.Split('.')[0].TrimEnd(']').Replace("[", ""))
+                .Where(v => v.Length > 1 && !v.StartsWith("__", StringComparison.Ordinal))
+                .Distinct().Take(10).ToList();
+
+            var behaviors = new List<string>();
+            foreach (Match m in FormActionRegex().Matches(f.Content)) behaviors.Add($"POST {m.Groups["a"].Value}");
+            foreach (Match m in LinkRegex().Matches(f.Content))
+                if (m.Groups["c"].Value.Equals(feature, StringComparison.OrdinalIgnoreCase))
+                    behaviors.Add($"link {feature}/{m.Groups["a"].Value}");
+            foreach (Match m in FetchRegex().Matches(f.Content)) behaviors.Add($"fetch {m.Groups["u"].Value}");
+            foreach (Match m in HubInvokeRegex().Matches(f.Content)) behaviors.Add($"SignalR {m.Groups["m"].Value}");
+            behaviors = behaviors.Distinct().Take(8).ToList();
+
+            if (fields.Count > 0 || behaviors.Count > 0)
+                result.Add(new PmViewDetail { Name = viewName, Feature = feature, Fields = fields, Behaviors = behaviors });
+        }
+        return result;
     }
 
     private PmPlatform MsPlatform(SourceSnapshot snapshot, string fx)
@@ -848,6 +940,21 @@ public sealed partial class SourceAnalyzer
 
     [GeneratedRegex(@"(?:Environment\.GetEnvironmentVariable\(|process\.env\.)[""']?(?<key>[A-Za-z0-9_]+)")]
     private static partial Regex EnvKeyRegex();
+
+    [GeneratedRegex(@"asp-for=""(?<f>[A-Za-z0-9_.\[\]]+)""|name=""(?<f2>[A-Za-z][A-Za-z0-9_]*)""")]
+    private static partial Regex InputFieldRegex();
+
+    [GeneratedRegex(@"(?:asp-action|asp-page|action)=""(?<a>[A-Za-z0-9_]+)""")]
+    private static partial Regex FormActionRegex();
+
+    [GeneratedRegex(@"href=""/?(?<c>[A-Za-z0-9_]+)/(?<a>[A-Za-z0-9_]+)""")]
+    private static partial Regex LinkRegex();
+
+    [GeneratedRegex(@"(?:fetch|\$\.(?:post|get|ajax))\([""'](?<u>[^""')]+)")]
+    private static partial Regex FetchRegex();
+
+    [GeneratedRegex(@"connection\.(?:invoke|send)\([""'](?<m>[^""']+)""")]
+    private static partial Regex HubInvokeRegex();
 }
 
 internal static class StringPmExtensions

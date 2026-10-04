@@ -49,6 +49,7 @@
     <div class="x-tabs" id="tabs">
         <button data-sec="overview" class="active">Overview</button>
         <button data-sec="sprints">Sprints</button>
+        <button data-sec="layers">Module &times; Layers</button>
         <button data-sec="backlog">Requirements</button>
         <button data-sec="team">Team &amp; Budget</button>
     </div>
@@ -176,6 +177,57 @@
                 <p style="font-size:12px;color:#6b7280;margin:0 0 14px">@s.Goal</p>
             }
         }
+        </div>
+    </section>
+
+    @* ---------------- Module × Layer breakdown ---------------- *@
+    <section id="layers" class="x-sec">
+        <div class="pm-card">
+            <h3>Module &times; Layer Breakdown</h3>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 14px">
+                Every module broken into its architecture layers — framework, controllers/actions, server side,
+                data adapter, frontend and database (dbscript) — with the stories and points feeding each layer.
+                Sprint waves: base framework code generation &rarr; basic module functionality &rarr; field/enhancement waves.
+            </p>
+            @{
+                var layers = new[] { "Framework", "Controllers", "Server", "Data Adapter", "Frontend", "Database" };
+                var byModule = Model.Stories
+                    .GroupBy(st => st.EpicKey, StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(g => g.Key)
+                    .ToList();
+                var epicByName = Model.Epics.ToDictionary(e => e.Key, e => e.Name, StringComparer.OrdinalIgnoreCase);
+            }
+            <table class="pm-tbl">
+                <thead><tr><th>Epic</th><th>Module</th>@foreach (var l in layers) { <th>@l</th> }<th>Total</th></tr></thead>
+                <tbody>
+                @foreach (var g in byModule)
+                {
+                    var totalPts = g.Sum(st => st.Points);
+                    <tr>
+                        <td><b>@g.Key</b></td>
+                        <td>@(epicByName.TryGetValue(g.Key, out var en) ? en : "")</td>
+                        @foreach (var l in layers)
+                        {
+                            var ls = g.Where(st => st.Layer == l).ToList();
+                            if (ls.Count == 0) { <td>—</td> }
+                            else { <td>@ls.Count stories / @ls.Sum(st => st.Points) pts</td> }
+                        }
+                        <td><b>@g.Count() stories / @totalPts pts</b></td>
+                    </tr>
+                }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2"><b>All modules</b></td>
+                        @foreach (var l in layers)
+                        {
+                            var ls = Model.Stories.Where(st => st.Layer == l).ToList();
+                            <td><b>@ls.Count / @ls.Sum(st => st.Points) pts</b></td>
+                        }
+                        <td><b>@Model.Stories.Count / @Model.Stories.Sum(st => st.Points) pts</b></td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
     </section>
 

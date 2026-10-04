@@ -222,10 +222,14 @@ public sealed partial class RequirementIngestor
                 foreach (var entity in cap.Entities.Take(3))
                 {
                     if (!persistedEntities.Add(entity)) continue;
+                    var detail = cap.EntityDetails.FirstOrDefault(d => d.Name == entity);
+                    var fields = detail != null ? string.Join(", ", detail.Fields) : "";
                     AddStory(epic, $"{entity} persistence & invariants",
                         persona, $"{WordsOf(entity)}s stored with enforced validation",
                         $"{appWords} data stays consistent", ClampFibonacci(3), Math.Max(20, priority - 5), "Medium",
-                        new[] { $"{entity} round-trips through persistence identically",
+                        new[] { fields.Length > 0
+                                ? $"{entity} fields ({fields}) round-trip through the data adapter identically"
+                                : $"{entity} round-trips through persistence identically",
                                 "Constraint violations surface as validation errors",
                                 $"Consumers of {entity} validated against its contract" },
                         cap.Kind == "Entities" ? "Data Adapter" : "Server");
@@ -233,46 +237,90 @@ public sealed partial class RequirementIngestor
             }
             else
             {
-                // end-to-end flows through the controller's real actions
+                // end-to-end flows through the controller's real actions,
+                // one specific requirement per action, wired to its view & fields
+                var acs = new List<string>();
+                var primary = cap.EntityDetails.FirstOrDefault();
+                var fieldList = primary != null ? string.Join(", ", primary.Fields.Take(6)) : "";
+                foreach (var m in cap.Methods.Take(6))
+                {
+                    var view = cap.ViewDetails.FirstOrDefault(v =>
+                        Path.GetFileNameWithoutExtension(v.Name).Equals(m, StringComparison.OrdinalIgnoreCase));
+                    var req = $"{cap.Class}.{m}()";
+                    if (view != null)
+                        req += $" pairs with view {feature}/{view.Name}"
+                            + (view.Fields.Count > 0 ? $" (fields: {string.Join(", ", view.Fields.Take(5))})" : "");
+                    else if (cap.ViewDetails.Count > 0)
+                        req += $" paired with the {feature} views per the source layout";
+                    if (fieldList.Length > 0 && (m.StartsWith("Create", StringComparison.OrdinalIgnoreCase)
+                        || m.StartsWith("Edit", StringComparison.OrdinalIgnoreCase)
+                        || m.StartsWith("Add", StringComparison.OrdinalIgnoreCase)))
+                        req += $"; binds and validates {fieldList}";
+                    acs.Add(req);
+                }
+                acs.Add("Authorization and model validation enforced on every action; error paths return correct status codes");
                 AddStory(epic, $"{feature}: {verbs} {noun} end to end",
                     persona, $"the {featureWords} workflows ({verbs}) working per the source behavior",
                     $"{appWords} delivers the {featureWords} workflow end to end",
                     ClampFibonacci(2 + cap.Methods.Count), priority,
                     cap.Methods.Count > 4 ? "High" : "Medium",
-                    cap.Methods.Take(3).Select(m => $"{m} behaves per the source contract").Concat(new[]
-                        { "Authorization and validation enforced on every action",
-                          "Error paths return correct status codes" }).ToArray(),
-                    "Controllers");
+                    acs.ToArray(), "Controllers");
 
                 foreach (var entity in cap.Entities.Take(2))
                 {
                     if (!persistedEntities.Add(entity)) continue;
+                    var detail = cap.EntityDetails.FirstOrDefault(d => d.Name == entity);
+                    var fields = detail != null ? string.Join(", ", detail.Fields) : "";
+                    var required = detail != null
+                        ? string.Join(", ", detail.Fields.Where(f => f.Contains("(string)") && !f.Contains("?")).Take(4))
+                        : "";
                     AddStory(epic, $"{entity} persistence & invariants",
                         persona, $"{WordsOf(entity)}s stored with enforced validation",
                         $"{appWords} data stays consistent", ClampFibonacci(3), Math.Max(20, priority - 3), "Medium",
-                        new[] { $"{entity} round-trips through persistence identically",
-                                "Constraint violations surface as validation errors",
+                        new[] { fields.Length > 0
+                                ? $"{entity} fields ({fields}) round-trip through the data adapter identically"
+                                : $"{entity} round-trips through persistence identically",
+                                required.Length > 0
+                                ? $"Required fields ({required}) enforced: null/empty submissions rejected with validation errors"
+                                : "Constraint violations surface as validation errors",
                                 "Seed data covers representative records" },
                         "Data Adapter");
                 }
 
                 if (cap.Views.Count > 0)
+                {
+                    // one specific requirement per view: its real form fields and wired behaviors
+                    var viewAcs = new List<string>();
+                    foreach (var v in cap.ViewDetails.Take(4))
+                    {
+                        var req = $"{feature}/{v.Name}";
+                        if (v.Fields.Count > 0) req += $" — fields: {string.Join(", ", v.Fields)}";
+                        if (v.Behaviors.Count > 0) req += $"; behaviors: {string.Join(", ", v.Behaviors)}";
+                        viewAcs.Add(req);
+                    }
+                    var missing = cap.Views.Where(vn => !cap.ViewDetails.Any(vd => Path.GetFileNameWithoutExtension(vd.Name) == vn)).ToList();
+                    if (missing.Count > 0)
+                        viewAcs.Add($"{string.Join(", ", missing)} render with model validation per the source markup");
+                    viewAcs.Add("Auth guards every screen and action; navigation and error states handled");
                     AddStory(epic, $"{feature} screens ({string.Join(", ", cap.Views.Take(4))})",
                         persona, $"the {featureWords} screens rendered per the source views",
                         $"{persona}s can complete every {featureWords} task from the UI",
                         ClampFibonacci(2 + cap.Views.Count), Math.Max(20, priority - 4), "Medium",
-                        new[] { string.Join(", ", cap.Views) + " render with model validation",
-                                "Auth guards every screen and action",
-                                "Navigation and error states handled" },
-                        "Frontend");
+                        viewAcs.ToArray(), "Frontend");
+                }
 
                 if (cap.Entities.Count > 0)
+                {
+                    var ddlAcs = new List<string>();
+                    foreach (var d in cap.EntityDetails.Take(3))
+                        ddlAcs.Add($"{d.Name} → table with columns {string.Join(", ", d.Fields)} "
+                            + "(dual-provider DDL: SQL Server + Oracle, per the source schema)");
+                    ddlAcs.Add($"Seed data idempotent for {string.Join(", ", cap.Entities)}; rollback scripts documented");
                     AddStory(epic, $"{feature} schema, migrations & seeds",
                         "database admin", $"versioned DDL and seeds for the {featureWords} tables",
                         $"{featureWords} environments rebuild deterministically", 5, Math.Max(20, priority - 6), "Medium",
-                        new[] { $"Tables and constraints scripted for {string.Join(", ", cap.Entities)}",
-                                "Seed data idempotent", "Rollback documented" },
-                        "Database");
+                        ddlAcs.ToArray(), "Database");
+                }
 
                 AddStory(epic, $"{feature} integration & contract tests",
                     "qa lead", $"an integration suite proving the {featureWords} contracts end to end",
@@ -304,7 +352,7 @@ public sealed partial class RequirementIngestor
                 "one platform serves every user", 13, 42, "High",
                 new[] { $"Live {root} features reachable in the primary app",
                         "Data migrated losslessly where applicable",
-                        "Cutover verified with parity tests" });
+                        "Cutover verified with parity tests" }, "Server");
             AddStory(epic, $"Decommission retired {root} surface",
                 "operations", $"dead {root} code paths removed with regression cover",
                 "maintenance cost drops", 8, 38, "Medium",
@@ -341,23 +389,50 @@ public sealed partial class RequirementIngestor
                 Math.Max(30, enhancePriority), "Medium",
                 new[] { $"Change wave mirrors the source pattern '{headline}' ({pattern.Commits} commits touched {pattern.Layer.ToLowerInvariant()} code)",
                         $"Touched paths covered: {string.Join(", ", pattern.Examples.Take(2))}",
-                        $"Regression tests prove the enhanced {pattern.Layer.ToLowerInvariant()} behavior",
-                        "Frontend, server and database components updated together" },
+                        LayerComponentsOf(pattern.Examples),
+                        $"Regression tests prove the enhanced {pattern.Layer.ToLowerInvariant()} behavior" },
                 pattern.Layer, "enhance", capOfPattern?.Feature ?? pattern.Module);
             enhancePriority -= 2;
         }
-        foreach (var cap in profile.Capabilities.Where(c => c.Entities.Count > 0).Take(3))
+        foreach (var cap in profile.Capabilities.Where(c => c.EntityDetails.Count > 0).Take(3))
         {
             if (stories.Count >= MaxStories) break;
-            AddStory(enhanceEpic, $"Extend {WordsOf(cap.Feature)} data model: new fields end to end",
-                "product owner", $"additional fields on {NounOf(cap)} across db, server and UI",
-                $"{WordsOf(cap.Feature)} grows without schema drift", 8, Math.Max(30, enhancePriority), "Medium",
-                new[] { $"New columns added via versioned migration ({string.Join(", ", cap.Entities)})",
-                        "Server validation and data adapter mapping updated for the new fields",
-                        "Frontend forms display and edit the new fields",
-                        "Existing data migrates losslessly" },
+            // concrete fields the source model lacks, derived from the entity's own columns
+            var detail = cap.EntityDetails[0];
+            var existing = detail.Fields.Select(f => f.Split(' ')[0]).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var candidates = new[] { "CreatedAt (DateTime)", "UpdatedAt (DateTime)", "Status (string)", "DisplayOrder (int)", "Tags (string)" };
+            var newFields = candidates.Where(c => !existing.Contains(c.Split(' ')[0])).Take(2).ToList();
+            if (newFields.Count == 0) continue;
+            var fieldsTxt = string.Join(", ", newFields.Select(f => f.Split(' ')[0]));
+            var viewsTxt = cap.ViewDetails.Count > 0
+                ? string.Join(", ", cap.ViewDetails.Select(v => $"{cap.Feature}/{v.Name}").Take(3))
+                : $"the {WordsOf(cap.Feature)} screens";
+            var baseP = Math.Max(30, enhancePriority);
+            // enhancement wave split into per-layer components so sprints carry
+            // explicit frontend/server/database work: database first, then server, then frontend
+            AddStory(enhanceEpic, $"{WordsOf(cap.Feature)}: add fields {fieldsTxt} — database migration",
+                "database admin", $"ALTER TABLE {detail.Name} ADD {fieldsTxt} via versioned migration",
+                $"the {WordsOf(cap.Feature)} data model grows without schema drift", 3, baseP, "Medium",
+                new[] { $"Dual-provider DDL (SQL Server + Oracle): ALTER TABLE {detail.Name} ADD {string.Join(", ", newFields)}",
+                        $"Columns nullable-safe for existing {detail.Name} rows; migration idempotent and reversible",
+                        $"Rollback script verified: dropping {fieldsTxt} restores the source schema" },
                 "Database", "enhance", cap.Feature);
-            enhancePriority -= 2;
+            AddStory(enhanceEpic, $"{WordsOf(cap.Feature)}: add fields {fieldsTxt} — server & data adapter",
+                "developer", $"data adapter mapping, validation and contracts updated for {fieldsTxt} on {detail.Name}",
+                $"server-side {WordsOf(cap.Feature)} code serves the new fields end to end", 3, Math.Max(25, baseP - 1), "Medium",
+                new[] { $"Data adapter maps {string.Join(", ", newFields)} onto {detail.Name} (persistence round-trip verified)",
+                        $"Server validation for {fieldsTxt}: values conform to their CLR types before persistence",
+                        $"Service/API contract for {WordsOf(cap.Feature)} exposes {fieldsTxt}; contract tests updated" },
+                "Data Adapter", "enhance", cap.Feature);
+            AddStory(enhanceEpic, $"{WordsOf(cap.Feature)}: add fields {fieldsTxt} — frontend forms & views",
+                "user", $"{viewsTxt} display and edit {fieldsTxt}",
+                $"{WordsOf(cap.Feature)} users see the enriched data in the UI", 5,
+                Math.Max(22, baseP - 2), "Medium",
+                new[] { $"{viewsTxt} render and bind {fieldsTxt} per the source markup patterns",
+                        $"Client-side validation of {fieldsTxt} mirrors the server rules",
+                        $"Existing {WordsOf(cap.Feature)} views degrade gracefully for rows without {fieldsTxt}" },
+                "Frontend", "enhance", cap.Feature);
+            enhancePriority -= 6;
         }
 
         // ── data & persistence epic ──
@@ -400,6 +475,37 @@ public sealed partial class RequirementIngestor
             "Framework", "release");
 
         return (epics, stories);
+    }
+
+    /// <summary>Splits a change pattern's touched paths into explicit
+    /// frontend / server / database component requirements for the sprint.</summary>
+    private static string LayerComponentsOf(IReadOnlyList<string> examples)
+    {
+        var fe = new List<string>(); var srv = new List<string>(); var db = new List<string>();
+        foreach (var ex in examples.Take(6))
+        {
+            if (ex.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase)
+                || ex.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)
+                || ex.EndsWith(".tsx", StringComparison.OrdinalIgnoreCase)
+                || ex.EndsWith(".jsx", StringComparison.OrdinalIgnoreCase)
+                || ex.EndsWith(".js", StringComparison.OrdinalIgnoreCase)
+                || ex.EndsWith(".css", StringComparison.OrdinalIgnoreCase))
+                fe.Add(Path.GetFileName(ex));
+            else if (ex.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                || ex.EndsWith(".ts", StringComparison.OrdinalIgnoreCase)
+                || ex.EndsWith(".java", StringComparison.OrdinalIgnoreCase)
+                || ex.EndsWith(".py", StringComparison.OrdinalIgnoreCase))
+                srv.Add(Path.GetFileName(ex));
+            else if (ex.EndsWith(".sql", StringComparison.OrdinalIgnoreCase)
+                || ex.Contains("migration", StringComparison.OrdinalIgnoreCase))
+                db.Add(Path.GetFileName(ex));
+        }
+        var parts = new List<string>();
+        if (srv.Count > 0) parts.Add($"Server: {string.Join(", ", srv.Take(3))}");
+        if (fe.Count > 0) parts.Add($"frontend: {string.Join(", ", fe.Take(3))}");
+        if (db.Count > 0) parts.Add($"database: {string.Join(", ", db.Take(3))}");
+        if (db.Count == 0) parts.Add("database: schema unchanged or migration not required");
+        return $"Sprint components — {string.Join("; ", parts)}";
     }
 
     /// <summary>Legacy folder-module flow (kept for sources without detectable capabilities).</summary>

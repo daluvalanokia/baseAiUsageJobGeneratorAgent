@@ -293,6 +293,20 @@ module inventory — controllers, domain entities, services, Hubs, UI files,
 database scripts — and each module's stories are grounded in its actual
 classes, files and endpoints.
 
+**Capability-driven requirement capture**: the app's own controllers, hubs,
+entities and views name the epics (Library, Events, Session real-time...,
+not folder names), and every story carries detailed, specific requirements
+connecting views, fields and behavior: per-action requirements wired to the
+view they pair with, entity fields with their CLR types (`Title (string)`),
+per-view form fields and wired behaviors (`POST Create`, `fetch
+/Library/GetItem`, `SignalR SendChatMessage`), column-level DDL requirements,
+and the source readme's own identity. Modules are broken into the framework,
+controllers/actions, server-side, data adapter, frontend and database
+(dbscript) layers; the static export renders a Module × Layer breakdown.
+Enhancement waves split field extensions into explicit database → server →
+frontend sprint components, and every commit-history change pattern carries
+its frontend/server/database sprint components derived from its touched paths.
+
 **Commit-history pattern review**: for GitHub sources the provider also
 captures recent commits with their touched paths. Recurring
 (module, layer) change patterns become Year-2 enhancement stories, so the

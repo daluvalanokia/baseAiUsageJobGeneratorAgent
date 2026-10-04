@@ -25,8 +25,10 @@ public class PmCapabilityTests
                 "public class LibraryItem {\n    public int Id { get; set; }\n    public string Title { get; set; }\n    public string LinesJson { get; set; }\n}\n" },
             new() { Path = "MvcApp/Models/UserProfile.cs", Content =
                 "public class UserProfile {\n    public int Id { get; set; }\n    public string DisplayName { get; set; }\n}\n" },
-            new() { Path = "MvcApp/Views/Library/Index.cshtml", Content = "<h1>Library</h1>\n" },
-            new() { Path = "MvcApp/Views/Library/Create.cshtml", Content = "<form></form>\n" },
+            new() { Path = "MvcApp/Views/Library/Index.cshtml", Content =
+                "<h1>Library</h1>\n<a href=\"/Library/Create\">New</a> <a href=\"/Library/Edit\">Edit</a>\n" },
+            new() { Path = "MvcApp/Views/Library/Create.cshtml", Content =
+                "<form asp-action=\"Create\" method=\"post\">\n<input asp-for=\"Title\" />\n<input asp-for=\"LinesJson\" />\n<input name=\"__RequestVerificationToken\" />\n</form>\n" },
             // secondary root: a legacy client platform that must NOT be feature-ified
             new() { Path = "legacy-client/components/List.tsx", Content = "export function List() { return null; }\n" },
             new() { Path = "legacy-client/components/Grid.tsx", Content = "export function Grid() { return null; }\n" },
@@ -84,6 +86,82 @@ public class PmCapabilityTests
         Assert.Contains("Create", text);
         Assert.Contains("LibraryItem", text);
         Assert.Contains("sacred text recitals", string.Join("\n", epics.Select(e => e.Description)));
+    }
+
+    [Fact]
+    public void Details_extraction_captures_entity_fields_and_view_fields_behaviors()
+    {
+        var snapshot = RecitalAppSnapshot();
+        var analyzer = new SourceAnalyzer();
+
+        var entities = analyzer.EntityDetailsOf(snapshot);
+        var libraryItem = entities.Single(e => e.Name == "LibraryItem");
+        Assert.Contains("Title (string)", libraryItem.Fields);
+        Assert.Contains("LinesJson (string)", libraryItem.Fields);
+
+        var views = analyzer.ViewDetailsOf(snapshot);
+        var create = views.Single(v => v.Name == "Create.cshtml");
+        Assert.Equal("Library", create.Feature);
+        Assert.Contains("Title", create.Fields);
+        Assert.Contains("LinesJson", create.Fields);
+        Assert.DoesNotContain(create.Fields, f => f.StartsWith("__"));
+        Assert.Contains("POST Create", create.Behaviors);
+        var index = views.Single(v => v.Name == "Index.cshtml");
+        Assert.Contains("link Library/Create", index.Behaviors);
+        Assert.Contains("link Library/Edit", index.Behaviors);
+    }
+
+    [Fact]
+    public void FromCapabilities_writes_specific_requirements_connecting_views_fields_behavior()
+    {
+        var snapshot = RecitalAppSnapshot();
+        var analyzer = new SourceAnalyzer();
+        var classes = analyzer.Classes(snapshot);
+        var profile = analyzer.ProfileApp(snapshot, classes);
+        var ingestor = new RequirementIngestor();
+        var (epics, stories) = ingestor.FromSource(snapshot, classes, profile);
+
+        // controller story: per-action requirements wired to views & fields
+        var controllerStory = stories.Single(s => s.Layer == "Controllers" && s.Title.StartsWith("Library:"));
+        Assert.Contains(controllerStory.AcceptanceCriteria, a => a.Contains("LibraryController.Create()")
+            && a.Contains("Library/Create.cshtml") && a.Contains("Title"));
+        Assert.Contains(controllerStory.AcceptanceCriteria, a => a.Contains("LibraryController.Index()"));
+
+        // data adapter story: real entity fields named
+        var adapterStory = stories.Single(s => s.Layer == "Data Adapter" && s.Title.StartsWith("LibraryItem"));
+        Assert.Contains(adapterStory.AcceptanceCriteria, a => a.Contains("Id") && a.Contains("Title") && a.Contains("LinesJson"));
+
+        // frontend story: view-level fields and behaviors
+        var frontendStory = stories.Single(s => s.Layer == "Frontend" && s.Title.StartsWith("Library screens"));
+        Assert.Contains(frontendStory.AcceptanceCriteria, a => a.Contains("Create.cshtml") && a.Contains("Title") && a.Contains("POST Create"));
+        Assert.Contains(frontendStory.AcceptanceCriteria, a => a.Contains("Index.cshtml") && a.Contains("link Library/Create"));
+
+        // database story: column-level DDL requirements
+        var dbStory = stories.Single(s => s.Layer == "Database" && s.Title.StartsWith("Library schema"));
+        Assert.Contains(dbStory.AcceptanceCriteria, a => a.Contains("LibraryItem") && a.Contains("Title (string)"));
+    }
+
+    [Fact]
+    public void Enhancement_waves_split_field_extensions_into_layer_components()
+    {
+        var snapshot = RecitalAppSnapshot();
+        var analyzer = new SourceAnalyzer();
+        var classes = analyzer.Classes(snapshot);
+        var profile = analyzer.ProfileApp(snapshot, classes);
+        var ingestor = new RequirementIngestor();
+        var (epics, stories) = ingestor.FromSource(snapshot, classes, profile);
+
+        var extend = stories.Where(s => s.Phase == "enhance" && s.Title.Contains("add fields")).ToList();
+        Assert.Contains(extend, s => s.Layer == "Database" && s.Title.Contains("database migration"));
+        Assert.Contains(extend, s => s.Layer == "Data Adapter" && s.Title.Contains("server & data adapter"));
+        Assert.Contains(extend, s => s.Layer == "Frontend" && s.Title.Contains("frontend forms & views"));
+        // the concrete fields come from what the source model lacks (LibraryItem has no audit fields)
+        Assert.Contains(extend, s => s.Title.Contains("CreatedAt"));
+        // database component runs before server, server before frontend (descending priority)
+        var db = extend.Single(s => s.Layer == "Database" && s.Module == "Library");
+        var sv = extend.Single(s => s.Layer == "Data Adapter" && s.Module == "Library");
+        var fe = extend.Single(s => s.Layer == "Frontend" && s.Module == "Library");
+        Assert.True(db.Priority >= sv.Priority && sv.Priority >= fe.Priority);
     }
 
     [Fact]

@@ -1,0 +1,53 @@
+@model SmartAgent.Core.Pm.ProgramPlan
+@using SmartAgent.Core.Pm
+@using SmartAgent.Web.Models
+@{
+    PmLayout.Apply(ViewData, Model);
+    ViewData["PmNav"] = "testcases";
+    Layout = "_PmLayout";
+    var unitBySprint = new Dictionary<string, List<PmUnitTestCase>>();
+    foreach (var s in Model.SprintPlans)
+        foreach (var t in s.Detail?.UnitTests ?? Array.Empty<PmUnitTestCase>())
+        {
+            if (!unitBySprint.ContainsKey(s.Quarter)) unitBySprint[s.Quarter] = new List<PmUnitTestCase>();
+            unitBySprint[s.Quarter].Add(t);
+        }
+}
+<header>
+    <h1>Test Cases</h1>
+    <p class="pm-sub">@Model.UnitTestCount unit tests + @Model.SystemTestCount system tests across all @Model.Sprints sprints</p>
+</header>
+
+<div class="pm-kpis">
+    <div class="pm-kpi"><b>@Model.UnitTestCount</b><span>UNIT TESTS</span></div>
+    <div class="pm-kpi green"><b>@Model.SystemTestCount</b><span>SYSTEM TESTS</span></div>
+    <div class="pm-kpi"><b>@Model.UnitTests.Select(t => t.Cls).Distinct().Count()</b><span>CLASSES COVERED</span></div>
+    <div class="pm-kpi"><b>@Model.TestCaseCount</b><span>TOTAL CASES</span></div>
+</div>
+
+<div class="pm-card">
+    <h3>Unit Tests (all sprints)</h3>
+    <table class="pm-tbl">
+        <thead><tr><th>ID</th><th>Sprint</th><th>Class</th><th>Method</th><th>Scenario</th><th>Expected</th></tr></thead>
+        <tbody>
+        @foreach (var t in Model.UnitTests)
+        {
+            var sprintNo = t.Id.Substring(5, 3);
+            <tr><td><b>@t.Id</b></td><td>@sprintNo</td><td>@t.Cls</td><td>@t.Method</td><td>@t.Scenario</td><td>@t.Expected</td></tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<div class="pm-card">
+    <h3>System Tests (all sprints)</h3>
+    <table class="pm-tbl">
+        <thead><tr><th>ID</th><th>Feature</th><th>Precondition</th><th>Steps</th><th>Expected</th><th>Env</th></tr></thead>
+        <tbody>
+        @foreach (var t in Model.SystemTests)
+        {
+            <tr><td><b>@t.Id</b></td><td>@t.Feature</td><td>@t.Precondition</td><td>@t.Steps</td><td>@t.Expected</td><td>@t.Env</td></tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,31 @@
+@model SmartAgent.Core.Pm.ProgramPlan
+@using SmartAgent.Core.Pm
+@using SmartAgent.Web.Models
+@{
+    PmLayout.Apply(ViewData, Model);
+    ViewData["PmNav"] = "releases";
+    Layout = "_PmLayout";
+}
+<header>
+    <h1>Release Milestones</h1>
+    <p class="pm-sub">@Model.Milestones.Count key milestones across the @Model.Years-year programme</p>
+</header>
+
+<div class="rel-timeline">
+    @foreach (var m in Model.Milestones)
+    {
+        <div class="rel-card">
+            <h3 style="margin:0 0 4px;font-size:15px">@m.Name</h3>
+            <span class="pm-badge" style="background:#eff6ff;color:#1e3a8a">Sprint @m.Sprint</span>
+            <span class="pm-badge" style="background:#f1f5f9;color:#4b5563">Week @m.Week</span>
+            <p style="background:#f8fafc;border-radius:6px;padding:6px 10px;font-size:12px;margin:8px 0 0">@m.Scope</p>
+            <p style="font-size:11px;color:#6b7280;margin:8px 0 2px"><b>GO/NO-GO CRITERIA</b></p>
+            <ul class="checklist">
+                @foreach (var g in m.GoNoGo)
+                {
+                    <li>@g</li>
+                }
+            </ul>
+        </div>
+    }
+</div>

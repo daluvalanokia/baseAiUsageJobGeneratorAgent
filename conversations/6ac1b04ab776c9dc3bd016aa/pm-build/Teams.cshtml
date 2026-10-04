@@ -1,0 +1,68 @@
+@model SmartAgent.Core.Pm.ProgramPlan
+@using SmartAgent.Core.Pm
+@using SmartAgent.Web.Models
+@{
+    PmLayout.Apply(ViewData, Model);
+    ViewData["PmNav"] = "teams";
+    Layout = "_PmLayout";
+    var byRole = Model.Resources.GroupBy(r => r.Role)
+        .Select(g => (Role: g.Key, Count: g.Count(), Note: g.Count() + " × " + g.Key))
+        .OrderByDescending(x => x.Count).ToList();
+    var devs = Model.Resources.Count(r => r.Role is "Developer" or "Senior Developer" or "Dev Lead");
+    var qas = Model.Resources.Count(r => r.Role.Contains("QA"));
+    var bas = Model.Resources.Count(r => r.Role is "Business Analyst");
+    var mgmt = Model.Resources.Count(r => r.Role is "Product Owner" or "Scrum Master" or "Solution Architect"
+        or "Dev Lead" or "QA Lead" or "Data Engineer" or "Technical Writer");
+    var others = Model.Resources.Count - devs - qas;
+}
+<header>
+    <h1>Teams & Org Structure</h1>
+    <p class="pm-sub">@Model.Resources.Count team members across @Model.Squads.Count squads</p>
+</header>
+
+<div class="pm-kpis">
+    <div class="pm-kpi"><b>@devs</b><span>DEVELOPERS</span></div>
+    <div class="pm-kpi"><b>@qas</b><span>QA ENGINEERS</span></div>
+    <div class="pm-kpi"><b>@bas</b><span>BUSINESS ANALYSTS</span></div>
+    <div class="pm-kpi"><b>@mgmt</b><span>MGMT & LEADERSHIP</span></div>
+    <div class="pm-kpi"><b>@Model.Squads.Count</b><span>SQUADS</span></div>
+    <div class="pm-kpi red"><b>@Model.Resources.Count</b><span>TOTAL PROGRAMME</span></div>
+</div>
+
+<div class="pm-cols" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr))">
+    @foreach (var s in Model.Squads)
+    {
+        var members = s.ResourceKeys.Select(k => Model.Resources.FirstOrDefault(r => r.Key == k))
+            .Where(r => r != null).Cast<PmResource>().ToList();
+        <div class="pm-card">
+            <h3><span class="pm-chip" style="background:@PmHub.SquadColor(s.Key)">@s.Key</span> @s.Name</h3>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 10px">@s.Domain</p>
+            <table class="pm-tbl">
+                <thead><tr><th>Member</th><th>Role</th><th>Rate</th></tr></thead>
+                <tbody>
+                @foreach (var m in members)
+                {
+                    <tr><td>@m.Name</td><td>@m.Role</td><td>$@m.HourlyRate/hr</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="pm-card">
+    <h3>Program Roster by Role</h3>
+    <table class="pm-tbl">
+        <thead><tr><th>Role</th><th>Headcount</th><th>Cost share</th></tr></thead>
+        <tbody>
+        @foreach (var r in byRole)
+        {
+            var cost = Model.Budget.CostByRole.FirstOrDefault(c => c.Role == r.Role)?.CostUsd ?? 0;
+            <tr>
+                <td>@r.Role</td><td>@r.Count</td>
+                <td>$@cost.ToString("N0")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

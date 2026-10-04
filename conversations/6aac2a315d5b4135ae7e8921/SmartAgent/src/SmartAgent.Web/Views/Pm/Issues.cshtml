@@ -1,0 +1,45 @@
+@model SmartAgent.Core.Pm.ProgramPlan
+@using SmartAgent.Core.Pm
+@using SmartAgent.Web.Models
+@{
+    PmLayout.Apply(ViewData, Model);
+    ViewData["PmNav"] = "issues";
+    Layout = "_PmLayout";
+    var open = Model.IssueRegister.Count(i => i.Status == "Open");
+    var progress = Model.IssueRegister.Count(i => i.Status == "In Progress");
+    var resolved = Model.IssueRegister.Count(i => i.Status == "Resolved");
+}
+<header>
+    <h1>Issue Register</h1>
+    <p class="pm-sub">@Model.IssueRegister.Count total defects logged across all sprints</p>
+</header>
+
+<div class="pm-kpis">
+    <div class="pm-kpi red"><b>@open</b><span>OPEN</span></div>
+    <div class="pm-kpi"><b>@progress</b><span>IN PROGRESS</span></div>
+    <div class="pm-kpi green"><b>@resolved</b><span>RESOLVED</span></div>
+    <div class="pm-kpi"><b>@Model.IssueRegister.Count</b><span>TOTAL</span></div>
+</div>
+
+<div class="pm-card">
+    <table class="pm-tbl">
+        <thead>
+        <tr><th>ID</th><th>Sprint</th><th>Severity</th><th>Component</th><th>Description</th><th>Reporter</th><th>Assignee</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var i in Model.IssueRegister)
+        {
+            <tr>
+                <td><b>@i.Id</b></td>
+                <td>S@i.SprintNumber.ToString("D2")</td>
+                <td><span class="pm-badge @i.Severity.ToLowerInvariant()">@i.Severity</span></td>
+                <td>@i.Component</td>
+                <td>@i.Description</td>
+                <td>@i.Reporter</td>
+                <td>@i.Assignee</td>
+                <td><span class="pm-badge @(i.Status == "Open" ? "open" : i.Status == "Resolved" ? "resolved" : "progress")">@i.Status</span></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,75 @@
+@model SmartAgent.Web.Models.PmSprintPickerPage
+@using SmartAgent.Web.Models
+@using SmartAgent.Core.Pm
+@using SmartAgent.Web.Models
+@{
+    PmLayout.Apply(ViewData, Model.Plan);
+    var plan = Model.Plan;
+    var n = Model.SprintNumber;
+    ViewData["PmNav"] = "designdocs";
+    Layout = "_PmLayout";
+    var sprint = plan.SprintPlans.FirstOrDefault(s => s.Number == n) ?? plan.SprintPlans[0];
+    var detail = sprint.Detail;
+}
+<header>
+    <h1>Design Docs — HLD + DDD per sprint</h1>
+    <p class="pm-sub">High-level and detailed design, pseudo-code and sequence diagrams grounded in captured source</p>
+</header>
+
+<div class="pm-picker">
+    <div class="pm-list">
+        @foreach (var s in plan.SprintPlans)
+        {
+            var story = s.StoryKeys.Select(k => plan.Stories.FirstOrDefault(x => x.Key == k)).FirstOrDefault(x => x != null);
+            <a asp-controller="Pm" asp-action="DesignDocs" asp-route-slug="@plan.Slug" asp-route-number="@s.Number"
+               class="@(s.Number == sprint.Number ? "active" : "")">
+                <div class="t">S@s.Number.ToString("D2") @(story?.Title ?? s.Goal)</div>
+                <div class="d">@s.Quarter · @(s.Detail?.Hld.ModuleName ?? "")</div>
+            </a>
+        }
+    </div>
+
+    <div>
+        <div class="pm-card">
+            <h3>Sprint @sprint.Number — HLD: @(detail?.Hld.ModuleName ?? "n/a")</h3>
+            @if (detail is not null)
+            {
+                <p style="font-size:12.5px;margin:0 0 8px">@detail.Hld.Purpose</p>
+                <p style="font-size:11px;color:#6b7280;margin:6px 0 2px"><b>COMPONENTS</b></p>
+                <ul style="font-size:12px;padding-left:18px;margin:4px 0">@foreach (var c in detail.Hld.Components)
+                { <li>@c</li> }</ul>
+                <p style="font-size:11px;color:#6b7280;margin:6px 0 2px"><b>EXTERNAL DEPENDENCIES</b></p>
+                @foreach (var d in detail.Hld.ExternalDeps)
+                {
+                    <span class="dep-pill">@d</span>
+                }
+                <p style="font-size:11px;color:#6b7280;margin:6px 0 2px"><b>NFRS</b></p>
+                <ul style="font-size:12px;padding-left:18px;margin:4px 0">@foreach (var x in detail.Hld.Nfrs)
+                { <li>@x</li> }</ul>
+            }
+        </div>
+
+        @if (detail is not null)
+        {
+            <div class="pm-card">
+                <h3>DDD + Pseudo-code</h3>
+                <pre class="pm-code">@detail.Ddd.PseudoCode</pre>
+                <h4 style="margin-top:10px;font-size:12px">Sequence</h4>
+                @foreach (var step in detail.Ddd.Sequence)
+                {
+                    <div class="seq-step">
+                        <b>@step.From</b><span class="arrow">→</span><b>@step.To</b>
+                        <span style="color:#6b7280">(@step.Label)@(step.IsReturn ? " ↩" : "")</span>
+                    </div>
+                }
+                <h4 style="margin-top:10px;font-size:12px">Data Flow & Error Handling</h4>
+                <p style="font-size:12px;margin:4px 0">@detail.Ddd.DataFlow — @detail.Ddd.ErrorHandling</p>
+                <h4 style="margin-top:10px;font-size:12px">Config Dependencies</h4>
+                @foreach (var c in detail.Ddd.ConfigDeps)
+                {
+                    <span class="dep-pill">@c</span>
+                }
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,60 @@
+@model SmartAgent.Core.Pm.ProgramPlan
+@using SmartAgent.Core.Pm
+@using SmartAgent.Web.Models
+@{
+    PmLayout.Apply(ViewData, Model);
+    ViewData["PmNav"] = "requirements";
+    Layout = "_PmLayout";
+    var sprintOf = new Dictionary<string, int>();
+    foreach (var s in Model.SprintPlans)
+        foreach (var k in s.StoryKeys)
+            sprintOf[k] = s.Number;
+}
+<header>
+    <h1>Requirements — Full Story Backlog</h1>
+    <p class="pm-sub">@Model.Stories.Count of @Model.Stories.Count stories shown · MoSCoW priority · squad ownership</p>
+</header>
+
+<div class="pm-card">
+    <table class="pm-tbl">
+        <thead>
+        <tr><th>ID</th><th>Sprint</th><th>Title</th><th>As a</th><th>Priority</th><th>Points</th><th>Risk</th><th>Squad</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var s in Model.Stories)
+        {
+            var (label, css) = PmHub.MoScow(s.Priority);
+            var squad = PmHub.SquadOfModule(Model, s.Module);
+            <tr>
+                <td><b>@s.Key</b></td>
+                <td>@(sprintOf.TryGetValue(s.Key, out var sn) ? $"S{sn:D2}" : "—")</td>
+                <td>@s.Title</td>
+                <td>@s.AsA</td>
+                <td><span class="pm-badge @css">@label</span></td>
+                <td>@s.Points</td>
+                <td>@s.Risk</td>
+                <td><span class="pm-chip" style="background:@PmHub.SquadColor(squad)">@squad</span></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<div class="pm-card">
+    <h3>Epics</h3>
+    <table class="pm-tbl">
+        <thead><tr><th>Key</th><th>Epic</th><th>Module</th><th>Theme</th><th>Stories</th></tr></thead>
+        <tbody>
+        @foreach (var e in Model.Epics)
+        {
+            <tr>
+                <td><b>@e.Key</b></td>
+                <td>@e.Name — @e.Description</td>
+                <td>@e.Module</td>
+                <td>@e.Theme</td>
+                <td>@Model.Stories.Count(s => s.EpicKey == e.Key)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

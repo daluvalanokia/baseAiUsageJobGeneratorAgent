@@ -40,6 +40,7 @@ public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor inge
         var plan = planner.Plan(options.Name,
             snapshot.SourceType.ToString(), snapshot.SourceName, snapshot.SourceDetail,
             resources, epics, stories, squads, options);
+        plan = planner.AttachArtifacts(plan, snapshot);   // deep source capture: tests, DB scripts, HLD/DDD, issues, milestones
         plan.RoleOutputs = roleOutputs;
         plan.GovernorReportFile = reportPath;
         return plan;

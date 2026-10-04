@@ -1,0 +1,44 @@
+@model SmartAgent.Core.Pm.ProgramPlan
+@using SmartAgent.Core.Pm
+@using SmartAgent.Web.Models
+@{
+    PmLayout.Apply(ViewData, Model);
+    ViewData["PmNav"] = "gantt";
+    Layout = "_PmLayout";
+    var totalWeeks = Math.Max(1, Model.Weeks);
+    var bySprint = Model.SprintPlans.ToList();
+    var milestoneSpints = Model.Milestones.Select(m => m.Sprint).ToHashSet();
+}
+<header>
+    <h1>Gantt Chart — @Model.Sprints Sprints / @Model.Weeks Weeks</h1>
+    <p class="pm-sub">Each bar = 1 sprint (2 weeks) · colored by lead squad · milestones shown as diamonds</p>
+</header>
+
+<div class="gantt">
+    <div class="gantt-quarters">
+        @foreach (var q in Model.Quarters)
+        {
+            var width = (decimal)(q.WeekTo - q.WeekFrom + 1) * 100 / totalWeeks;
+            <div class="gantt-q" style="width:@width.ToString("F2")%">@q.Key @(string.IsNullOrEmpty(q.Release) ? "" : "· " + q.Release)</div>
+        }
+    </div>
+    @foreach (var s in bySprint)
+    {
+        var story = s.StoryKeys.Select(k => Model.Stories.FirstOrDefault(x => x.Key == k)).FirstOrDefault(x => x != null);
+        var squad = story is not null ? PmHub.SquadOfModule(Model, story.Module) : "H";
+        var left = (decimal)(s.StartWeek - 1) * 100 / totalWeeks;
+        var width = (decimal)(s.EndWeek - s.StartWeek + 1) * 100 / totalWeeks;
+        var label = story is not null ? story.Title : s.Goal;
+        <div class="gantt-row">
+            <div class="gantt-label">S@s.Number.ToString("D2") @(label.Length > 34 ? label[..33] + "…" : label)</div>
+            <div class="gantt-track">
+                <div class="gantt-bar" style="left:@left.ToString("F2")%;width:@width.ToString("F2")%;background:@PmHub.SquadColor(squad)"></div>
+                @if (milestoneSpints.Contains(s.Number))
+                {
+                    var mLeft = (decimal)s.EndWeek * 100 / totalWeeks;
+                    <span class="gantt-diamond" style="left:@(mLeft - 0.6m).ToString("F2")%">◆</span>
+                }
+            </div>
+        </div>
+    }
+</div>

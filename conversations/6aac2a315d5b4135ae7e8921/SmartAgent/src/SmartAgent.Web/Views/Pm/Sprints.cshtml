@@ -1,0 +1,38 @@
+@model SmartAgent.Core.Pm.ProgramPlan
+@using SmartAgent.Core.Pm
+@using SmartAgent.Web.Models
+@{
+    PmLayout.Apply(ViewData, Model);
+    ViewData["PmNav"] = "sprints";
+    Layout = "_PmLayout";
+}
+<header>
+    <h1>Sprints</h1>
+    <p class="pm-sub">@Model.Sprints two-week sprints across @Model.Quarters.Count quarters — select a sprint for full engineering detail</p>
+</header>
+
+<div class="pm-picker">
+    <div class="pm-list">
+        @foreach (var s in Model.SprintPlans)
+        {
+            var story = s.StoryKeys.Select(k => Model.Stories.FirstOrDefault(x => x.Key == k)).FirstOrDefault(x => x != null);
+            var squad = story is not null ? PmHub.SquadOfModule(Model, story.Module) : "H";
+            <a asp-controller="Pm" asp-action="Sprint" asp-route-slug="@Model.Slug" asp-route-number="@s.Number">
+                <div class="t">Sprint @s.Number — @(story?.Title ?? s.Goal)</div>
+                <div class="d">
+                    @s.Quarter · @s.Points pts · Weeks @s.StartWeek–@s.EndWeek
+                    <span class="pm-chip" style="background:@PmHub.SquadColor(squad)">@squad</span>
+                    @if (!string.IsNullOrEmpty(s.Milestone))
+                    {
+                        <span class="pm-badge milestone">@s.Milestone</span>
+                    }
+                </div>
+            </a>
+        }
+    </div>
+    <div class="pm-card" style="min-height:300px">
+        <h3>Sprint explorer</h3>
+        <p style="color:#6b7280;font-size:13px">Select a sprint from the list to open its stories, tests, issues,
+            code artifacts, detailed design (DDD) and database scripts.</p>
+    </div>
+</div>

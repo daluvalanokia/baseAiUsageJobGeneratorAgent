@@ -1,0 +1,54 @@
+@using SmartAgent.Web.Models
+@{
+    Layout = null;
+    var info = (PmLayoutInfo)ViewData[PmLayout.Key]!;
+    var slug = info.Slug;
+    var nav = (string?)ViewData["PmNav"] ?? "overview";
+    var navItems = new (string Id, string Label, string Action)[]
+    {
+        ("overview", "Overview", "Hub"),
+        ("gantt", "Gantt Chart", "Gantt"),
+        ("sprints", "Sprints", "Sprints"),
+        ("teams", "Teams", "Teams"),
+        ("requirements", "Requirements", "Requirements"),
+        ("designdocs", "Design Docs", "DesignDocs"),
+        ("dbscripts", "Database Scripts", "DbScripts"),
+        ("testcases", "Test Cases", "TestCases"),
+        ("issues", "Issues", "Issues"),
+        ("releases", "Releases", "Releases")
+    };
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@info.Brand — PM Hub</title>
+    <link rel="stylesheet" href="~/css/pm-hub.css" asp-append-version="true" />
+</head>
+<body>
+<div class="pm-shell">
+    <aside class="pm-sidebar">
+        <div class="pm-brand">
+            <h1>@info.Brand</h1>
+            <span>@info.Years-Year Agile Plan</span>
+        </div>
+        <nav class="pm-nav">
+            @foreach (var item in navItems)
+            {
+                <a asp-controller="Pm" asp-action="@item.Action" asp-route-slug="@slug"
+                   class="@(nav == item.Id ? "active" : "")">@item.Label</a>
+            }
+        </nav>
+        <div class="pm-foot">
+            <b>● @info.PlatformShort</b><br />
+            @info.Sprints Sprints · @info.Weeks Weeks<br />
+            @info.Team Team Members
+        </div>
+    </aside>
+    <main class="pm-main">
+        @RenderBody()
+    </main>
+</div>
+</body>
+</html>

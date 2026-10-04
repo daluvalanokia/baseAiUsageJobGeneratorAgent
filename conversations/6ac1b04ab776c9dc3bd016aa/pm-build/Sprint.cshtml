@@ -1,0 +1,225 @@
+@model SmartAgent.Web.Models.PmSprintPage
+@using SmartAgent.Web.Models
+@using SmartAgent.Core.Pm
+@using SmartAgent.Web.Models
+@{
+    PmLayout.Apply(ViewData, Model.Plan);
+    var plan = Model.Plan;
+    var sprint = Model.Sprint;
+    ViewData["PmNav"] = "sprints";
+    Layout = "_PmLayout";
+    var detail = sprint.Detail;
+    var stories = sprint.StoryKeys.Select(k => plan.Stories.FirstOrDefault(x => x.Key == k))
+        .Where(x => x != null).Cast<PmStory>().ToList();
+    var squads = stories.Select(s => PmHub.SquadOfModule(plan, s.Module)).Distinct().ToList();
+    var slug = plan.Slug;
+    var n = sprint.Number;
+}
+<header>
+    <h1>Sprint @n — @(stories.FirstOrDefault()?.Title ?? sprint.Goal)</h1>
+    <p class="pm-sub">@sprint.Quarter — @(plan.Quarters.FirstOrDefault(q => q.Key == sprint.Quarter)?.Theme ?? "")
+        | @sprint.Points points | Weeks @sprint.StartWeek–@sprint.EndWeek | Squads: @string.Join(", ", squads)
+        @if (!string.IsNullOrEmpty(sprint.Milestone))
+        {<span class="pm-badge rel">@sprint.Milestone</span>}</p>
+</header>
+
+<div class="pm-tabs">
+    <span class="active">Overview</span>
+    <a href="#stories">Stories</a>
+    <a href="#tests">Tests</a>
+    <a href="#issues">Issues</a>
+    <a href="#code">Code</a>
+    <a href="#ddd">DDD</a>
+    <a href="#dbscripts">DB Scripts</a>
+</div>
+
+@if (detail is not null)
+{
+    <div class="pm-cols">
+        <div class="pm-card">
+            <h3>Implementation Checklist</h3>
+            <ul class="checklist">
+                @foreach (var c in detail.ImplChecklist)
+                {
+                    <li>@c</li>
+                }
+            </ul>
+        </div>
+        <div class="pm-card">
+            <h3>High-Level Design — @detail.Hld.ModuleName</h3>
+            <p style="font-size:12.5px;margin:0 0 8px">@detail.Hld.Purpose</p>
+            <p style="font-size:11px;color:#6b7280;margin:6px 0 2px"><b>COMPONENTS</b></p>
+            <ul style="font-size:12px;padding-left:18px;margin:4px 0">@foreach (var c in detail.Hld.Components)
+            { <li>@c</li> }</ul>
+            <p style="font-size:11px;color:#6b7280;margin:6px 0 2px"><b>EXTERNAL DEPENDENCIES</b></p>
+            @foreach (var d in detail.Hld.ExternalDeps)
+            {
+                <span class="dep-pill">@d</span>
+            }
+            <p style="font-size:11px;color:#6b7280;margin:6px 0 2px"><b>NFRS</b></p>
+            <ul style="font-size:12px;padding-left:18px;margin:4px 0">@foreach (var x in detail.Hld.Nfrs)
+            { <li>@x</li> }</ul>
+        </div>
+    </div>
+}
+
+<a id="stories"></a>
+<div class="pm-card">
+    <h3>Stories (@stories.Count)</h3>
+    <table class="pm-tbl">
+        <thead><tr><th>ID</th><th>Title</th><th>As a / I want / So that</th><th>Priority</th><th>Points</th><th>Squad</th><th>AC</th></tr></thead>
+        <tbody>
+        @foreach (var s in stories)
+        {
+            var (label, css) = PmHub.MoScow(s.Priority);
+            <tr>
+                <td><b>@s.Key</b></td>
+                <td>@s.Title</td>
+                <td>As a @s.AsA I want @s.IWant so that @s.SoThat</td>
+                <td><span class="pm-badge @css">@label</span></td>
+                <td>@s.Points</td>
+                <td><span class="pm-chip" style="background:@PmHub.SquadColor(PmHub.SquadOfModule(plan, s.Module))">@PmHub.SquadOfModule(plan, s.Module)</span></td>
+                <td>@string.Join(" · ", s.AcceptanceCriteria)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<a id="tests"></a>
+@if (detail is not null)
+{
+    <div class="pm-card">
+        <h3>Unit Tests (@detail.UnitTests.Count)</h3>
+        <table class="pm-tbl">
+            <thead><tr><th>ID</th><th>Class</th><th>Method</th><th>Scenario</th><th>Expected</th></tr></thead>
+            <tbody>
+            @foreach (var t in detail.UnitTests)
+            {
+                <tr><td><b>@t.Id</b></td><td>@t.Cls</td><td>@t.Method</td><td>@t.Scenario</td><td>@t.Expected</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="pm-card">
+        <h3>System Tests (@detail.SystemTests.Count)</h3>
+        <table class="pm-tbl">
+            <thead><tr><th>ID</th><th>Feature</th><th>Precondition</th><th>Steps</th><th>Expected</th><th>Env</th></tr></thead>
+            <tbody>
+            @foreach (var t in detail.SystemTests)
+            {
+                <tr><td><b>@t.Id</b></td><td>@t.Feature</td><td>@t.Precondition</td><td>@t.Steps</td><td>@t.Expected</td><td>@t.Env</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+<a id="issues"></a>
+@if (detail is not null)
+{
+    <div class="pm-card">
+        <h3>Issues (@detail.Issues.Count)</h3>
+        <table class="pm-tbl">
+            <thead><tr><th>ID</th><th>Severity</th><th>Component</th><th>Description</th><th>Reporter</th><th>Assignee</th><th>Status</th></tr></thead>
+            <tbody>
+            @foreach (var i in detail.Issues)
+            {
+                <tr>
+                    <td><b>@i.Id</b></td>
+                    <td><span class="pm-badge @i.Severity.ToLowerInvariant()">@i.Severity</span></td>
+                    <td>@i.Component</td><td>@i.Description</td><td>@i.Reporter</td><td>@i.Assignee</td>
+                    <td><span class="pm-badge @(i.Status == "Open" ? "open" : i.Status == "Resolved" ? "resolved" : "progress")">@i.Status</span></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+<a id="code"></a>
+@if (detail is not null)
+{
+    <div class="pm-card">
+        <h3>Code Artifacts — cumulative @detail.CodeArtifacts.CumulativeCount files</h3>
+        <div class="pm-cols">
+            <div>
+                <h4 style="font-size:11px;color:#6b7280;text-transform:uppercase">New Files (@detail.CodeArtifacts.NewFiles.Count)</h4>
+                <ul style="font-size:11.5px;padding-left:16px;max-height:220px;overflow:auto">
+                    @foreach (var f in detail.CodeArtifacts.NewFiles)
+                    {
+                        <li><code>@f</code></li>
+                    }
+                </ul>
+            </div>
+            <div>
+                <h4 style="font-size:11px;color:#6b7280;text-transform:uppercase">Modified Files (@detail.CodeArtifacts.ModifiedFiles.Count)</h4>
+                <ul style="font-size:11.5px;padding-left:16px;max-height:220px;overflow:auto">
+                    @foreach (var f in detail.CodeArtifacts.ModifiedFiles)
+                    {
+                        <li><code>@f</code></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+}
+
+<a id="ddd"></a>
+@if (detail is not null)
+{
+    <div class="pm-card">
+        <h3>Detailed Design (DDD + Pseudo-code) — @detail.Hld.ModuleName</h3>
+        <div class="db-cols">
+            <div class="db-panel">
+                <h4>Pseudo-code</h4>
+                <pre class="pm-code">@detail.Ddd.PseudoCode</pre>
+                <h4 style="margin-top:10px">Data Flow</h4>
+                <p style="font-size:12px;margin:4px 0">@detail.Ddd.DataFlow</p>
+                <h4 style="margin-top:10px">Error Handling</h4>
+                <p style="font-size:12px;margin:4px 0">@detail.Ddd.ErrorHandling</p>
+                <h4 style="margin-top:10px">Config Dependencies</h4>
+                @foreach (var c in detail.Ddd.ConfigDeps)
+                {
+                    <span class="dep-pill">@c</span>
+                }
+            </div>
+            <div class="db-panel">
+                <h4>Sequence</h4>
+                @foreach (var step in detail.Ddd.Sequence)
+                {
+                    <div class="seq-step">
+                        <b>@step.From</b><span class="arrow">→</span><b>@step.To</b>
+                        <span style="color:#6b7280">(@step.Label)@(step.IsReturn ? " ↩" : "")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<a id="dbscripts"></a>
+@if (detail?.DbScript is { } db)
+{
+    <div class="pm-card">
+        <h3>Database Scripts — @db.MigrationClass</h3>
+        <div class="db-cols">
+            <div class="db-panel">
+                <h4 style="color:#1e3a8a">@db.PrimaryLabel</h4>
+                <pre class="pm-code">@db.PrimaryDdl</pre>
+                <h4 style="margin-top:8px;color:#1e3a8a">Rollback (primary)</h4>
+                <pre class="pm-code">@db.RollbackPrimary</pre>
+                <h4 style="margin-top:8px;color:#1e3a8a">Seed DML (primary)</h4>
+                <pre class="pm-code">@db.SeedDmlPrimary</pre>
+            </div>
+            <div class="db-panel">
+                <h4 style="color:#7c2d12">@db.SecondaryLabel</h4>
+                <pre class="pm-code">@db.SecondaryDdl</pre>
+                <h4 style="margin-top:8px;color:#7c2d12">Rollback (alternate)</h4>
+                <pre class="pm-code">@db.RollbackSecondary</pre>
+                <h4 style="margin-top:8px;color:#7c2d12">Seed DML (alternate)</h4>
+                <pre class="pm-code">@db.SeedDmlSecondary</pre>
+            </div>
+        </div>
+    </div>
+}

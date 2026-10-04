@@ -1,0 +1,74 @@
+@model SmartAgent.Web.Models.PmSprintPickerPage
+@using SmartAgent.Web.Models
+@using SmartAgent.Core.Pm
+@using SmartAgent.Web.Models
+@{
+    PmLayout.Apply(ViewData, Model.Plan);
+    var plan = Model.Plan;
+    var n = Model.SprintNumber;
+    ViewData["PmNav"] = "dbscripts";
+    Layout = "_PmLayout";
+    var sprint = plan.SprintPlans.FirstOrDefault(s => s.Number == n) ?? plan.SprintPlans[0];
+    var db = sprint.Detail?.DbScript;
+    var platform = plan.Platform;
+}
+<header>
+    <h1>Database Scripts</h1>
+    <p class="pm-sub">
+        @(platform?.ShortName ?? "Platform") · @(platform?.PrimaryDb ?? "Primary DB") + @(platform?.SecondaryDb ?? "Alternate DB")
+        · @plan.SprintPlans.Count(s => s.Detail?.DbScript is not null) migrations
+    </p>
+</header>
+
+<div class="pm-picker">
+    <div class="pm-list">
+        @foreach (var s in plan.SprintPlans)
+        {
+            <a asp-controller="Pm" asp-action="DbScripts" asp-route-slug="@plan.Slug" asp-route-number="@s.Number"
+               class="@(s.Number == sprint.Number ? "active" : "")">
+                <div class="t">S@s.Number.ToString("D2") @(s.Detail?.DbScript?.MigrationClass ?? "")</div>
+                <div class="d">@s.Quarter · @(s.Detail?.DbScript is null ? "no script" : "forward + rollback")</div>
+            </a>
+        }
+    </div>
+
+    <div>
+        @if (db is not null)
+        {
+            <div class="pm-card">
+                <h3>@db.MigrationClass · Forward Migration</h3>
+                <div class="db-cols">
+                    <div class="db-panel">
+                        <h4 style="color:#1e3a8a">@db.PrimaryLabel</h4>
+                        <pre class="pm-code">@db.PrimaryDdl</pre>
+                    </div>
+                    <div class="db-panel">
+                        <h4 style="color:#7c2d12">@db.SecondaryLabel</h4>
+                        <pre class="pm-code">@db.SecondaryDdl</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="pm-card">
+                <h3>Rollback</h3>
+                <div class="db-cols">
+                    <div class="db-panel">
+                        <h4 style="color:#1e3a8a">Primary rollback</h4>
+                        <pre class="pm-code">@db.RollbackPrimary</pre>
+                    </div>
+                    <div class="db-panel">
+                        <h4 style="color:#7c2d12">Alternate rollback</h4>
+                        <pre class="pm-code">@db.RollbackSecondary</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="pm-card">
+                <h3>Seed DML</h3>
+                <pre class="pm-code">@db.SeedDmlPrimary</pre>
+            </div>
+        }
+        else
+        {
+            <div class="pm-card"><h3>No script for this sprint</h3></div>
+        }
+    </div>
+</div>

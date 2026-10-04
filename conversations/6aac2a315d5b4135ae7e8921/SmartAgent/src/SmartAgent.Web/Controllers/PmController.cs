@@ -52,6 +52,88 @@ public sealed class PmController(
     }
 
     [HttpGet]
+    public IActionResult Gantt(string slug)
+    {
+        var plan = programStore.Load(slug);
+        if (plan is null) return NotFound($"No program '{slug}'. Generate one from /Pm.");
+        return View(plan);
+    }
+
+    [HttpGet]
+    public IActionResult Sprints(string slug)
+    {
+        var plan = programStore.Load(slug);
+        if (plan is null) return NotFound($"No program '{slug}'. Generate one from /Pm.");
+        return View(plan);
+    }
+
+    [HttpGet]
+    public IActionResult Sprint(string slug, int number)
+    {
+        var plan = programStore.Load(slug);
+        if (plan is null) return NotFound($"No program '{slug}'. Generate one from /Pm.");
+        var sprint = plan.SprintPlans.FirstOrDefault(s => s.Number == number) ?? plan.SprintPlans.FirstOrDefault();
+        if (sprint is null) return NotFound($"No sprint {number} in '{slug}'.");
+        return View(new PmSprintPage(plan, sprint));
+    }
+
+    [HttpGet]
+    public IActionResult Teams(string slug)
+    {
+        var plan = programStore.Load(slug);
+        if (plan is null) return NotFound($"No program '{slug}'. Generate one from /Pm.");
+        return View(plan);
+    }
+
+    [HttpGet]
+    public IActionResult Requirements(string slug)
+    {
+        var plan = programStore.Load(slug);
+        if (plan is null) return NotFound($"No program '{slug}'. Generate one from /Pm.");
+        return View(plan);
+    }
+
+    [HttpGet]
+    public IActionResult DesignDocs(string slug, int number)
+    {
+        var plan = programStore.Load(slug);
+        if (plan is null) return NotFound($"No program '{slug}'. Generate one from /Pm.");
+        return View(new PmSprintPickerPage(plan, number < 1 ? 1 : number));
+    }
+
+    [HttpGet]
+    public IActionResult DbScripts(string slug, int number)
+    {
+        var plan = programStore.Load(slug);
+        if (plan is null) return NotFound($"No program '{slug}'. Generate one from /Pm.");
+        return View(new PmSprintPickerPage(plan, number < 1 ? 1 : number));
+    }
+
+    [HttpGet]
+    public IActionResult TestCases(string slug)
+    {
+        var plan = programStore.Load(slug);
+        if (plan is null) return NotFound($"No program '{slug}'. Generate one from /Pm.");
+        return View(plan);
+    }
+
+    [HttpGet]
+    public IActionResult Issues(string slug)
+    {
+        var plan = programStore.Load(slug);
+        if (plan is null) return NotFound($"No program '{slug}'. Generate one from /Pm.");
+        return View(plan);
+    }
+
+    [HttpGet]
+    public IActionResult Releases(string slug)
+    {
+        var plan = programStore.Load(slug);
+        if (plan is null) return NotFound($"No program '{slug}'. Generate one from /Pm.");
+        return View(plan);
+    }
+
+    [HttpGet]
     public IActionResult Programs()
     {
         ViewBag.Programs = programStore.All();

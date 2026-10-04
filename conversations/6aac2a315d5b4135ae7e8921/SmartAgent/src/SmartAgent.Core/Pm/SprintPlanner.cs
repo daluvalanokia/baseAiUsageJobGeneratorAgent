@@ -6,7 +6,7 @@ namespace SmartAgent.Core.Pm;
 /// release milestones, and a full budget from RACI-weighted resource
 /// engagement.
 /// </summary>
-public sealed class SprintPlanner
+public sealed partial class SprintPlanner
 {
     private static readonly string[] Year1Themes = { "Foundation & Auth", "Core Domain", "Integration & API", "Hardening & RC" };
     private static readonly string[] YearNThemes = { "Scale & Optimization", "Advanced Features", "Platform Extensions", "Sustain & GA" };

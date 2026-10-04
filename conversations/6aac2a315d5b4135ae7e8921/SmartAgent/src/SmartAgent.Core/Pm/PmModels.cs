@@ -138,7 +138,9 @@ public sealed record PmSprint
     public int CapacityPoints { get; init; }
     public decimal BudgetUsd { get; init; }
     public string Release { get; init; } = string.Empty;
+    public string Milestone { get; init; } = string.Empty;
     public string Status { get; init; } = "planned";
+    public PmSprintDetail? Detail { get; init; }
     public IReadOnlyDictionary<string, decimal> EngagedHours { get; init; } =
         new Dictionary<string, decimal>();
 }
@@ -201,6 +203,8 @@ public sealed class ProgramPlan
     public int TotalStoryPoints { get; set; }
     public int UserStoryCount { get; set; }
     public int TestCaseCount { get; set; }
+    public int UnitTestCount { get; set; }
+    public int SystemTestCount { get; set; }
     public DateOnly ProgramStart { get; set; }
     public DateOnly ProgramEnd { get; set; }
 
@@ -211,6 +215,11 @@ public sealed class ProgramPlan
     public IReadOnlyList<PmSprint> SprintPlans { get; set; } = Array.Empty<PmSprint>();
     public IReadOnlyList<PmQuarter> Quarters { get; set; } = Array.Empty<PmQuarter>();
     public PmBudget Budget { get; set; } = new();
+    public PmPlatform? Platform { get; set; }
+    public IReadOnlyList<PmMilestone> Milestones { get; set; } = Array.Empty<PmMilestone>();
+    public IReadOnlyList<PmUnitTestCase> UnitTests { get; set; } = Array.Empty<PmUnitTestCase>();
+    public IReadOnlyList<PmSystemTest> SystemTests { get; set; } = Array.Empty<PmSystemTest>();
+    public IReadOnlyList<PmIssue> IssueRegister { get; set; } = Array.Empty<PmIssue>();
     public Dictionary<string, string> RoleOutputs { get; set; } = new();  // role → threaded deliverable
     public string GovernorReportFile { get; set; } = string.Empty;
 }

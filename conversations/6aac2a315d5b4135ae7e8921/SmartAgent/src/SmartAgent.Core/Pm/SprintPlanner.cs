@@ -78,12 +78,16 @@ public sealed partial class SprintPlanner
         var quarters = BuildQuarters(quarterCount, sprintCount);
         var sprints = BuildSprints(sprintCount, quarters, start, options.SprintLengthWeeks);
 
-        // ── even, squad-aware distribution across the multi-year horizon ──
-        // Priority order is preserved (foundation early, hardening last) while
-        // stories are placed proportionally across delivery sprints, so the
-        // whole program resolves into populated sprints instead of one
-        // overloaded sprint. Stabilization sprints (every 6th) stay clear and
-        // the final sprints carry the hardening/release train.
+                // ── phase-banded, squad-aware distribution across the horizon ──
+        // The program resolves into explicit delivery phases, so any source
+        // becomes a truthful long-horizon plan:
+        //   1. framework  — base framework code generation (scaffold, auth, tooling)
+        //   2. build      — basic module functionality in vertical slices:
+        //                   one module's database + server + controllers + frontend
+        //                   changes land in the same sprint wave
+        //   3. enhance    — field extensions & history-detected change patterns
+        //   4. release    — hardening & GA train on the tail sprints
+        // Stabilization sprints (every 6th) stay clear of new work.
         var themeOf = epics.ToDictionary(e => e.Key, e => e.Theme, StringComparer.Ordinal);
         var squadOf = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var squad in squads)
@@ -91,25 +95,79 @@ public sealed partial class SprintPlanner
                 if (!squadOf.ContainsKey(eKey)) squadOf[eKey] = squad.Key;
         foreach (var e in epics)
             if (!squadOf.ContainsKey(e.Key)) squadOf[e.Key] = e.Squad;   // fallback for shared/unassigned epics
-        var delivery = stories
-            .Where(s => themeOf.GetValueOrDefault(s.EpicKey, "Core") != "Release")
+        var phases = stories.Select(s => s.Phase).DefaultIfEmpty("build").Distinct().ToList();
+        var releaseTrain = stories
+            .Where(s => themeOf.GetValueOrDefault(s.EpicKey, "Core") == "Release" || s.Phase == "release")
+            .ToList();
+        var framework = stories.Where(s => s.Phase == "framework")
+            .OrderByDescending(s => s.Priority).ToList();
+        var build = stories.Where(s => s.Phase == "build" || s.Phase == string.Empty)
             .OrderByDescending(s => s.Priority).ThenBy(s => s.Risk == "High" ? 0 : 1).ThenBy(s => s.Key)
             .ToList();
-        var releaseTrain = stories
-            .Where(s => themeOf.GetValueOrDefault(s.EpicKey, "Core") == "Release")
-            .ToList();
+        var enhance = stories.Where(s => s.Phase == "enhance")
+            .OrderByDescending(s => s.Priority).ToList();
+
         var reserveCount = Math.Clamp(sprints.Count / 13, 1, 4);          // tail sprints: hardening/release train
-        var eligible = Enumerable.Range(0, sprints.Count - reserveCount)
-            .Where(i => i % 6 != 5)                                        // skip stabilization sprints
-            .ToList();
+        var deliverable = sprints.Count - reserveCount;
+        var frameworkEnd = Math.Clamp((int)Math.Round(deliverable * 0.12), 2, 10);
+        var enhanceCount = phases.Contains("enhance") ? Math.Clamp((int)Math.Round(deliverable * 0.4), 2, deliverable) : 0;
+        var enhanceStart = deliverable - enhanceCount;
+        List<int> Band(int from, int toExclusive) =>
+            Enumerable.Range(from, Math.Max(0, toExclusive - from)).Where(i => i % 6 != 5).ToList();
+
         var assignments = sprints.Select(_ => new List<PmStory>()).ToList();
-        for (var j = 0; j < delivery.Count; j++)
-            assignments[eligible[Math.Min(eligible.Count - 1, j * eligible.Count / Math.Max(1, delivery.Count))]].Add(delivery[j]);
+        var phasesOf = sprints.Select(_ => "").ToList();
+        foreach (var i in Enumerable.Range(0, sprints.Count))
+            phasesOf[i] = i % 6 == 5 ? "stabilization" : "";
+
+        // framework band: scaffold stories first, then move on
+        var fwCursor = 0;
+        foreach (var i in Band(0, frameworkEnd))
+        {
+            phasesOf[i] = "framework";
+            if (fwCursor < framework.Count)
+                assignments[i].Add(framework[fwCursor++]);
+        }
+        if (fwCursor < framework.Count)   // overflow joins the build band
+            build = framework.Skip(fwCursor).Concat(build).ToList();
+
+        // build band: vertical module slices — up to 3 stories of the same module per sprint
+        var buildCursor = 0;
+        var wave = new List<PmStory>();
+        foreach (var i in Band(frameworkEnd, enhanceStart))
+        {
+            phasesOf[i] = "build";
+            while (buildCursor < build.Count && wave.Count < 3
+                   && (wave.Count == 0 || wave[0].Module == build[buildCursor].Module))
+                wave.Add(build[buildCursor++]);
+            if (wave.Count > 0)
+            {
+                assignments[i].AddRange(wave);
+                wave.Clear();
+            }
+        }
+        if (build.Count > buildCursor)   // overflow joins the enhance band
+            enhance = build.Skip(buildCursor).Concat(enhance).ToList();
+
+        // enhance band: field extensions & change-pattern stories
+        var enhanceCursor = 0;
+        foreach (var i in Band(enhanceStart, deliverable))
+        {
+            phasesOf[i] = "enhance";
+            if (enhanceCursor < enhance.Count)
+                assignments[i].Add(enhance[enhanceCursor++]);
+        }
+
+        // release train on the tail sprints
         var reserve = Enumerable.Range(sprints.Count - reserveCount, reserveCount).ToList();
         for (var j = 0; j < releaseTrain.Count && reserve.Count > 0; j++)
-            assignments[reserve[Math.Min(reserve.Count - 1, j * reserve.Count / Math.Max(1, releaseTrain.Count))]].Add(releaseTrain[j]);
+        {
+            var i = reserve[Math.Min(reserve.Count - 1, j * reserve.Count / Math.Max(1, releaseTrain.Count))];
+            assignments[i].Add(releaseTrain[j]);
+            phasesOf[i] = "release";
+        }
 
-        // RACI-weighted engagement & budget
+// RACI-weighted engagement & budget
         var engagement = resources.ToDictionary(r => r.Key,
             r => Math.Round(r.HoursPerSprint * RaciChart.EngagementFactor(r), 1));
         var sprintBudget = Math.Round(resources.Sum(r => engagement[r.Key] * r.HourlyRate), 0);
@@ -118,16 +176,21 @@ public sealed partial class SprintPlanner
         {
             var q = quarters.First(q => sprints[i].Number >= q.SprintFrom && sprints[i].Number <= q.SprintTo);
             var planned = assignments[i];
+            var phaseLabel = planned.Count > 0 ? phasesOf[i] : phasesOf[i] is "" or "stabilization" ? "stabilization" : phasesOf[i];
+            var layerSpan = planned.Count > 0
+                ? string.Join("/", planned.Select(x => x.Layer).Where(l => l.Length > 0).Distinct().Take(3))
+                : "";
             sprintPlans.Add(sprints[i] with
             {
                 StoryKeys = planned.Select(s => s.Key).ToList(),
                 Points = planned.Sum(s => s.Points),
                 CapacityPoints = i % 6 == 5 ? velocity / 2 : velocity,
                 BudgetUsd = sprintBudget,
+                Phase = phaseLabel,
                 Goal = planned.Count > 0
-                    ? $"Squads {string.Join("+", planned.Select(x => squadOf.GetValueOrDefault(x.EpicKey, "A")).Distinct())}: "
-                     + $"deliver {planned.Count} stories ({planned.Sum(s => s.Points)} pts) — {planned[0].Module}: {Truncate(planned[0].Title, 60)}"
-                    : $"Stabilization, hardening & {q.Theme.ToLowerInvariant()} readiness",
+                    ? $"[{phaseLabel}] Squads {string.Join("+", planned.Select(x => squadOf.GetValueOrDefault(x.EpicKey, "A")).Distinct())}: "
+                     + $"{planned.Count} stories ({planned.Sum(s => s.Points)} pts, {layerSpan}) — {planned[0].Module}: {Truncate(planned[0].Title, 60)}"
+                    : $"[{phaseLabel}] Stabilization, hardening & {q.Theme.ToLowerInvariant()} readiness",
                 Release = q.Release
             });
         }

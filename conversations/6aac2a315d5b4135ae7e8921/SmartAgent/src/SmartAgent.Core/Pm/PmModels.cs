@@ -120,6 +120,10 @@ public sealed record PmStory
     public IReadOnlyList<string> AcceptanceCriteria { get; init; } = Array.Empty<string>();
     public string Module { get; init; } = string.Empty;
     public int TestCaseCount { get; init; }
+    /// <summary>Architecture layer: Database, Data Adapter, Controllers, Frontend, Server, Framework.</summary>
+    public string Layer { get; init; } = string.Empty;
+    /// <summary>Delivery phase: framework, build, enhance or release.</summary>
+    public string Phase { get; init; } = "build";
 }
 
 /// <summary>One 2-week sprint in the multi-year program.</summary>
@@ -140,6 +144,8 @@ public sealed record PmSprint
     public string Release { get; init; } = string.Empty;
     public string Milestone { get; init; } = string.Empty;
     public string Status { get; init; } = "planned";
+    /// <summary>Delivery phase of this sprint: framework, build, enhance, release or stabilization.</summary>
+    public string Phase { get; init; } = string.Empty;
     public PmSprintDetail? Detail { get; init; }
     public IReadOnlyDictionary<string, decimal> EngagedHours { get; init; } =
         new Dictionary<string, decimal>();

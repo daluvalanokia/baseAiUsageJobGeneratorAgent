@@ -69,13 +69,14 @@ public sealed partial class RequirementIngestor
         }
 
         void AddStory(PmEpic epic, string title, string asA, string want, string soThat,
-            int points, int priority, string risk, string[] ac)
+            int points, int priority, string risk, string[] ac,
+            string layer = "", string phase = "build")
         {
             storyNo++;
             stories.Add(new PmStory { Key = $"US-{storyNo:D3}", EpicKey = epic.Key, Title = title,
                 AsA = asA, IWant = want, SoThat = soThat, Points = points, Priority = priority,
                 Risk = risk, Module = epic.Module, TestCaseCount = Math.Max(2, points * 2),
-                AcceptanceCriteria = ac });
+                AcceptanceCriteria = ac, Layer = layer, Phase = phase });
         }
 
         // E01: foundation & auth — always first
@@ -87,11 +88,20 @@ public sealed partial class RequirementIngestor
         AddStory(foundation, "Solution bootstrap & repository structure",
             "developer", "a versioned solution skeleton with buildable projects and CI",
             "every squad can start from green", 8, 100, "Medium",
-            new[] { "Solution builds on .NET 8", "CI pipeline green on main", "README documents build" });
+            new[] { "Solution builds on .NET 8", "CI pipeline green on main", "README documents build" },
+            "Framework", "framework");
         AddStory(foundation, "Authentication & user management",
             "product owner", "authentication with role-based access for all user personas",
             "access is governed end to end", 13, 95, "High",
-            new[] { "Login/logout works for all roles", "Roles enforced server-side", "Password reset flow" });
+            new[] { "Login/logout works for all roles", "Roles enforced server-side", "Password reset flow" },
+            "Framework", "framework");
+        AddStory(foundation, "Base framework code generation & tooling",
+            "developer", "scaffolding, shared libraries and code-generation templates",
+            "every module is generated from the same base", 8, 92, "Medium",
+            new[] { "Module templates generate a working vertical slice",
+                    "Shared validation, logging and error handling are wired in",
+                    "Generated code passes lint and build gates" },
+            "Framework", "framework");
 
         // one epic per detected module: domain + in-depth source review
         var priority = 90;
@@ -118,20 +128,52 @@ public sealed partial class RequirementIngestor
                 ? $"{fileCount} source files, {moduleClasses.Count} analyzed types "
                   + $"({controllers.Count} controllers, {entities.Count} domain types, {services.Count} service types)"
                 : $"{fileCount} source files";
+            var layers = moduleFiles.Select(f => SourceAnalyzer.LayerOf(f.Path)).Distinct().ToList();
             AddEpic($"{module} core domain", module, theme,
-                $"Implement the {module} domain model, services and contracts ({profile} in scope)");
+                $"Implement the {module} domain model, services and contracts ({profile} in scope; "
+                + $"layers: {string.Join(", ", layers)})");
             var points = ClampFibonacci((int)Math.Ceiling(fileCount / 2.0));
-            AddStory(epics[^1], $"{module} domain model & services",
+            var isMvc = moduleFiles.Any(f => f.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase));
+            // server side layer
+            AddStory(epics[^1], $"{module} server-side domain & services",
                 "user", $"working {module} domain logic with persistence",
                 $"{module} functionality is delivered incrementally", points, priority, "Medium",
-                new[] { $"Domain model for {module} implemented", $"Unit tests cover core rules", "API/UI consumes the domain" });
-            var isMvc = moduleFiles.Any(f => f.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase));
+                new[] { $"Domain model for {module} implemented", $"Unit tests cover core rules", "API/UI consumes the domain" },
+                "Server", "build");
+            // data adapter layer
+            if (layers.Contains("Data Adapter") || entities.Count > 0)
+                AddStory(epics[^1], $"{module} data adapter & persistence layer",
+                    "developer", $"repository/DbContext and data-access contracts for {module}",
+                    "server code is decoupled from storage", ClampFibonacci(3 + entities.Count), priority - 3, "Medium",
+                    new[] { $"{module} entities mapped through the data adapter",
+                            "Query contracts return deterministic results",
+                            "Connection and transaction handling covered by tests" },
+                    "Data Adapter", "build");
+            // controllers / actions layer
+            if (controllers.Count > 0 || isMvc)
+                AddStory(epics[^1], $"{module} controllers & actions",
+                    "user", $"request handling for {module} with validation and auth guards",
+                    $"{module} is reachable and safe end to end", ClampFibonacci(2 + controllers.Count), priority - 4, "High",
+                    new[] { $"All {module} actions validate input and enforce auth",
+                            "Action results follow the platform conventions",
+                            "Error paths return correct status codes" },
+                    "Controllers", "build");
+            // frontend layer
             if (isUi)
                 AddStory(epics[^1],
-                    isMvc ? $"{module} MVC views & controllers" : $"{module} UI screens & interaction",
+                    isMvc ? $"{module} MVC views & forms" : $"{module} UI screens & interaction",
                     "user", $"{(isMvc ? "MVC screens" : "UI screens")} for {module} with validation",
                     $"{module} is usable end to end", ClampFibonacci(points / 2), priority - 5, "Medium",
-                    new[] { $"Views render with model validation", "Auth guards all actions", "Navigation and error states handled" });
+                    new[] { $"Views render with model validation", "Auth guards all actions", "Navigation and error states handled" },
+                    "Frontend", "build");
+            // database scripts layer
+            if (layers.Contains("Database"))
+                AddStory(epics[^1], $"{module} database scripts & schema",
+                    "database admin", $"versioned DDL and seed scripts for {module}",
+                    $"{module} environments rebuild deterministically", 5, priority - 6, "Medium",
+                    new[] { $"Tables and constraints scripted for {module}",
+                            "Seed data idempotent", "Rollback documented" },
+                    "Database", "build");
 
             // ── in-depth review: class-grounded feature slices ──
             var p = priority - 2;
@@ -174,8 +216,10 @@ public sealed partial class RequirementIngestor
                         "Repeat calls stay idempotent"
                     };
                 }
+                var sliceLayer = cls.Kind is "Controller" or "Hub" ? "Controllers"
+                    : cls.Kind == "Entity" ? "Data Adapter" : "Server";
                 AddStory(epics[^1], title, "user", want, $"{cls.Name} is production-grade",
-                    points2, Math.Max(15, p), cls.Kind == "Controller" ? "High" : "Medium", ac);
+                    points2, Math.Max(15, p), cls.Kind == "Controller" ? "High" : "Medium", ac, sliceLayer);
                 p -= 2;
             }
 
@@ -194,7 +238,9 @@ public sealed partial class RequirementIngestor
                         ClampFibonacci(3 + f.Content.Length / 4000), Math.Max(15, p), "Medium",
                         new[] { $"{topic} behavior implemented per the source contract",
                                 "Edge cases and error states handled",
-                                "Covered by unit + integration tests" });
+                                "Covered by unit + integration tests" },
+                        SourceAnalyzer.LayerOf(f.Path) is "Frontend" or "Controllers" or "Database" or "Data Adapter"
+                            ? SourceAnalyzer.LayerOf(f.Path) : "Server");
                     p -= 2;
                 }
 
@@ -204,9 +250,57 @@ public sealed partial class RequirementIngestor
                 $"{module} regressions surface before release", 5, Math.Max(15, priority - 8), "Medium",
                 new[] { $"{module} contracts asserted against consumers",
                         "Critical paths integration-tested in CI",
-                        "Contract drift breaks the build" });
+                        "Contract drift breaks the build" }, "Server");
 
             priority = Math.Max(20, priority - 10);
+        }
+
+        // ── enhancement wave: real change patterns from repository history ──
+        // Commits reveal where the source actually evolves; each recurring
+        // (module, layer) pattern becomes a Year-2 enhancement story so the
+        // plan stretches across the horizon with grounded change work.
+        var patterns = new SourceAnalyzer().ChangePatterns(snapshot)
+            .Where(p => modules.Contains(p.Module, StringComparer.OrdinalIgnoreCase))
+            .Take(10).ToList();
+        var enhanceEpic = new PmEpic { Key = $"E{epicNo + 1:D2}", Name = "Field & Enhancement Waves",
+            Module = modules[0], Theme = "Core",
+            Description = "Year-2 enhancement waves derived from the repository's own commit "
+                + $"history ({snapshot.History.Count} commits reviewed): field extensions, "
+                + "feature polish and change patterns per module" };
+        epics.Add(enhanceEpic);
+        epicNo++;
+        var enhancePriority = 52;
+        foreach (var pattern in patterns.Where(p => p.Commits >= 1))
+        {
+            if (stories.Count >= MaxStories) break;
+            var headline = pattern.Headline.Length > 70 ? pattern.Headline[..67] + "..." : pattern.Headline;
+            AddStory(enhanceEpic, $"Enhance {pattern.Module} ({pattern.Layer.ToLowerInvariant()}): {headline}",
+                "user", $"the '{headline}' change pattern carried into the rebuild",
+                $"{pattern.Module} keeps evolving the way the source did", ClampFibonacci(3 + pattern.Commits),
+                Math.Max(30, enhancePriority), "Medium",
+                new[] { $"Change wave mirrors the source pattern '{headline}' ({pattern.Commits} commits touched {pattern.Layer.ToLowerInvariant()} code)",
+                        $"Touched paths covered: {string.Join(", ", pattern.Examples.Take(2))}",
+                        $"Regression tests prove the enhanced {pattern.Layer.ToLowerInvariant()} behavior",
+                        "Frontend, server and database components updated together" },
+                pattern.Layer, "enhance");
+            enhancePriority -= 2;
+        }
+        // field extensions: extend each data-bearing module with new fields end to end
+        var fieldModules = new[] { modules[0], modules[^1] }.Concat(modules.Where(m =>
+            snapshot.Files.Any(f => ModuleOf(f.Path).Equals(m, StringComparison.OrdinalIgnoreCase)
+                && SourceAnalyzer.LayerOf(f.Path) == "Data Adapter"))).Distinct().Take(4);
+        foreach (var module in fieldModules)
+        {
+            if (stories.Count >= MaxStories) break;
+            AddStory(enhanceEpic, $"Extend {module} data model: new fields end to end",
+                "product owner", $"additional fields on {module} records across db, server and UI",
+                $"{module} grows without schema drift", 8, Math.Max(30, enhancePriority), "Medium",
+                new[] { $"New {module} columns added via versioned migration",
+                        "Server validation and data adapter mapping updated for the new fields",
+                        "Frontend forms display and edit the new fields",
+                        "Existing {module} data migrates losslessly" },
+                "Database", "enhance");
+            enhancePriority -= 2;
         }
 
         // data & persistence epic
@@ -215,7 +309,8 @@ public sealed partial class RequirementIngestor
         AddStory(epics[^1], "Database schema, migrations & seed data",
             "database admin", "versioned migrations with seeded reference data",
             "environments can be rebuilt deterministically", 8, 60, "Medium",
-            new[] { "Migrations run on SQL Server", "Seed data idempotent", "Rollback documented" });
+            new[] { "Migrations run on SQL Server", "Seed data idempotent", "Rollback documented" },
+            "Database", "build");
 
         // QA epic
         AddEpic("Testing & QA", modules[0], "QA",
@@ -223,7 +318,8 @@ public sealed partial class RequirementIngestor
         AddStory(epics[^1], "Automated test suites per module",
             "qa lead", "unit + integration suites wired into CI",
             "regressions surface before release", 8, 55, "Medium",
-            new[] { "Unit tests per module", "Integration tests for critical paths", "Coverage reported in CI" });
+            new[] { "Unit tests per module", "Integration tests for critical paths", "Coverage reported in CI" },
+            "Server", "build");
 
         // release epic — always last
         AddEpic("Hardening & release", modules[^1], "Release",
@@ -231,11 +327,13 @@ public sealed partial class RequirementIngestor
         AddStory(epics[^1], "Security review & performance hardening",
             "operations", "security pass and load-tested release candidates",
             "the platform is production-ready", 13, 40, "High",
-            new[] { "Security checklist cleared", "Load test meets SLO", "Runbook published" });
+            new[] { "Security checklist cleared", "Load test meets SLO", "Runbook published" },
+            "Framework", "release");
         AddStory(epics[^1], "GA release & operations handover",
             "operations", "GA release with monitoring and handover documentation",
             "operations can run the platform", 5, 35, "Medium",
-            new[] { "GA build signed off", "Monitoring dashboards live", "Handover doc accepted" });
+            new[] { "GA build signed off", "Monitoring dashboards live", "Handover doc accepted" },
+            "Framework", "release");
 
         return (epics, stories);
     }

@@ -26,7 +26,7 @@ public sealed class GitHubSourceProvider(HttpClient http) : ISourceProvider
         resp.EnsureSuccessStatusCode();
 
         await using var tarStream = await resp.Content.ReadAsStreamAsync(request.CancellationToken);
-        var files = await ExtractTarGzAsync(tarStream, $"{owner}-{repo}");
+        var files = await ExtractTarGzAsync(tarStream, $"{owner}-{repo}", repo);
         if (files.Count == 0)
             throw new InvalidOperationException($"No analyzable files found in {owner}/{repo}.");
 
@@ -66,7 +66,7 @@ public sealed class GitHubSourceProvider(HttpClient http) : ISourceProvider
         return (owner, repo, branch);
     }
 
-    private static async Task<List<SourceFile>> ExtractTarGzAsync(Stream tarGz, string repoSlug)
+    private static async Task<List<SourceFile>> ExtractTarGzAsync(Stream tarGz, string repoSlug, string repoName)
     {
         var files = new List<SourceFile>();
         long total = 0;
@@ -81,9 +81,10 @@ public sealed class GitHubSourceProvider(HttpClient http) : ISourceProvider
             var path = (entry.Name ?? string.Empty).Replace('\\', '/');
             if (SourceProviderCommon.IsSkippedPath(path)) continue;
 
-            // Strip the GitHub root folder ("owner-repo-<sha>/").
+            // Strip the GitHub root folder ("owner-repo-<sha>/" or "repo-<branch>/").
             var slash = path.IndexOf('/');
-            if (slash > 0 && path[..slash].StartsWith(repoSlug, StringComparison.OrdinalIgnoreCase))
+            if (slash > 0 && (path[..slash].StartsWith(repoSlug, StringComparison.OrdinalIgnoreCase)
+                              || path[..slash].StartsWith(repoName + "-", StringComparison.OrdinalIgnoreCase)))
                 path = path[(slash + 1)..];
             if (path.Length == 0) continue;
 

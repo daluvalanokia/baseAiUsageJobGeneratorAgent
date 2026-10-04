@@ -501,13 +501,31 @@ public sealed partial class SourceAnalyzer
         : "Other";
 
     /// <summary>Module of a source path, mirroring RequirementIngestor's logic.</summary>
+    /// <summary>Client-side vendor bundles excluded from module detection.</summary>
+    private static readonly string[] VendorPrefixes =
+        { "jquery", "bootstrap", "popper", "fontawesome", "font-awesome", "modernizr",
+          "moment", "lodash", "chart", "sweetalert", "select2", "datatables" };
+
+    /// <summary>Support folders that are not product modules.</summary>
+    private static readonly string[] SupportFolders =
+        { "artifacts", "attached_assets", "assets", "docs", "documentation", "scripts",
+          "tools", "test", "tests", "e2e", "coverage", "dist", "build" };
+
+    /// <summary>Module of a source path: product folder only (vendors/support folders excluded).</summary>
     internal static string ModuleOf(string path)
     {
         var parts = path.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        // client-side vendor bundles are never product modules
+        foreach (var part in parts)
+            if (Array.Exists(VendorPrefixes, v => part.StartsWith(v, StringComparison.OrdinalIgnoreCase)))
+                return string.Empty;
+        // src/<module>/... or lib/<module>/... → the module is the folder under the marker
         for (var i = 0; i < parts.Length - 1; i++)
             if (parts[i] is "src" or "lib" && i + 1 < parts.Length - 1)
                 return parts[i + 1].Replace("SmartAgent.", "").Replace("SmartAgent", "Core");
-        return parts.Length > 1 ? parts[0] : Path.GetFileNameWithoutExtension(path);
+        // else the top folder is the module — unless it is a root config file or support folder
+        return parts.Length > 1 && !Array.Exists(SupportFolders, s => parts[0].Equals(s, StringComparison.OrdinalIgnoreCase))
+            ? parts[0] : string.Empty;
     }
 
     internal static string ToSnakeCase(string s) =>

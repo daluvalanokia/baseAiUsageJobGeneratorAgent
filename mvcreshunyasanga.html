@@ -149,7 +149,7 @@
         <h1>MvcReshunyasanga Multi-Year Delivery Programme</h1>
         <span class="x-sub">
             static PM Hub export · 2-year program · <b>52</b> sprints (104 weeks) ·
-            Oct 2026 → Oct 2028 · source: 13 epics
+            Oct 2026 → Oct 2028 · source: 15 epics
         </span>
     </div>
 
@@ -164,10 +164,10 @@
         <div class="pm-kpis">
             <div class="pm-kpi"><b>52</b><span>SPRINTS</span></div>
             <div class="pm-kpi"><b>104</b><span>WEEKS</span></div>
-            <div class="pm-kpi"><b>26</b><span>TEAM MEMBERS</span></div>
-            <div class="pm-kpi"><b>352</b><span>STORY POINTS</span></div>
-            <div class="pm-kpi"><b>60</b><span>USER STORIES</span></div>
-            <div class="pm-kpi green"><b>508</b><span>TEST CASES</span></div>
+            <div class="pm-kpi"><b>12</b><span>TEAM MEMBERS</span></div>
+            <div class="pm-kpi"><b>313</b><span>STORY POINTS</span></div>
+            <div class="pm-kpi"><b>53</b><span>USER STORIES</span></div>
+            <div class="pm-kpi green"><b>560</b><span>TEST CASES</span></div>
         </div>
 
         <div class="pm-card">
@@ -184,16 +184,16 @@
                     </tr>
                     <tr>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>4–39 (30)</td>
-                        <td>47</td>
-                        <td>239</td>
+                        <td>4–41 (32)</td>
+                        <td>42</td>
+                        <td>216</td>
                         <td>basic module with functionality in vertical slices (db &#x2B; server &#x2B; controllers &#x2B; frontend per sprint)</td>
                     </tr>
                     <tr>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>40–47 (7)</td>
-                        <td>8</td>
-                        <td>66</td>
+                        <td>43–47 (5)</td>
+                        <td>6</td>
+                        <td>50</td>
                         <td>field extensions and change patterns from the repository&#x27;s commit history</td>
                     </tr>
                     <tr>
@@ -287,32 +287,14 @@
                         <tr>
                             <td><span class="pm-chip" style="background:#2563EB">A</span></td>
                             <td>Squad A</td>
-                            <td>components, db</td>
-                            <td>3</td>
+                            <td>MVCSolutionBase, Events, Governance</td>
+                            <td>8</td>
                         </tr>
                         <tr>
                             <td><span class="pm-chip" style="background:#16A34A">B</span></td>
                             <td>Squad B</td>
-                            <td>components, api-spec</td>
-                            <td>3</td>
-                        </tr>
-                        <tr>
-                            <td><span class="pm-chip" style="background:#0D9488">C</span></td>
-                            <td>Squad C</td>
-                            <td>MVCSolutionBase, lib, routes</td>
-                            <td>3</td>
-                        </tr>
-                        <tr>
-                            <td><span class="pm-chip" style="background:#4F46E5">D</span></td>
-                            <td>Squad D</td>
-                            <td>api-client-react, routes</td>
-                            <td>2</td>
-                        </tr>
-                        <tr>
-                            <td><span class="pm-chip" style="background:#EA580C">E</span></td>
-                            <td>Squad E</td>
-                            <td>api-zod, components</td>
-                            <td>2</td>
+                            <td>Library, Admin, Session</td>
+                            <td>7</td>
                         </tr>
                     </tbody>
                 </table>
@@ -332,12 +314,12 @@
                     <tbody>
                         <tr>
                             <td><b>US-001</b></td>
-                            <td>Solution bootstrap &amp; repository structure</td>
+                            <td>Shunya Sangha &#x2014; Cultural Recital Management System solution bootstrap &amp; repository structure</td>
                             <td> <span class="pm-badge layer-fw">Framework</span> </td>
-                            <td>components</td>
+                            <td>MVCSolutionBase</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>Solution builds on .NET 8</li>  <li>CI pipeline green on main</li>  <li>README documents build</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Solution builds cleanly on the target framework</li>  <li>CI pipeline green on main</li>  <li>README documents the build and run steps</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -351,12 +333,12 @@
                     <tbody>
                         <tr>
                             <td><b>US-002</b></td>
-                            <td>Authentication &amp; user management</td>
+                            <td>Authentication &amp; access control (AuthController)</td>
                             <td> <span class="pm-badge layer-fw">Framework</span> </td>
-                            <td>components</td>
+                            <td>MVCSolutionBase</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>13</td>
-                            <td><ul class="ac-list"> <li>Login/logout works for all roles</li>  <li>Roles enforced server-side</li>  <li>Password reset flow</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Login, Logout, SwitchUser, GetAllUsers all behave per the source contract</li>  <li>Sessions/roles enforced server-side on every guarded action</li>  <li>Invalid credentials and expired sessions redirect safely</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -372,7 +354,7 @@
                             <td><b>US-003</b></td>
                             <td>Base framework code generation &amp; tooling</td>
                             <td> <span class="pm-badge layer-fw">Framework</span> </td>
-                            <td>components</td>
+                            <td>MVCSolutionBase</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>8</td>
                             <td><ul class="ac-list"> <li>Module templates generate a working vertical slice</li>  <li>Shared validation, logging and error handling are wired in</li>  <li>Generated code passes lint and build gates</li> </ul></td>
@@ -381,75 +363,66 @@
                 </table>
             <h4>Sprint 4 — Sprint 4</h4>
             <div class="d">
-                Q1 · 26 pts · Weeks 7–8
+                Q1 · 19 pts · Weeks 7–8
                 <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
                             <td><b>US-004</b></td>
-                            <td>components server-side domain &amp; services</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>components</td>
+                            <td>Library: browse, create, edit, delete and view library items, user profiles end to end</td>
+                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
+                            <td>Library</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>13</td>
-                            <td><ul class="ac-list"> <li>Domain model for components implemented</li>  <li>Unit tests cover core rules</li>  <li>API/UI consumes the domain</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>Create behaves per the source contract</li>  <li>Edit behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-005</b></td>
+                            <td>LibraryItem persistence &amp; invariants</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Library</td>
+                            <td><span class="pm-badge must">Must</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>LibraryItem round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-006</b></td>
-                            <td>Sidebar UI component (components) implementation</td>
-                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
-                            <td>components</td>
+                            <td>UserProfile persistence &amp; invariants</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Library</td>
                             <td><span class="pm-badge must">Must</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>Sidebar UI component behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-007</b></td>
-                            <td>Menubar UI component (components) implementation</td>
-                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
-                            <td>components</td>
-                            <td><span class="pm-badge must">Must</span></td>
-                            <td>5</td>
-                            <td><ul class="ac-list"> <li>Menubar UI component behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>UserProfile round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 5 — Sprint 5</h4>
             <div class="d">
-                Q1 · 18 pts · Weeks 9–10
+                Q1 · 8 pts · Weeks 9–10
                 <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-005</b></td>
-                            <td>components UI screens &amp; interaction</td>
+                            <td><b>US-007</b></td>
+                            <td>Library screens (Index)</td>
                             <td> <span class="pm-badge layer-fe">Frontend</span> </td>
-                            <td>components</td>
+                            <td>Library</td>
                             <td><span class="pm-badge must">Must</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>Views render with model validation</li>  <li>Auth guards all actions</li>  <li>Navigation and error states handled</li> </ul></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Index render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-008</b></td>
-                            <td>Dropdown menu UI component (components) implementation</td>
-                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
-                            <td>components</td>
+                            <td>Library schema, migrations &amp; seeds</td>
+                            <td> <span class="pm-badge layer-db">Database</span> </td>
+                            <td>Library</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Dropdown menu UI component behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-009</b></td>
-                            <td>components integration &amp; contract tests</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>components</td>
-                            <td><span class="pm-badge must">Must</span></td>
-                            <td>5</td>
-                            <td><ul class="ac-list"> <li>components contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Tables and constraints scripted for LibraryItem, UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -461,81 +434,76 @@
                 <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; foundation &amp; auth readiness</p>
             <h4>Sprint 7 — Sprint 7</h4>
             <div class="d">
-                Q1 · 0 pts · Weeks 13–14
+                Q1 · 8 pts · Weeks 13–14
                 <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; foundation &amp; auth readiness</p>
-            <h4>Sprint 8 — Sprint 8</h4>
-            <div class="d">
-                Q2 · 34 pts · Weeks 15–16
-                <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#0D9488">C</span>             </div>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
                             <td><b>US-010</b></td>
-                            <td>MVCSolutionBase server-side domain &amp; services</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>MVCSolutionBase</td>
-                            <td><span class="pm-badge must">Must</span></td>
-                            <td>13</td>
-                            <td><ul class="ac-list"> <li>Domain model for MVCSolutionBase implemented</li>  <li>Unit tests cover core rules</li>  <li>API/UI consumes the domain</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-014</b></td>
-                            <td>LibraryController endpoints &amp; behavior</td>
+                            <td>Events: view, edit and send chat messages, library items end to end</td>
                             <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
-                            <td>MVCSolutionBase</td>
+                            <td>Events</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>Index returns the expected result for valid input</li>  <li>Create enforces authorization and validation</li>  <li>Invalid input maps to 400/403 with clear error bodies</li> </ul></td>
+                            <td><ul class="ac-list"> <li>View behaves per the source contract</li>  <li>GetSession behaves per the source contract</li>  <li>UpdateSession behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
                         </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 8 — Sprint 8</h4>
+            <div class="d">
+                Q2 · 5 pts · Weeks 15–16
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
                         <tr>
-                            <td><b>US-011</b></td>
-                            <td>MVCSolutionBase data adapter &amp; persistence layer</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>MVCSolutionBase</td>
+                            <td><b>US-009</b></td>
+                            <td>Library integration &amp; contract tests</td>
+                            <td> <span class="pm-badge layer-srv">Server</span> </td>
+                            <td>Library</td>
                             <td><span class="pm-badge must">Must</span></td>
-                            <td>13</td>
-                            <td><ul class="ac-list"> <li>MVCSolutionBase entities mapped through the data adapter</li>  <li>Query contracts return deterministic results</li>  <li>Connection and transaction handling covered by tests</li> </ul></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>LibraryController contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 9 — Sprint 9</h4>
             <div class="d">
-                Q2 · 29 pts · Weeks 17–18
+                Q2 · 11 pts · Weeks 17–18
                 <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#0D9488">C</span>             </div>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-012</b></td>
-                            <td>MVCSolutionBase controllers &amp; actions</td>
-                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
-                            <td>MVCSolutionBase</td>
+                            <td><b>US-011</b></td>
+                            <td>ChatMessage persistence &amp; invariants</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Events</td>
                             <td><span class="pm-badge must">Must</span></td>
-                            <td>13</td>
-                            <td><ul class="ac-list"> <li>All MVCSolutionBase actions validate input and enforce auth</li>  <li>Action results follow the platform conventions</li>  <li>Error paths return correct status codes</li> </ul></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>ChatMessage round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
                         </tr>
                         <tr>
-                            <td><b>US-015</b></td>
-                            <td>EventsController endpoints &amp; behavior</td>
-                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
-                            <td>MVCSolutionBase</td>
+                            <td><b>US-012</b></td>
+                            <td>Events screens (View)</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Events</td>
                             <td><span class="pm-badge must">Must</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>View returns the expected result for valid input</li>  <li>GetSession enforces authorization and validation</li>  <li>Invalid input maps to 400/403 with clear error bodies</li> </ul></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>View render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-013</b></td>
-                            <td>MVCSolutionBase MVC views &amp; forms</td>
-                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
-                            <td>MVCSolutionBase</td>
+                            <td>Events schema, migrations &amp; seeds</td>
+                            <td> <span class="pm-badge layer-db">Database</span> </td>
+                            <td>Events</td>
                             <td><span class="pm-badge must">Must</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>Views render with model validation</li>  <li>Auth guards all actions</li>  <li>Navigation and error states handled</li> </ul></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>Tables and constraints scripted for ChatMessage, LibraryItem, RecitalRecord, SessionState, UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -547,38 +515,20 @@
                 <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; core domain readiness</p>
             <h4>Sprint 11 — Sprint 11</h4>
             <div class="d">
-                Q2 · 15 pts · Weeks 21–22
+                Q2 · 8 pts · Weeks 21–22
                 <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#0D9488">C</span>             </div>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-016</b></td>
-                            <td>AdminController endpoints &amp; behavior</td>
+                            <td><b>US-015</b></td>
+                            <td>Admin: browse, create, edit, delete and view event models, recital sequence items end to end</td>
                             <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
-                            <td>MVCSolutionBase</td>
+                            <td>Admin</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>Index returns the expected result for valid input</li>  <li>CreateEvent enforces authorization and validation</li>  <li>Invalid input maps to 400/403 with clear error bodies</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-017</b></td>
-                            <td>ChatMessage persistence &amp; validation</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>MVCSolutionBase</td>
-                            <td><span class="pm-badge must">Must</span></td>
-                            <td>2</td>
-                            <td><ul class="ac-list"> <li>ChatMessage round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Consume sites validated against ChatMessage contract</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-018</b></td>
-                            <td>MVCSolutionBase integration &amp; contract tests</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>MVCSolutionBase</td>
-                            <td><span class="pm-badge must">Must</span></td>
-                            <td>5</td>
-                            <td><ul class="ac-list"> <li>MVCSolutionBase contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>CreateEvent behaves per the source contract</li>  <li>EditEvent behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -590,109 +540,131 @@
                 <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; core domain readiness</p>
             <h4>Sprint 13 — Sprint 13</h4>
             <div class="d">
-                Q2 · 11 pts · Weeks 25–26
+                Q2 · 5 pts · Weeks 25–26
                 <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#4F46E5">D</span>             </div>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-019</b></td>
-                            <td>api-client-react server-side domain &amp; services</td>
+                            <td><b>US-014</b></td>
+                            <td>Events integration &amp; contract tests</td>
                             <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>api-client-react</td>
+                            <td>Events</td>
                             <td><span class="pm-badge must">Must</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Domain model for api-client-react implemented</li>  <li>Unit tests cover core rules</li>  <li>API/UI consumes the domain</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-021</b></td>
-                            <td>Custom fetch module (api-client-react) implementation</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>api-client-react</td>
-                            <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Custom fetch module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-020</b></td>
-                            <td>api-client-react data adapter &amp; persistence layer</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>api-client-react</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>api-client-react entities mapped through the data adapter</li>  <li>Query contracts return deterministic results</li>  <li>Connection and transaction handling covered by tests</li> </ul></td>
+                            <td><ul class="ac-list"> <li>EventsController contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 14 — Sprint 14</h4>
             <div class="d">
-                Q2 · 0 pts · Weeks 27–28
+                Q2 · 9 pts · Weeks 27–28
                 <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; core domain readiness</p>
-            <h4>Sprint 15 — Sprint 15</h4>
-            <div class="d">
-                Q3 · 11 pts · Weeks 29–30
-                <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#4F46E5">D</span>             </div>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-022</b></td>
-                            <td>Api module (api-client-react) implementation</td>
+                            <td><b>US-016</b></td>
+                            <td>EventModel persistence &amp; invariants</td>
                             <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>api-client-react</td>
-                            <td><span class="pm-badge should">Should</span></td>
+                            <td>Admin</td>
+                            <td><span class="pm-badge must">Must</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>Api module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
+                            <td><ul class="ac-list"> <li>EventModel round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
                         </tr>
                         <tr>
-                            <td><b>US-023</b></td>
-                            <td>Index module (api-client-react) implementation</td>
+                            <td><b>US-017</b></td>
+                            <td>RecitalSequenceItem persistence &amp; invariants</td>
                             <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>api-client-react</td>
-                            <td><span class="pm-badge should">Should</span></td>
+                            <td>Admin</td>
+                            <td><span class="pm-badge must">Must</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>Index module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
+                            <td><ul class="ac-list"> <li>RecitalSequenceItem round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
                         </tr>
                         <tr>
-                            <td><b>US-024</b></td>
-                            <td>api-client-react integration &amp; contract tests</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>api-client-react</td>
+                            <td><b>US-018</b></td>
+                            <td>Admin screens (Index)</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Admin</td>
+                            <td><span class="pm-badge must">Must</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Index render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 15 — Sprint 15</h4>
+            <div class="d">
+                Q3 · 10 pts · Weeks 29–30
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-019</b></td>
+                            <td>Admin schema, migrations &amp; seeds</td>
+                            <td> <span class="pm-badge layer-db">Database</span> </td>
+                            <td>Admin</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>api-client-react contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Tables and constraints scripted for EventModel, RecitalSequenceItem, LibraryItem, SessionState, UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-020</b></td>
+                            <td>Admin integration &amp; contract tests</td>
+                            <td> <span class="pm-badge layer-srv">Server</span> </td>
+                            <td>Admin</td>
+                            <td><span class="pm-badge should">Should</span></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>AdminController contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 16 — Sprint 16</h4>
             <div class="d">
-                Q3 · 3 pts · Weeks 31–32
+                Q3 · 0 pts · Weeks 31–32
                 <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#EA580C">E</span>             </div>
+            </div>
+                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; integration &amp; api readiness</p>
+            <h4>Sprint 17 — Sprint 17</h4>
+            <div class="d">
+                Q3 · 14 pts · Weeks 33–34
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-025</b></td>
-                            <td>api-zod server-side domain &amp; services</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>api-zod</td>
+                            <td><b>US-021</b></td>
+                            <td>Governance: browse, delete and edit global configs, user profiles end to end</td>
+                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
+                            <td>Governance</td>
+                            <td><span class="pm-badge should">Should</span></td>
+                            <td>8</td>
+                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>SaveUser behaves per the source contract</li>  <li>DeleteUser behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-022</b></td>
+                            <td>GlobalConfig persistence &amp; invariants</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Governance</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>Domain model for api-zod implemented</li>  <li>Unit tests cover core rules</li>  <li>API/UI consumes the domain</li> </ul></td>
+                            <td><ul class="ac-list"> <li>GlobalConfig round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-023</b></td>
+                            <td>Governance screens (Index)</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Governance</td>
+                            <td><span class="pm-badge should">Should</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Index render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 17 — Sprint 17</h4>
-            <div class="d">
-                Q3 · 0 pts · Weeks 33–34
-                <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; integration &amp; api readiness</p>
             <h4>Sprint 18 — Sprint 18</h4>
             <div class="d">
                 Q3 · 0 pts · Weeks 35–36
@@ -701,110 +673,83 @@
                 <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; integration &amp; api readiness</p>
             <h4>Sprint 19 — Sprint 19</h4>
             <div class="d">
-                Q3 · 8 pts · Weeks 37–38
+                Q3 · 5 pts · Weeks 37–38
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-057</b></td>
-                            <td>Database schema, migrations &amp; seed data</td>
+                            <td><b>US-024</b></td>
+                            <td>Governance schema, migrations &amp; seeds</td>
                             <td> <span class="pm-badge layer-db">Database</span> </td>
-                            <td>components</td>
+                            <td>Governance</td>
                             <td><span class="pm-badge should">Should</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>Migrations run on SQL Server</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>Tables and constraints scripted for GlobalConfig, UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 20 — Sprint 20</h4>
             <div class="d">
-                Q3 · 9 pts · Weeks 39–40
-                <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#EA580C">E</span>             </div>
-                <table class="pm-tbl">
-                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
-                    <tbody>
-                        <tr>
-                            <td><b>US-027</b></td>
-                            <td>Api module (api-zod) implementation</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>api-zod</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Api module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-026</b></td>
-                            <td>api-zod data adapter &amp; persistence layer</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>api-zod</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>api-zod entities mapped through the data adapter</li>  <li>Query contracts return deterministic results</li>  <li>Connection and transaction handling covered by tests</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-028</b></td>
-                            <td>Health Status module (api-zod) implementation</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>api-zod</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Health Status module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
-                        </tr>
-                    </tbody>
-                </table>
-            <h4>Sprint 21 — Sprint 21</h4>
-            <div class="d">
-                Q3 · 0 pts · Weeks 41–42
-                <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; integration &amp; api readiness</p>
-            <h4>Sprint 22 — Sprint 22</h4>
-            <div class="d">
-                Q4 · 8 pts · Weeks 43–44
+                Q3 · 8 pts · Weeks 39–40
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-058</b></td>
-                            <td>Automated test suites per module</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>components</td>
+                            <td><b>US-050</b></td>
+                            <td>Database schema, migrations &amp; seed data</td>
+                            <td> <span class="pm-badge layer-db">Database</span> </td>
+                            <td>MVCSolutionBase</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>Unit tests per module</li>  <li>Integration tests for critical paths</li>  <li>Coverage reported in CI</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Migrations run on the platform database</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 23 — Sprint 23</h4>
+            <h4>Sprint 21 — Sprint 21</h4>
             <div class="d">
-                Q4 · 8 pts · Weeks 45–46
+                Q3 · 13 pts · Weeks 41–42
                 <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#EA580C">E</span>             </div>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-029</b></td>
-                            <td>Index module (api-zod) implementation</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>api-zod</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Index module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-030</b></td>
-                            <td>api-zod integration &amp; contract tests</td>
+                            <td><b>US-026</b></td>
+                            <td>Session real-time sync</td>
                             <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>api-zod</td>
+                            <td>Session</td>
+                            <td><span class="pm-badge should">Should</span></td>
+                            <td>13</td>
+                            <td><ul class="ac-list"> <li>SessionHub broadcasts state changes to all connected clients</li>  <li>Late joiners and reconnects receive the current state</li>  <li>Concurrent updates stay consistent across clients</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 22 — Sprint 22</h4>
+            <div class="d">
+                Q4 · 0 pts · Weeks 43–44
+                <span class="pm-badge phase-build">build</span>
+            </div>
+                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; hardening &amp; rc readiness</p>
+            <h4>Sprint 23 — Sprint 23</h4>
+            <div class="d">
+                Q4 · 5 pts · Weeks 45–46
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-025</b></td>
+                            <td>Governance integration &amp; contract tests</td>
+                            <td> <span class="pm-badge layer-srv">Server</span> </td>
+                            <td>Governance</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>api-zod contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
+                            <td><ul class="ac-list"> <li>GovernanceController contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -816,127 +761,95 @@
                 <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; hardening &amp; rc readiness</p>
             <h4>Sprint 25 — Sprint 25</h4>
             <div class="d">
-                Q4 · 0 pts · Weeks 49–50
-                <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; hardening &amp; rc readiness</p>
-            <h4>Sprint 26 — Sprint 26</h4>
-            <div class="d">
-                Q4 · 9 pts · Weeks 51–52
+                Q4 · 8 pts · Weeks 49–50
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-031</b></td>
-                            <td>db server-side domain &amp; services</td>
+                            <td><b>US-051</b></td>
+                            <td>Automated test suites per capability</td>
                             <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>db</td>
+                            <td>MVCSolutionBase</td>
+                            <td><span class="pm-badge should">Should</span></td>
+                            <td>8</td>
+                            <td><ul class="ac-list"> <li>Unit tests per capability</li>  <li>Integration tests for critical paths</li>  <li>Coverage reported in CI</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 26 — Sprint 26</h4>
+            <div class="d">
+                Q4 · 6 pts · Weeks 51–52
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-027</b></td>
+                            <td>Dashboard: browse event models, user profiles end to end</td>
+                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
+                            <td>Dashboard</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>Domain model for db implemented</li>  <li>Unit tests cover core rules</li>  <li>API/UI consumes the domain</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
                         </tr>
                         <tr>
-                            <td><b>US-033</b></td>
-                            <td>Index module (db) implementation</td>
-                            <td> <span class="pm-badge layer-db">Database</span> </td>
-                            <td>db</td>
+                            <td><b>US-028</b></td>
+                            <td>Dashboard screens (Index)</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Dashboard</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>Index module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-034</b></td>
-                            <td>Index module (db) implementation</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>db</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Index module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Index render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 27 — Sprint 27</h4>
             <div class="d">
-                Q4 · 13 pts · Weeks 53–54
+                Q4 · 5 pts · Weeks 53–54
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-032</b></td>
-                            <td>db database scripts &amp; schema</td>
-                            <td> <span class="pm-badge layer-db">Database</span> </td>
-                            <td>db</td>
+                            <td><b>US-041</b></td>
+                            <td>lib audit: what is live, legacy or duplicated</td>
+                            <td> <span class="pm-badge layer-srv">Server</span> </td>
+                            <td>lib</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Tables and constraints scripted for db</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-035</b></td>
-                            <td>Drizzle config module (db) implementation</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>db</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Drizzle config module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-036</b></td>
-                            <td>db integration &amp; contract tests</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>db</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>5</td>
-                            <td><ul class="ac-list"> <li>db contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
+                            <td><ul class="ac-list"> <li>All lib entry points and consumers inventoried</li>  <li>Live vs replaceable parts classified with evidence</li>  <li>Findings reviewed with the product owner</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 28 — Sprint 28</h4>
             <div class="d">
-                Q4 · 0 pts · Weeks 55–56
+                Q4 · 5 pts · Weeks 55–56
                 <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; hardening &amp; rc readiness</p>
-            <h4>Sprint 29 — Sprint 29</h4>
-            <div class="d">
-                Q5 · 8 pts · Weeks 57–58
-                <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#16A34A">B</span>             </div>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-037</b></td>
-                            <td>api-spec server-side domain &amp; services</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>api-spec</td>
+                            <td><b>US-029</b></td>
+                            <td>Dashboard schema, migrations &amp; seeds</td>
+                            <td> <span class="pm-badge layer-db">Database</span> </td>
+                            <td>Dashboard</td>
                             <td><span class="pm-badge should">Should</span></td>
-                            <td>2</td>
-                            <td><ul class="ac-list"> <li>Domain model for api-spec implemented</li>  <li>Unit tests cover core rules</li>  <li>API/UI consumes the domain</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-039</b></td>
-                            <td>Orval config module (api-spec) implementation</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>api-spec</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Orval config module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-038</b></td>
-                            <td>api-spec data adapter &amp; persistence layer</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>api-spec</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>api-spec entities mapped through the data adapter</li>  <li>Query contracts return deterministic results</li>  <li>Connection and transaction handling covered by tests</li> </ul></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>Tables and constraints scripted for EventModel, UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
+            <h4>Sprint 29 — Sprint 29</h4>
+            <div class="d">
+                Q5 · 0 pts · Weeks 57–58
+                <span class="pm-badge phase-build">build</span>
+            </div>
+                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</p>
             <h4>Sprint 30 — Sprint 30</h4>
             <div class="d">
                 Q5 · 0 pts · Weeks 59–60
@@ -945,82 +858,86 @@
                 <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</p>
             <h4>Sprint 31 — Sprint 31</h4>
             <div class="d">
-                Q5 · 5 pts · Weeks 61–62
+                Q5 · 13 pts · Weeks 61–62
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-042</b></td>
+                            <td>Migrate live lib capabilities into Shunya Sangha &#x2014; Cultural Recital Management System</td>
+                            <td>—</td>
+                            <td>lib</td>
+                            <td><span class="pm-badge should">Should</span></td>
+                            <td>13</td>
+                            <td><ul class="ac-list"> <li>Live lib features reachable in the primary app</li>  <li>Data migrated losslessly where applicable</li>  <li>Cutover verified with parity tests</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 32 — Sprint 32</h4>
+            <div class="d">
+                Q5 · 5 pts · Weeks 63–64
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-030</b></td>
+                            <td>Dashboard integration &amp; contract tests</td>
+                            <td> <span class="pm-badge layer-srv">Server</span> </td>
+                            <td>Dashboard</td>
+                            <td><span class="pm-badge should">Should</span></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>DashboardController contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 33 — Sprint 33</h4>
+            <div class="d">
+                Q5 · 8 pts · Weeks 65–66
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-040</b></td>
-                            <td>api-spec integration &amp; contract tests</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>api-spec</td>
+                            <td><b>US-031</b></td>
+                            <td>Home: browse homes end to end</td>
+                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
+                            <td>Home</td>
+                            <td><span class="pm-badge should">Should</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-032</b></td>
+                            <td>Home screens (Index, Privacy)</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Home</td>
                             <td><span class="pm-badge could">Could</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>api-spec contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
-                        </tr>
-                    </tbody>
-                </table>
-            <h4>Sprint 32 — Sprint 32</h4>
-            <div class="d">
-                Q5 · 0 pts · Weeks 63–64
-                <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</p>
-            <h4>Sprint 33 — Sprint 33</h4>
-            <div class="d">
-                Q5 · 7 pts · Weeks 65–66
-                <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#0D9488">C</span>             </div>
-                <table class="pm-tbl">
-                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
-                    <tbody>
-                        <tr>
-                            <td><b>US-041</b></td>
-                            <td>lib server-side domain &amp; services</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>lib</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>1</td>
-                            <td><ul class="ac-list"> <li>Domain model for lib implemented</li>  <li>Unit tests cover core rules</li>  <li>API/UI consumes the domain</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-042</b></td>
-                            <td>Logger module (lib) implementation</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>lib</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Logger module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-043</b></td>
-                            <td>Utils module (lib) implementation</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>lib</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Utils module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Index, Privacy render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 34 — Sprint 34</h4>
             <div class="d">
-                Q5 · 5 pts · Weeks 67–68
+                Q5 · 8 pts · Weeks 67–68
                 <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#0D9488">C</span>             </div>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-044</b></td>
-                            <td>lib integration &amp; contract tests</td>
+                            <td><b>US-043</b></td>
+                            <td>Decommission retired lib surface</td>
                             <td> <span class="pm-badge layer-srv">Server</span> </td>
                             <td>lib</td>
                             <td><span class="pm-badge could">Could</span></td>
-                            <td>5</td>
-                            <td><ul class="ac-list"> <li>lib contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
+                            <td>8</td>
+                            <td><ul class="ac-list"> <li>Retired lib paths deleted</li>  <li>No consumer references remain</li>  <li>Regression suite green after removal</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1038,113 +955,122 @@
                 <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; advanced features (year 2) readiness</p>
             <h4>Sprint 37 — Sprint 37</h4>
             <div class="d">
-                Q6 · 7 pts · Weeks 73–74
+                Q6 · 5 pts · Weeks 73–74
                 <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#4F46E5">D</span>             </div>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-045</b></td>
-                            <td>routes server-side domain &amp; services</td>
+                            <td><b>US-033</b></td>
+                            <td>Home integration &amp; contract tests</td>
                             <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>routes</td>
+                            <td>Home</td>
                             <td><span class="pm-badge could">Could</span></td>
-                            <td>1</td>
-                            <td><ul class="ac-list"> <li>Domain model for routes implemented</li>  <li>Unit tests cover core rules</li>  <li>API/UI consumes the domain</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-046</b></td>
-                            <td>Health module (routes) implementation</td>
-                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
-                            <td>routes</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Health module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-047</b></td>
-                            <td>Index module (routes) implementation</td>
-                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
-                            <td>routes</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Index module behavior implemented per the source contract</li>  <li>Edge cases and error states handled</li>  <li>Covered by unit &#x2B; integration tests</li> </ul></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>HomeController contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 38 — Sprint 38</h4>
             <div class="d">
-                Q6 · 5 pts · Weeks 75–76
+                Q6 · 11 pts · Weeks 75–76
                 <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#4F46E5">D</span>             </div>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-048</b></td>
-                            <td>routes integration &amp; contract tests</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>routes</td>
+                            <td><b>US-034</b></td>
+                            <td>Records: browse user profiles end to end</td>
+                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
+                            <td>Records</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-035</b></td>
+                            <td>Records screens (Index)</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Records</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Index render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-036</b></td>
+                            <td>Records schema, migrations &amp; seeds</td>
+                            <td> <span class="pm-badge layer-db">Database</span> </td>
+                            <td>Records</td>
                             <td><span class="pm-badge could">Could</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>routes contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Tables and constraints scripted for UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 39 — Sprint 39</h4>
             <div class="d">
-                Q6 · 0 pts · Weeks 77–78
+                Q6 · 5 pts · Weeks 77–78
                 <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; advanced features (year 2) readiness</p>
-            <h4>Sprint 40 — Sprint 40</h4>
-            <div class="d">
-                Q6 · 21 pts · Weeks 79–80
-                <span class="pm-badge phase-enhance">enhance</span>
- <span class="pm-chip" style="background:#0D9488">C</span>             </div>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-049</b></td>
-                            <td>Enhance MVCSolutionBase (frontend): Fix error in gathering sequence builder and update database</td>
-                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
-                            <td>MVCSolutionBase</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>13</td>
-                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Fix error in gathering sequence builder and update database&#x27; (15 commits touched frontend code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Views/Admin/Index.cshtml, MVCSolutionBase/MVCSolutionBase/Views/Events/View.cshtml</li>  <li>Regression tests prove the enhanced frontend behavior</li>  <li>Frontend, server and database components updated together</li> </ul></td>
+                            <td><b>US-037</b></td>
+                            <td>Records integration &amp; contract tests</td>
+                            <td> <span class="pm-badge layer-srv">Server</span> </td>
+                            <td>Records</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>RecordsController contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 40 — Sprint 40</h4>
+            <div class="d">
+                Q6 · 9 pts · Weeks 79–80
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-038</b></td>
+                            <td>DateTimeModel persistence &amp; invariants</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Domain data model</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>DateTimeModel round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Consumers of DateTimeModel validated against its contract</li> </ul></td>
                         </tr>
                         <tr>
-                            <td><b>US-050</b></td>
-                            <td>Enhance MVCSolutionBase (controllers): Add AI-powered scripture discovery and enhance event viewing features</td>
-                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
-                            <td>MVCSolutionBase</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Add AI-powered scripture discovery and enhance event viewing features&#x27; (4 commits touched controllers code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Controllers/LibraryController.cs, MVCSolutionBase/MVCSolutionBase/Controllers/AdminController.cs</li>  <li>Regression tests prove the enhanced controllers behavior</li>  <li>Frontend, server and database components updated together</li> </ul></td>
+                            <td><b>US-039</b></td>
+                            <td>ErrorViewModel persistence &amp; invariants</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Domain data model</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>ErrorViewModel round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Consumers of ErrorViewModel validated against its contract</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-040</b></td>
+                            <td>DateTimeViewModel persistence &amp; invariants</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Domain data model</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>DateTimeViewModel round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Consumers of DateTimeViewModel validated against its contract</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 41 — Sprint 41</h4>
             <div class="d">
-                Q7 · 8 pts · Weeks 81–82
-                <span class="pm-badge phase-enhance">enhance</span>
- <span class="pm-chip" style="background:#0D9488">C</span>             </div>
-                <table class="pm-tbl">
-                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
-                    <tbody>
-                        <tr>
-                            <td><b>US-051</b></td>
-                            <td>Enhance MVCSolutionBase (server): Add AI-powered scripture discovery and enhance event viewing features</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>MVCSolutionBase</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Add AI-powered scripture discovery and enhance event viewing features&#x27; (4 commits touched server code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Program.cs, .replit</li>  <li>Regression tests prove the enhanced server behavior</li>  <li>Frontend, server and database components updated together</li> </ul></td>
-                        </tr>
-                    </tbody>
-                </table>
+                Q7 · 0 pts · Weeks 81–82
+                <span class="pm-badge phase-build">build</span>
+            </div>
+                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; platform extensions (year 2) readiness</p>
             <h4>Sprint 42 — Sprint 42</h4>
             <div class="d">
                 Q7 · 0 pts · Weeks 83–84
@@ -1153,39 +1079,48 @@
                 <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; platform extensions (year 2) readiness</p>
             <h4>Sprint 43 — Sprint 43</h4>
             <div class="d">
-                Q7 · 5 pts · Weeks 85–86
+                Q7 · 21 pts · Weeks 85–86
                 <span class="pm-badge phase-enhance">enhance</span>
- <span class="pm-chip" style="background:#0D9488">C</span>             </div>
+ <span class="pm-chip" style="background:#2563EB">A</span>  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-052</b></td>
-                            <td>Enhance MVCSolutionBase (data adapter): Build a comprehensive .NET MVC application for managing cultural re...</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>MVCSolutionBase</td>
+                            <td><b>US-044</b></td>
+                            <td>Enhance events: Fix error in gathering sequence builder and update database</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Events</td>
                             <td><span class="pm-badge should">Should</span></td>
-                            <td>5</td>
-                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Build a comprehensive .NET MVC application for managing cultural re...&#x27; (1 commits touched data adapter code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Data/ShunyaSanghaDbContext.cs</li>  <li>Regression tests prove the enhanced data adapter behavior</li>  <li>Frontend, server and database components updated together</li> </ul></td>
+                            <td>13</td>
+                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Fix error in gathering sequence builder and update database&#x27; (15 commits touched frontend code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Views/Admin/Index.cshtml, MVCSolutionBase/MVCSolutionBase/Views/Events/View.cshtml</li>  <li>Regression tests prove the enhanced frontend behavior</li>  <li>Frontend, server and database components updated together</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-045</b></td>
+                            <td>Enhance library: Add AI-powered scripture discovery and enhance event viewing features</td>
+                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
+                            <td>Library</td>
+                            <td><span class="pm-badge should">Should</span></td>
+                            <td>8</td>
+                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Add AI-powered scripture discovery and enhance event viewing features&#x27; (4 commits touched controllers code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Controllers/LibraryController.cs, MVCSolutionBase/MVCSolutionBase/Controllers/AdminController.cs</li>  <li>Regression tests prove the enhanced controllers behavior</li>  <li>Frontend, server and database components updated together</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 44 — Sprint 44</h4>
             <div class="d">
-                Q7 · 8 pts · Weeks 87–88
+                Q7 · 5 pts · Weeks 87–88
                 <span class="pm-badge phase-enhance">enhance</span>
- <span class="pm-chip" style="background:#0D9488">C</span>             </div>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-053</b></td>
-                            <td>Extend MVCSolutionBase data model: new fields end to end</td>
-                            <td> <span class="pm-badge layer-db">Database</span> </td>
-                            <td>MVCSolutionBase</td>
+                            <td><b>US-046</b></td>
+                            <td>Enhance library: Build a comprehensive .NET MVC application for managing cultural re...</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Library</td>
                             <td><span class="pm-badge should">Should</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>New MVCSolutionBase columns added via versioned migration</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Build a comprehensive .NET MVC application for managing cultural re...&#x27; (1 commits touched data adapter code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Data/ShunyaSanghaDbContext.cs</li>  <li>Regression tests prove the enhanced data adapter behavior</li>  <li>Frontend, server and database components updated together</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1193,18 +1128,18 @@
             <div class="d">
                 Q7 · 8 pts · Weeks 89–90
                 <span class="pm-badge phase-enhance">enhance</span>
- <span class="pm-chip" style="background:#4F46E5">D</span>             </div>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-054</b></td>
-                            <td>Extend api-client-react data model: new fields end to end</td>
+                            <td><b>US-047</b></td>
+                            <td>Extend library data model: new fields end to end</td>
                             <td> <span class="pm-badge layer-db">Database</span> </td>
-                            <td>api-client-react</td>
+                            <td>Library</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>New api-client-react columns added via versioned migration</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
+                            <td><ul class="ac-list"> <li>New columns added via versioned migration (LibraryItem, UserProfile)</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1212,18 +1147,18 @@
             <div class="d">
                 Q7 · 8 pts · Weeks 91–92
                 <span class="pm-badge phase-enhance">enhance</span>
- <span class="pm-chip" style="background:#EA580C">E</span>             </div>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-055</b></td>
-                            <td>Extend api-zod data model: new fields end to end</td>
+                            <td><b>US-048</b></td>
+                            <td>Extend events data model: new fields end to end</td>
                             <td> <span class="pm-badge layer-db">Database</span> </td>
-                            <td>api-zod</td>
+                            <td>Events</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>New api-zod columns added via versioned migration</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
+                            <td><ul class="ac-list"> <li>New columns added via versioned migration (ChatMessage, LibraryItem, RecitalRecord, SessionState, UserProfile)</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1231,18 +1166,18 @@
             <div class="d">
                 Q8 · 8 pts · Weeks 93–94
                 <span class="pm-badge phase-enhance">enhance</span>
- <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-056</b></td>
-                            <td>Extend db data model: new fields end to end</td>
+                            <td><b>US-049</b></td>
+                            <td>Extend admin data model: new fields end to end</td>
                             <td> <span class="pm-badge layer-db">Database</span> </td>
-                            <td>db</td>
-                            <td><span class="pm-badge could">Could</span></td>
+                            <td>Admin</td>
+                            <td><span class="pm-badge should">Should</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>New db columns added via versioned migration</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
+                            <td><ul class="ac-list"> <li>New columns added via versioned migration (EventModel, RecitalSequenceItem, LibraryItem, SessionState, UserProfile)</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1256,18 +1191,18 @@
             <div class="d">
                 Q8 · 8 pts · Weeks 97–98
                 <span class="pm-badge phase-release">release</span>
- <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-056</b></td>
-                            <td>Extend db data model: new fields end to end</td>
+                            <td><b>US-049</b></td>
+                            <td>Extend admin data model: new fields end to end</td>
                             <td> <span class="pm-badge layer-db">Database</span> </td>
-                            <td>db</td>
-                            <td><span class="pm-badge could">Could</span></td>
+                            <td>Admin</td>
+                            <td><span class="pm-badge should">Should</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>New db columns added via versioned migration</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
+                            <td><ul class="ac-list"> <li>New columns added via versioned migration (EventModel, RecitalSequenceItem, LibraryItem, SessionState, UserProfile)</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1275,15 +1210,15 @@
             <div class="d">
                 Q8 · 13 pts · Weeks 99–100
                 <span class="pm-badge phase-release">release</span>
- <span class="pm-chip" style="background:#4F46E5">D</span>             </div>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-059</b></td>
+                            <td><b>US-052</b></td>
                             <td>Security review &amp; performance hardening</td>
                             <td> <span class="pm-badge layer-fw">Framework</span> </td>
-                            <td>routes</td>
+                            <td>MVCSolutionBase</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>13</td>
                             <td><ul class="ac-list"> <li>Security checklist cleared</li>  <li>Load test meets SLO</li>  <li>Runbook published</li> </ul></td>
@@ -1294,15 +1229,15 @@
             <div class="d">
                 Q8 · 5 pts · Weeks 101–102
                 <span class="pm-badge phase-release">release</span>
- <span class="pm-chip" style="background:#4F46E5">D</span>             </div>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-060</b></td>
+                            <td><b>US-053</b></td>
                             <td>GA release &amp; operations handover</td>
                             <td> <span class="pm-badge layer-fw">Framework</span> </td>
-                            <td>routes</td>
+                            <td>MVCSolutionBase</td>
                             <td><span class="pm-badge could">Could</span></td>
                             <td>5</td>
                             <td><ul class="ac-list"> <li>GA build signed off</li>  <li>Monitoring dashboards live</li>  <li>Handover doc accepted</li> </ul></td>
@@ -1320,17 +1255,17 @@
 
     <section id="backlog" class="x-sec">
         <div class="pm-card">
-            <h3>Requirement Backlog (60 stories)</h3>
+            <h3>Requirement Backlog (53 stories)</h3>
             <table class="pm-tbl">
                 <thead><tr><th>ID</th><th>Sprint</th><th>Title</th><th>Layer</th><th>Phase</th><th>Module</th><th>As a</th><th>Priority</th><th>Points</th><th>Risk</th></tr></thead>
                 <tbody>
                     <tr>
                         <td><b>US-001</b></td>
                         <td>1</td>
-                        <td>Solution bootstrap &amp; repository structure</td>
+                        <td>Shunya Sangha &#x2014; Cultural Recital Management System solution bootstrap &amp; repository structure</td>
                         <td> <span class="pm-badge layer-fw">Framework</span> </td>
                         <td><span class="pm-badge phase-framework">framework</span></td>
-                        <td>components</td>
+                        <td>MVCSolutionBase</td>
                         <td>developer</td>
                         <td><span class="pm-badge must">Must</span></td>
                         <td>8</td>
@@ -1339,11 +1274,11 @@
                     <tr>
                         <td><b>US-002</b></td>
                         <td>2</td>
-                        <td>Authentication &amp; user management</td>
+                        <td>Authentication &amp; access control (AuthController)</td>
                         <td> <span class="pm-badge layer-fw">Framework</span> </td>
                         <td><span class="pm-badge phase-framework">framework</span></td>
-                        <td>components</td>
-                        <td>product owner</td>
+                        <td>MVCSolutionBase</td>
+                        <td>user</td>
                         <td><span class="pm-badge must">Must</span></td>
                         <td>13</td>
                         <td>High</td>
@@ -1354,7 +1289,7 @@
                         <td>Base framework code generation &amp; tooling</td>
                         <td> <span class="pm-badge layer-fw">Framework</span> </td>
                         <td><span class="pm-badge phase-framework">framework</span></td>
-                        <td>components</td>
+                        <td>MVCSolutionBase</td>
                         <td>developer</td>
                         <td><span class="pm-badge must">Must</span></td>
                         <td>8</td>
@@ -1363,70 +1298,70 @@
                     <tr>
                         <td><b>US-004</b></td>
                         <td>4</td>
-                        <td>components server-side domain &amp; services</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td>Library: browse, create, edit, delete and view library items, user profiles end to end</td>
+                        <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>components</td>
-                        <td>user</td>
+                        <td>Library</td>
+                        <td>curator</td>
                         <td><span class="pm-badge must">Must</span></td>
                         <td>13</td>
-                        <td>Medium</td>
+                        <td>High</td>
                     </tr>
                     <tr>
                         <td><b>US-005</b></td>
-                        <td>5</td>
-                        <td>components UI screens &amp; interaction</td>
-                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                        <td>4</td>
+                        <td>LibraryItem persistence &amp; invariants</td>
+                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>components</td>
-                        <td>user</td>
+                        <td>Library</td>
+                        <td>curator</td>
                         <td><span class="pm-badge must">Must</span></td>
-                        <td>8</td>
+                        <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-006</b></td>
                         <td>4</td>
-                        <td>Sidebar UI component (components) implementation</td>
-                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                        <td>UserProfile persistence &amp; invariants</td>
+                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>components</td>
-                        <td>user</td>
+                        <td>Library</td>
+                        <td>curator</td>
                         <td><span class="pm-badge must">Must</span></td>
-                        <td>8</td>
+                        <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-007</b></td>
-                        <td>4</td>
-                        <td>Menubar UI component (components) implementation</td>
+                        <td>5</td>
+                        <td>Library screens (Index)</td>
                         <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>components</td>
-                        <td>user</td>
+                        <td>Library</td>
+                        <td>curator</td>
                         <td><span class="pm-badge must">Must</span></td>
-                        <td>5</td>
+                        <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-008</b></td>
                         <td>5</td>
-                        <td>Dropdown menu UI component (components) implementation</td>
-                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                        <td>Library schema, migrations &amp; seeds</td>
+                        <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>components</td>
-                        <td>user</td>
+                        <td>Library</td>
+                        <td>database admin</td>
                         <td><span class="pm-badge must">Must</span></td>
                         <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-009</b></td>
-                        <td>5</td>
-                        <td>components integration &amp; contract tests</td>
+                        <td>8</td>
+                        <td>Library integration &amp; contract tests</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>components</td>
+                        <td>Library</td>
                         <td>qa lead</td>
                         <td><span class="pm-badge must">Must</span></td>
                         <td>5</td>
@@ -1434,251 +1369,251 @@
                     </tr>
                     <tr>
                         <td><b>US-010</b></td>
-                        <td>8</td>
-                        <td>MVCSolutionBase server-side domain &amp; services</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td>7</td>
+                        <td>Events: view, edit and send chat messages, library items end to end</td>
+                        <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>MVCSolutionBase</td>
-                        <td>user</td>
+                        <td>Events</td>
+                        <td>participant</td>
                         <td><span class="pm-badge must">Must</span></td>
-                        <td>13</td>
-                        <td>Medium</td>
+                        <td>8</td>
+                        <td>High</td>
                     </tr>
                     <tr>
                         <td><b>US-011</b></td>
-                        <td>8</td>
-                        <td>MVCSolutionBase data adapter &amp; persistence layer</td>
+                        <td>9</td>
+                        <td>ChatMessage persistence &amp; invariants</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>MVCSolutionBase</td>
-                        <td>developer</td>
+                        <td>Events</td>
+                        <td>participant</td>
                         <td><span class="pm-badge must">Must</span></td>
-                        <td>13</td>
+                        <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-012</b></td>
                         <td>9</td>
-                        <td>MVCSolutionBase controllers &amp; actions</td>
-                        <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
+                        <td>Events screens (View)</td>
+                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>MVCSolutionBase</td>
-                        <td>user</td>
+                        <td>Events</td>
+                        <td>participant</td>
                         <td><span class="pm-badge must">Must</span></td>
-                        <td>13</td>
-                        <td>High</td>
+                        <td>3</td>
+                        <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-013</b></td>
                         <td>9</td>
-                        <td>MVCSolutionBase MVC views &amp; forms</td>
-                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                        <td>Events schema, migrations &amp; seeds</td>
+                        <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>MVCSolutionBase</td>
-                        <td>user</td>
+                        <td>Events</td>
+                        <td>database admin</td>
                         <td><span class="pm-badge must">Must</span></td>
-                        <td>8</td>
+                        <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-014</b></td>
-                        <td>8</td>
-                        <td>LibraryController endpoints &amp; behavior</td>
-                        <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
+                        <td>13</td>
+                        <td>Events integration &amp; contract tests</td>
+                        <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>MVCSolutionBase</td>
-                        <td>user</td>
+                        <td>Events</td>
+                        <td>qa lead</td>
                         <td><span class="pm-badge must">Must</span></td>
-                        <td>8</td>
-                        <td>High</td>
+                        <td>5</td>
+                        <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-015</b></td>
-                        <td>9</td>
-                        <td>EventsController endpoints &amp; behavior</td>
+                        <td>11</td>
+                        <td>Admin: browse, create, edit, delete and view event models, recital sequence items end to end</td>
                         <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>MVCSolutionBase</td>
-                        <td>user</td>
+                        <td>Admin</td>
+                        <td>administrator</td>
                         <td><span class="pm-badge must">Must</span></td>
                         <td>8</td>
                         <td>High</td>
                     </tr>
                     <tr>
                         <td><b>US-016</b></td>
-                        <td>11</td>
-                        <td>AdminController endpoints &amp; behavior</td>
-                        <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
+                        <td>14</td>
+                        <td>EventModel persistence &amp; invariants</td>
+                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>MVCSolutionBase</td>
-                        <td>user</td>
+                        <td>Admin</td>
+                        <td>administrator</td>
                         <td><span class="pm-badge must">Must</span></td>
-                        <td>8</td>
-                        <td>High</td>
+                        <td>3</td>
+                        <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-017</b></td>
-                        <td>11</td>
-                        <td>ChatMessage persistence &amp; validation</td>
+                        <td>14</td>
+                        <td>RecitalSequenceItem persistence &amp; invariants</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>MVCSolutionBase</td>
-                        <td>user</td>
+                        <td>Admin</td>
+                        <td>administrator</td>
                         <td><span class="pm-badge must">Must</span></td>
-                        <td>2</td>
+                        <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-018</b></td>
-                        <td>11</td>
-                        <td>MVCSolutionBase integration &amp; contract tests</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td>14</td>
+                        <td>Admin screens (Index)</td>
+                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>MVCSolutionBase</td>
-                        <td>qa lead</td>
+                        <td>Admin</td>
+                        <td>administrator</td>
                         <td><span class="pm-badge must">Must</span></td>
-                        <td>5</td>
+                        <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-019</b></td>
-                        <td>13</td>
-                        <td>api-client-react server-side domain &amp; services</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td>15</td>
+                        <td>Admin schema, migrations &amp; seeds</td>
+                        <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-client-react</td>
-                        <td>user</td>
-                        <td><span class="pm-badge must">Must</span></td>
-                        <td>3</td>
-                        <td>Medium</td>
-                    </tr>
-                    <tr>
-                        <td><b>US-020</b></td>
-                        <td>13</td>
-                        <td>api-client-react data adapter &amp; persistence layer</td>
-                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                        <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-client-react</td>
-                        <td>developer</td>
-                        <td><span class="pm-badge should">Should</span></td>
-                        <td>3</td>
-                        <td>Medium</td>
-                    </tr>
-                    <tr>
-                        <td><b>US-021</b></td>
-                        <td>13</td>
-                        <td>Custom fetch module (api-client-react) implementation</td>
-                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                        <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-client-react</td>
-                        <td>user</td>
+                        <td>Admin</td>
+                        <td>database admin</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
-                        <td><b>US-022</b></td>
+                        <td><b>US-020</b></td>
                         <td>15</td>
-                        <td>Api module (api-client-react) implementation</td>
+                        <td>Admin integration &amp; contract tests</td>
+                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td><span class="pm-badge phase-build">build</span></td>
+                        <td>Admin</td>
+                        <td>qa lead</td>
+                        <td><span class="pm-badge should">Should</span></td>
+                        <td>5</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><b>US-021</b></td>
+                        <td>17</td>
+                        <td>Governance: browse, delete and edit global configs, user profiles end to end</td>
+                        <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
+                        <td><span class="pm-badge phase-build">build</span></td>
+                        <td>Governance</td>
+                        <td>administrator</td>
+                        <td><span class="pm-badge should">Should</span></td>
+                        <td>8</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><b>US-022</b></td>
+                        <td>17</td>
+                        <td>GlobalConfig persistence &amp; invariants</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-client-react</td>
-                        <td>user</td>
+                        <td>Governance</td>
+                        <td>administrator</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-023</b></td>
-                        <td>15</td>
-                        <td>Index module (api-client-react) implementation</td>
-                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                        <td>17</td>
+                        <td>Governance screens (Index)</td>
+                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-client-react</td>
-                        <td>user</td>
+                        <td>Governance</td>
+                        <td>administrator</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-024</b></td>
-                        <td>15</td>
-                        <td>api-client-react integration &amp; contract tests</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td>19</td>
+                        <td>Governance schema, migrations &amp; seeds</td>
+                        <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-client-react</td>
-                        <td>qa lead</td>
+                        <td>Governance</td>
+                        <td>database admin</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-025</b></td>
-                        <td>16</td>
-                        <td>api-zod server-side domain &amp; services</td>
+                        <td>23</td>
+                        <td>Governance integration &amp; contract tests</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-zod</td>
-                        <td>user</td>
+                        <td>Governance</td>
+                        <td>qa lead</td>
                         <td><span class="pm-badge should">Should</span></td>
-                        <td>3</td>
+                        <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-026</b></td>
-                        <td>20</td>
-                        <td>api-zod data adapter &amp; persistence layer</td>
-                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                        <td>21</td>
+                        <td>Session real-time sync</td>
+                        <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-zod</td>
-                        <td>developer</td>
+                        <td>Session</td>
+                        <td>participant</td>
                         <td><span class="pm-badge should">Should</span></td>
-                        <td>3</td>
-                        <td>Medium</td>
+                        <td>13</td>
+                        <td>High</td>
                     </tr>
                     <tr>
                         <td><b>US-027</b></td>
-                        <td>20</td>
-                        <td>Api module (api-zod) implementation</td>
-                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                        <td>26</td>
+                        <td>Dashboard: browse event models, user profiles end to end</td>
+                        <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-zod</td>
-                        <td>user</td>
+                        <td>Dashboard</td>
+                        <td>member</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-028</b></td>
-                        <td>20</td>
-                        <td>Health Status module (api-zod) implementation</td>
-                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                        <td>26</td>
+                        <td>Dashboard screens (Index)</td>
+                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-zod</td>
-                        <td>user</td>
+                        <td>Dashboard</td>
+                        <td>member</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-029</b></td>
-                        <td>23</td>
-                        <td>Index module (api-zod) implementation</td>
-                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                        <td>28</td>
+                        <td>Dashboard schema, migrations &amp; seeds</td>
+                        <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-zod</td>
-                        <td>user</td>
+                        <td>Dashboard</td>
+                        <td>database admin</td>
                         <td><span class="pm-badge should">Should</span></td>
-                        <td>3</td>
+                        <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-030</b></td>
-                        <td>23</td>
-                        <td>api-zod integration &amp; contract tests</td>
+                        <td>32</td>
+                        <td>Dashboard integration &amp; contract tests</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-zod</td>
+                        <td>Dashboard</td>
                         <td>qa lead</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>5</td>
@@ -1686,11 +1621,11 @@
                     </tr>
                     <tr>
                         <td><b>US-031</b></td>
-                        <td>26</td>
-                        <td>db server-side domain &amp; services</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td>33</td>
+                        <td>Home: browse homes end to end</td>
+                        <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>db</td>
+                        <td>Home</td>
                         <td>user</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>3</td>
@@ -1698,95 +1633,95 @@
                     </tr>
                     <tr>
                         <td><b>US-032</b></td>
-                        <td>27</td>
-                        <td>db database scripts &amp; schema</td>
-                        <td> <span class="pm-badge layer-db">Database</span> </td>
+                        <td>33</td>
+                        <td>Home screens (Index, Privacy)</td>
+                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>db</td>
-                        <td>database admin</td>
-                        <td><span class="pm-badge should">Should</span></td>
+                        <td>Home</td>
+                        <td>user</td>
+                        <td><span class="pm-badge could">Could</span></td>
                         <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-033</b></td>
-                        <td>26</td>
-                        <td>Index module (db) implementation</td>
-                        <td> <span class="pm-badge layer-db">Database</span> </td>
+                        <td>37</td>
+                        <td>Home integration &amp; contract tests</td>
+                        <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>db</td>
-                        <td>user</td>
-                        <td><span class="pm-badge should">Should</span></td>
-                        <td>3</td>
+                        <td>Home</td>
+                        <td>qa lead</td>
+                        <td><span class="pm-badge could">Could</span></td>
+                        <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-034</b></td>
-                        <td>26</td>
-                        <td>Index module (db) implementation</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td>38</td>
+                        <td>Records: browse user profiles end to end</td>
+                        <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>db</td>
-                        <td>user</td>
-                        <td><span class="pm-badge should">Should</span></td>
+                        <td>Records</td>
+                        <td>archivist</td>
+                        <td><span class="pm-badge could">Could</span></td>
                         <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-035</b></td>
-                        <td>27</td>
-                        <td>Drizzle config module (db) implementation</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td>38</td>
+                        <td>Records screens (Index)</td>
+                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>db</td>
-                        <td>user</td>
-                        <td><span class="pm-badge should">Should</span></td>
+                        <td>Records</td>
+                        <td>archivist</td>
+                        <td><span class="pm-badge could">Could</span></td>
                         <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-036</b></td>
-                        <td>27</td>
-                        <td>db integration &amp; contract tests</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td>38</td>
+                        <td>Records schema, migrations &amp; seeds</td>
+                        <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>db</td>
-                        <td>qa lead</td>
-                        <td><span class="pm-badge should">Should</span></td>
+                        <td>Records</td>
+                        <td>database admin</td>
+                        <td><span class="pm-badge could">Could</span></td>
                         <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-037</b></td>
-                        <td>29</td>
-                        <td>api-spec server-side domain &amp; services</td>
+                        <td>39</td>
+                        <td>Records integration &amp; contract tests</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-spec</td>
-                        <td>user</td>
-                        <td><span class="pm-badge should">Should</span></td>
-                        <td>2</td>
+                        <td>Records</td>
+                        <td>qa lead</td>
+                        <td><span class="pm-badge could">Could</span></td>
+                        <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-038</b></td>
-                        <td>29</td>
-                        <td>api-spec data adapter &amp; persistence layer</td>
+                        <td>40</td>
+                        <td>DateTimeModel persistence &amp; invariants</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-spec</td>
-                        <td>developer</td>
+                        <td>Domain data model</td>
+                        <td>user</td>
                         <td><span class="pm-badge could">Could</span></td>
                         <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-039</b></td>
-                        <td>29</td>
-                        <td>Orval config module (api-spec) implementation</td>
+                        <td>40</td>
+                        <td>ErrorViewModel persistence &amp; invariants</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-spec</td>
+                        <td>Domain data model</td>
                         <td>user</td>
                         <td><span class="pm-badge could">Could</span></td>
                         <td>3</td>
@@ -1794,251 +1729,167 @@
                     </tr>
                     <tr>
                         <td><b>US-040</b></td>
-                        <td>31</td>
-                        <td>api-spec integration &amp; contract tests</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td>40</td>
+                        <td>DateTimeViewModel persistence &amp; invariants</td>
+                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>api-spec</td>
-                        <td>qa lead</td>
+                        <td>Domain data model</td>
+                        <td>user</td>
                         <td><span class="pm-badge could">Could</span></td>
-                        <td>5</td>
+                        <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-041</b></td>
-                        <td>33</td>
-                        <td>lib server-side domain &amp; services</td>
+                        <td>27</td>
+                        <td>lib audit: what is live, legacy or duplicated</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
                         <td>lib</td>
-                        <td>user</td>
-                        <td><span class="pm-badge could">Could</span></td>
-                        <td>1</td>
+                        <td>solution architect</td>
+                        <td><span class="pm-badge should">Should</span></td>
+                        <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-042</b></td>
-                        <td>33</td>
-                        <td>Logger module (lib) implementation</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
+                        <td>31</td>
+                        <td>Migrate live lib capabilities into Shunya Sangha &#x2014; Cultural Recital Management System</td>
+                        <td>—</td>
                         <td><span class="pm-badge phase-build">build</span></td>
                         <td>lib</td>
-                        <td>user</td>
-                        <td><span class="pm-badge could">Could</span></td>
-                        <td>3</td>
-                        <td>Medium</td>
+                        <td>developer</td>
+                        <td><span class="pm-badge should">Should</span></td>
+                        <td>13</td>
+                        <td>High</td>
                     </tr>
                     <tr>
                         <td><b>US-043</b></td>
-                        <td>33</td>
-                        <td>Utils module (lib) implementation</td>
+                        <td>34</td>
+                        <td>Decommission retired lib surface</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
                         <td>lib</td>
-                        <td>user</td>
+                        <td>operations</td>
                         <td><span class="pm-badge could">Could</span></td>
-                        <td>3</td>
+                        <td>8</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-044</b></td>
-                        <td>34</td>
-                        <td>lib integration &amp; contract tests</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
-                        <td><span class="pm-badge phase-build">build</span></td>
-                        <td>lib</td>
-                        <td>qa lead</td>
-                        <td><span class="pm-badge could">Could</span></td>
-                        <td>5</td>
-                        <td>Medium</td>
-                    </tr>
-                    <tr>
-                        <td><b>US-045</b></td>
-                        <td>37</td>
-                        <td>routes server-side domain &amp; services</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
-                        <td><span class="pm-badge phase-build">build</span></td>
-                        <td>routes</td>
-                        <td>user</td>
-                        <td><span class="pm-badge could">Could</span></td>
-                        <td>1</td>
-                        <td>Medium</td>
-                    </tr>
-                    <tr>
-                        <td><b>US-046</b></td>
-                        <td>37</td>
-                        <td>Health module (routes) implementation</td>
-                        <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
-                        <td><span class="pm-badge phase-build">build</span></td>
-                        <td>routes</td>
-                        <td>user</td>
-                        <td><span class="pm-badge could">Could</span></td>
-                        <td>3</td>
-                        <td>Medium</td>
-                    </tr>
-                    <tr>
-                        <td><b>US-047</b></td>
-                        <td>37</td>
-                        <td>Index module (routes) implementation</td>
-                        <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
-                        <td><span class="pm-badge phase-build">build</span></td>
-                        <td>routes</td>
-                        <td>user</td>
-                        <td><span class="pm-badge could">Could</span></td>
-                        <td>3</td>
-                        <td>Medium</td>
-                    </tr>
-                    <tr>
-                        <td><b>US-048</b></td>
-                        <td>38</td>
-                        <td>routes integration &amp; contract tests</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
-                        <td><span class="pm-badge phase-build">build</span></td>
-                        <td>routes</td>
-                        <td>qa lead</td>
-                        <td><span class="pm-badge could">Could</span></td>
-                        <td>5</td>
-                        <td>Medium</td>
-                    </tr>
-                    <tr>
-                        <td><b>US-049</b></td>
-                        <td>40</td>
-                        <td>Enhance MVCSolutionBase (frontend): Fix error in gathering sequence builder and update database</td>
+                        <td>43</td>
+                        <td>Enhance events: Fix error in gathering sequence builder and update database</td>
                         <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>MVCSolutionBase</td>
+                        <td>Events</td>
                         <td>user</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>13</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
-                        <td><b>US-050</b></td>
-                        <td>40</td>
-                        <td>Enhance MVCSolutionBase (controllers): Add AI-powered scripture discovery and enhance event viewing features</td>
+                        <td><b>US-045</b></td>
+                        <td>43</td>
+                        <td>Enhance library: Add AI-powered scripture discovery and enhance event viewing features</td>
                         <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>MVCSolutionBase</td>
+                        <td>Library</td>
                         <td>user</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>8</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
-                        <td><b>US-051</b></td>
-                        <td>41</td>
-                        <td>Enhance MVCSolutionBase (server): Add AI-powered scripture discovery and enhance event viewing features</td>
-                        <td> <span class="pm-badge layer-srv">Server</span> </td>
-                        <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>MVCSolutionBase</td>
-                        <td>user</td>
-                        <td><span class="pm-badge should">Should</span></td>
-                        <td>8</td>
-                        <td>Medium</td>
-                    </tr>
-                    <tr>
-                        <td><b>US-052</b></td>
-                        <td>43</td>
-                        <td>Enhance MVCSolutionBase (data adapter): Build a comprehensive .NET MVC application for managing cultural re...</td>
+                        <td><b>US-046</b></td>
+                        <td>44</td>
+                        <td>Enhance library: Build a comprehensive .NET MVC application for managing cultural re...</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>MVCSolutionBase</td>
+                        <td>Library</td>
                         <td>user</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
-                        <td><b>US-053</b></td>
-                        <td>44</td>
-                        <td>Extend MVCSolutionBase data model: new fields end to end</td>
-                        <td> <span class="pm-badge layer-db">Database</span> </td>
-                        <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>MVCSolutionBase</td>
-                        <td>product owner</td>
-                        <td><span class="pm-badge should">Should</span></td>
-                        <td>8</td>
-                        <td>Medium</td>
-                    </tr>
-                    <tr>
-                        <td><b>US-054</b></td>
+                        <td><b>US-047</b></td>
                         <td>45</td>
-                        <td>Extend api-client-react data model: new fields end to end</td>
+                        <td>Extend library data model: new fields end to end</td>
                         <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>api-client-react</td>
+                        <td>Library</td>
                         <td>product owner</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>8</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
-                        <td><b>US-055</b></td>
+                        <td><b>US-048</b></td>
                         <td>46</td>
-                        <td>Extend api-zod data model: new fields end to end</td>
+                        <td>Extend events data model: new fields end to end</td>
                         <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>api-zod</td>
+                        <td>Events</td>
                         <td>product owner</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>8</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
-                        <td><b>US-056</b></td>
+                        <td><b>US-049</b></td>
                         <td>47</td>
-                        <td>Extend db data model: new fields end to end</td>
+                        <td>Extend admin data model: new fields end to end</td>
                         <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>db</td>
+                        <td>Admin</td>
                         <td>product owner</td>
-                        <td><span class="pm-badge could">Could</span></td>
+                        <td><span class="pm-badge should">Should</span></td>
                         <td>8</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
-                        <td><b>US-057</b></td>
-                        <td>19</td>
+                        <td><b>US-050</b></td>
+                        <td>20</td>
                         <td>Database schema, migrations &amp; seed data</td>
                         <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>components</td>
+                        <td>MVCSolutionBase</td>
                         <td>database admin</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>8</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
-                        <td><b>US-058</b></td>
-                        <td>22</td>
-                        <td>Automated test suites per module</td>
+                        <td><b>US-051</b></td>
+                        <td>25</td>
+                        <td>Automated test suites per capability</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>components</td>
+                        <td>MVCSolutionBase</td>
                         <td>qa lead</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>8</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
-                        <td><b>US-059</b></td>
+                        <td><b>US-052</b></td>
                         <td>50</td>
                         <td>Security review &amp; performance hardening</td>
                         <td> <span class="pm-badge layer-fw">Framework</span> </td>
                         <td><span class="pm-badge phase-release">release</span></td>
-                        <td>routes</td>
+                        <td>MVCSolutionBase</td>
                         <td>operations</td>
                         <td><span class="pm-badge should">Should</span></td>
                         <td>13</td>
                         <td>High</td>
                     </tr>
                     <tr>
-                        <td><b>US-060</b></td>
+                        <td><b>US-053</b></td>
                         <td>51</td>
                         <td>GA release &amp; operations handover</td>
                         <td> <span class="pm-badge layer-fw">Framework</span> </td>
                         <td><span class="pm-badge phase-release">release</span></td>
-                        <td>routes</td>
+                        <td>MVCSolutionBase</td>
                         <td>operations</td>
                         <td><span class="pm-badge could">Could</span></td>
                         <td>5</td>
@@ -2052,7 +1903,7 @@
     <section id="team" class="x-sec">
         <div class="pm-cols">
             <div class="pm-card">
-                <h3>Resources (26)</h3>
+                <h3>Resources (12)</h3>
                 <table class="pm-tbl">
                     <thead><tr><th>Member</th><th>Role</th><th>Squad</th><th>Rate</th></tr></thead>
                     <tbody>
@@ -2128,100 +1979,14 @@
                             <td></td>
                             <td>$60/h</td>
                         </tr>
-                        <tr>
-                            <td>Developer 13</td>
-                            <td>Developer</td>
-                            <td></td>
-                            <td>$75/h</td>
-                        </tr>
-                        <tr>
-                            <td>Developer 14</td>
-                            <td>Developer</td>
-                            <td></td>
-                            <td>$75/h</td>
-                        </tr>
-                        <tr>
-                            <td>QA Engineer 15</td>
-                            <td>QA Engineer</td>
-                            <td></td>
-                            <td>$70/h</td>
-                        </tr>
-                        <tr>
-                            <td>Developer 16</td>
-                            <td>Developer</td>
-                            <td></td>
-                            <td>$75/h</td>
-                        </tr>
-                        <tr>
-                            <td>Developer 17</td>
-                            <td>Developer</td>
-                            <td></td>
-                            <td>$75/h</td>
-                        </tr>
-                        <tr>
-                            <td>QA Engineer 18</td>
-                            <td>QA Engineer</td>
-                            <td></td>
-                            <td>$70/h</td>
-                        </tr>
-                        <tr>
-                            <td>Developer 19</td>
-                            <td>Developer</td>
-                            <td></td>
-                            <td>$75/h</td>
-                        </tr>
-                        <tr>
-                            <td>Developer 20</td>
-                            <td>Developer</td>
-                            <td></td>
-                            <td>$75/h</td>
-                        </tr>
-                        <tr>
-                            <td>QA Engineer 21</td>
-                            <td>QA Engineer</td>
-                            <td></td>
-                            <td>$70/h</td>
-                        </tr>
-                        <tr>
-                            <td>Developer 22</td>
-                            <td>Developer</td>
-                            <td></td>
-                            <td>$75/h</td>
-                        </tr>
-                        <tr>
-                            <td>Developer 23</td>
-                            <td>Developer</td>
-                            <td></td>
-                            <td>$75/h</td>
-                        </tr>
-                        <tr>
-                            <td>QA Engineer 24</td>
-                            <td>QA Engineer</td>
-                            <td></td>
-                            <td>$70/h</td>
-                        </tr>
-                        <tr>
-                            <td>Developer 25</td>
-                            <td>Developer</td>
-                            <td></td>
-                            <td>$75/h</td>
-                        </tr>
-                        <tr>
-                            <td>Developer 26</td>
-                            <td>Developer</td>
-                            <td></td>
-                            <td>$75/h</td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
             <div class="pm-card">
-                <h3>Budget — $1,025,180 total (uncapped)</h3>
+                <h3>Budget — $505,960 total (uncapped)</h3>
                 <table class="pm-tbl">
                     <thead><tr><th>Role</th><th>Cost</th></tr></thead>
                     <tbody>
-                        <tr><td>Developer</td><td>$417,300</td></tr>
-                        <tr><td>QA Engineer</td><td>$101,920</td></tr>
                         <tr><td>Product Owner</td><td>$92,378</td></tr>
                         <tr><td>Dev Lead</td><td>$74,802</td></tr>
                         <tr><td>Solution Architect</td><td>$69,966</td></tr>

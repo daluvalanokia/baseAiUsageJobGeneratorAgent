@@ -142,6 +142,24 @@ public sealed class PmController(
 
     // ---------- API ----------
 
+    /// <summary>Renders a self-contained static HTML PM hub (no server needed) for a saved program.</summary>
+    [HttpGet("~/Pm/Export")]
+    public IActionResult Export(string? slug)
+    {
+        var plan = programStore.Load(slug ?? "");
+        if (plan is null)
+            return NotFound(new { error = $"no program '{slug}'" });
+
+        // inline the hub stylesheet so the export is a single portable file
+        var cssPath = Path.Combine(env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot"),
+            "css", "pm-hub.css");
+        if (System.IO.File.Exists(cssPath))
+            ViewData["PmCss"] = System.IO.File.ReadAllText(cssPath);
+
+        Response.Headers.CacheControl = "no-store";
+        return View("Export", plan);
+    }
+
     [HttpGet("~/api/pm/programs")]
     public ActionResult ListPrograms() => Ok(new
     {

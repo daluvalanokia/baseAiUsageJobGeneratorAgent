@@ -1,0 +1,264 @@
+@using SmartAgent.Core.Pm
+@using SmartAgent.Core
+@using SmartAgent.Web.Models
+@model ProgramPlan
+@{
+    Layout = null;
+    var storyBy = Model.Stories.ToDictionary(s => s.Key);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Model.Name — PM Hub (static export)</title>
+    <style>@Html.Raw((string)ViewData["PmCss"] ?? "")</style>
+    <style>
+        body { background: #f9fafb; color: #1f2937; margin: 0;
+            font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+        .x-wrap { max-width: 1280px; margin: 0 auto; padding: 22px 26px 60px; }
+        .x-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+        .x-head h1 { font-size: 21px; margin: 0; color: #111827; }
+        .x-sub { color: #6b7280; font-size: 12.5px; margin: 0 0 18px; }
+        .x-sub b { color: #111827; }
+        .x-tabs { display: flex; gap: 4px; border-bottom: 2px solid #e5e7eb; margin: 0 0 18px; flex-wrap: wrap; }
+        .x-tabs button { border: 0; background: transparent; padding: 9px 16px; font-size: 13px;
+            color: #6b7280; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .x-tabs button.active { color: #1890ff; border-bottom-color: #1890ff; }
+        .x-sec { display: none; }
+        .x-sec.show { display: block; }
+        .x-foot { margin-top: 26px; color: #9ca3af; font-size: 11px; text-align: center; }
+        .x-sprint h4 { margin: 0; font-size: 13.5px; }
+        .x-sprint .d { font-size: 11.5px; color: #6b7280; margin: 2px 0 8px; }
+        .ac-list { list-style: none; padding: 0; margin: 0; font-size: 11.5px; color: #374151; }
+        .ac-list li { padding: 1px 0; }
+        .ac-list li::before { content: "☐ "; color: #9ca3af; }
+        @@media print { .x-tabs { display: none; } .x-sec { display: block !important; page-break-after: always; } }
+    </style>
+</head>
+<body>
+<div class="x-wrap">
+    <div class="x-head">
+        <h1>@Model.Name</h1>
+        <span class="x-sub">
+            static PM Hub export · @Model.Years-year program · <b>@Model.Sprints</b> sprints (@Model.Weeks weeks) ·
+            @Model.ProgramStart.ToString("MMM yyyy") → @Model.ProgramEnd.ToString("MMM yyyy") · source: @Model.Epics.Count epics
+        </span>
+    </div>
+
+    <div class="x-tabs" id="tabs">
+        <button data-sec="overview" class="active">Overview</button>
+        <button data-sec="sprints">Sprints</button>
+        <button data-sec="backlog">Requirements</button>
+        <button data-sec="team">Team &amp; Budget</button>
+    </div>
+
+    @* ---------------- Overview ---------------- *@
+    <section id="overview" class="x-sec show">
+        <div class="pm-kpis">
+            <div class="pm-kpi"><b>@Model.Sprints</b><span>SPRINTS</span></div>
+            <div class="pm-kpi"><b>@Model.Weeks</b><span>WEEKS</span></div>
+            <div class="pm-kpi"><b>@Model.Resources.Count</b><span>TEAM MEMBERS</span></div>
+            <div class="pm-kpi"><b>@Model.TotalStoryPoints</b><span>STORY POINTS</span></div>
+            <div class="pm-kpi"><b>@Model.UserStoryCount</b><span>USER STORIES</span></div>
+            <div class="pm-kpi green"><b>@(Model.UnitTestCount + Model.SystemTestCount)</b><span>TEST CASES</span></div>
+        </div>
+
+        @{
+            var phaseSprints = Model.SprintPlans.GroupBy(s => s.Phase is { Length: > 0 } ? s.Phase : "build")
+                .ToDictionary(g => g.Key, g => g.ToList());
+            var phaseOrder = new[] { "framework", "build", "enhance", "release", "stabilization" };
+            var phaseDesc = new Dictionary<string, string> {
+                ["framework"] = "base framework code generation: scaffold, auth, tooling",
+                ["build"] = "basic module with functionality in vertical slices (db + server + controllers + frontend per sprint)",
+                ["enhance"] = "field extensions and change patterns from the repository's commit history",
+                ["release"] = "hardening, security review and the GA train",
+                ["stabilization"] = "regression, hardening and readiness sprints" };
+        }
+        <div class="pm-card">
+            <h3>Delivery Phases — framework → build → enhance → release</h3>
+            <table class="pm-tbl">
+                <thead><tr><th>Phase</th><th>Sprints</th><th>Stories</th><th>Points</th><th>Focus</th></tr></thead>
+                <tbody>
+                @foreach (var ph in phaseOrder.Where(x => phaseSprints.ContainsKey(x)))
+                {
+                    var (label, css) = PmPhaseBadge.Phase(ph);
+                    var sprintsIn = phaseSprints[ph];
+                    var keys = sprintsIn.SelectMany(x => x.StoryKeys).ToList();
+                    var pts = keys.Select(k => storyBy.GetValueOrDefault(k)).Where(y => y != null).Sum(y => y!.Points);
+                    <tr>
+                        <td><span class="pm-badge @css">@label</span></td>
+                        <td>@sprintsIn.Min(x => x.Number)–@sprintsIn.Max(x => x.Number) (@sprintsIn.Count)</td>
+                        <td>@keys.Count</td>
+                        <td>@pts</td>
+                        <td>@phaseDesc[ph]</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pm-cols">
+            <div class="pm-card">
+                <h3>Quarter Schedule</h3>
+                <table class="pm-tbl">
+                    <thead><tr><th>Quarter</th><th>Theme</th><th>Sprints</th><th>Weeks</th><th>Release</th></tr></thead>
+                    <tbody>
+                    @foreach (var q in Model.Quarters)
+                    {
+                        <tr>
+                            <td><b>@q.Key</b></td>
+                            <td>@q.Theme</td>
+                            <td>@q.SprintFrom–@q.SprintTo</td>
+                            <td>@q.WeekFrom–@q.WeekTo</td>
+                            <td>@if (q.Release.Length > 0) { <span class="pm-badge rel">@q.Release</span> } else { <text>—</text> }</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <div class="pm-card">
+                <h3>Squad Domains</h3>
+                <table class="pm-tbl">
+                    <thead><tr><th>Squad</th><th>Name</th><th>Domain</th><th>Epics</th></tr></thead>
+                    <tbody>
+                    @foreach (var sq in Model.Squads)
+                    {
+                        <tr>
+                            <td><span class="pm-chip" style="background:@PmHub.SquadColor(sq.Key)">@sq.Key</span></td>
+                            <td>@sq.Name</td>
+                            <td>@sq.Domain</td>
+                            <td>@sq.EpicKeys.Count</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    @* ---------------- Sprints ---------------- *@
+    <section id="sprints" class="x-sec">
+        <div class="pm-card x-sprint">
+        @foreach (var s in Model.SprintPlans)
+        {
+            var stories = s.StoryKeys.Select(k => storyBy.GetValueOrDefault(k)).Where(x => x != null).Cast<PmStory>().ToList();
+            var squads = stories.Select(x => PmHub.SquadOfModule(Model, x.Module)).Where(x => x != "H" && x.Length > 0).Distinct().ToList();
+            <h4>Sprint @s.Number — @s.Name</h4>
+            <div class="d">
+                @s.Quarter · @s.Points pts · Weeks @s.StartWeek–@s.EndWeek
+                <span class="pm-badge @PmPhaseBadge.Phase(s.Phase).Css">@PmPhaseBadge.Phase(s.Phase).Label</span>
+                @foreach (var sq in squads) { <span class="pm-chip" style="background:@PmHub.SquadColor(sq)">@sq</span> }
+            </div>
+            @if (stories.Count > 0)
+            {
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                    @foreach (var st in stories)
+                    {
+                        var (plabel, pcss) = PmHub.MoScow(st.Priority);
+                        <tr>
+                            <td><b>@st.Key</b></td>
+                            <td>@st.Title</td>
+                            <td>@if (st.Layer.Length > 0) { <span class="pm-badge @PmPhaseBadge.Layer(st.Layer).Css">@st.Layer</span> } else { <text>—</text> }</td>
+                            <td>@st.Module</td>
+                            <td><span class="pm-badge @pcss">@plabel</span></td>
+                            <td>@st.Points</td>
+                            <td><ul class="ac-list">@foreach (var a in st.AcceptanceCriteria) { <li>@a</li> }</ul></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">@s.Goal</p>
+            }
+        }
+        </div>
+    </section>
+
+    @* ---------------- Requirements backlog ---------------- *@
+    <section id="backlog" class="x-sec">
+        <div class="pm-card">
+            <h3>Requirement Backlog (@Model.Stories.Count stories)</h3>
+            <table class="pm-tbl">
+                <thead><tr><th>ID</th><th>Sprint</th><th>Title</th><th>Layer</th><th>Phase</th><th>Module</th><th>As a</th><th>Priority</th><th>Points</th><th>Risk</th></tr></thead>
+                <tbody>
+                @{
+                    var sprintByStory = new Dictionary<string, int>();
+                    foreach (var sp in Model.SprintPlans)
+                        foreach (var k in sp.StoryKeys)
+                            sprintByStory.TryAdd(k, sp.Number);
+                }
+                @foreach (var s in Model.Stories)
+                {
+                    var (plabel, pcss) = PmHub.MoScow(s.Priority);
+                    <tr>
+                        <td><b>@s.Key</b></td>
+                        <td>@(sprintByStory.TryGetValue(s.Key, out var n) ? n.ToString() : "—")</td>
+                        <td>@s.Title</td>
+                        <td>@if (s.Layer.Length > 0) { <span class="pm-badge @PmPhaseBadge.Layer(s.Layer).Css">@s.Layer</span> } else { <text>—</text> }</td>
+                        <td><span class="pm-badge @PmPhaseBadge.Phase(s.Phase).Css">@s.Phase</span></td>
+                        <td>@s.Module</td>
+                        <td>@s.AsA</td>
+                        <td><span class="pm-badge @pcss">@plabel</span></td>
+                        <td>@s.Points</td>
+                        <td>@s.Risk</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ---------------- Team & budget ---------------- *@
+    <section id="team" class="x-sec">
+        <div class="pm-cols">
+            <div class="pm-card">
+                <h3>Resources (@Model.Resources.Count)</h3>
+                <table class="pm-tbl">
+                    <thead><tr><th>Member</th><th>Role</th><th>Squad</th><th>Rate</th></tr></thead>
+                    <tbody>
+                    @foreach (var r in Model.Resources)
+                    {
+                        <tr>
+                            <td>@r.Name</td>
+                            <td>@r.Role</td>
+                            <td>@if (r.Squad.Length > 0) { <span class="pm-chip" style="background:@PmHub.SquadColor(r.Squad)">@r.Squad</span> }</td>
+                            <td>$@r.HourlyRate.ToString("N0")/h</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <div class="pm-card">
+                <h3>Budget — $@Model.Budget.TotalUsd.ToString("N0") total (@(Model.Budget.BudgetCapPerYearUsd > 0 ? $"cap ${Model.Budget.BudgetCapPerYearUsd:N0}/yr" : "uncapped"))</h3>
+                <table class="pm-tbl">
+                    <thead><tr><th>Role</th><th>Cost</th></tr></thead>
+                    <tbody>
+                    @foreach (var c in Model.Budget.CostByRole.OrderByDescending(x => x.CostUsd))
+                    {
+                        <tr><td>@c.Role</td><td>$@c.CostUsd.ToString("N0")</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <div class="x-foot">Generated by SmartAgent PM engine · @DateTime.UtcNow.ToString("yyyy-MM-dd") · static export of @Model.Slug</div>
+</div>
+<script>
+    document.getElementById('tabs').addEventListener('click', function (e) {
+        if (e.target.tagName !== 'BUTTON') return;
+        document.querySelectorAll('.x-tabs button').forEach(function (b) { b.classList.remove('active'); });
+        e.target.classList.add('active');
+        document.querySelectorAll('.x-sec').forEach(function (s) { s.classList.remove('show'); });
+        document.getElementById(e.target.dataset.sec).classList.add('show');
+        window.scrollTo(0, 0);
+    });
+</script>
+</body>
+</html>

@@ -491,6 +491,91 @@ public sealed partial class SourceAnalyzer
 
     // ─── parsing helpers ─────────────────────────────────────────────────
 
+
+    // ─── layer taxonomy & history analysis ─────────────────────────────────
+
+    /// <summary>A change/enhancement pattern detected in repository history.</summary>
+    public sealed record PmChangePattern
+    {
+        public required string Module { get; init; }
+        public required string Layer { get; init; }
+        public required string Headline { get; init; }
+        public required IReadOnlyList<string> Examples { get; init; }
+        public int Commits { get; init; }
+        public DateTimeOffset Last { get; init; }
+    }
+
+    /// <summary>
+    /// Classifies a source path into an architecture layer:
+    /// Database, Data Adapter, Controllers, Frontend or Server.
+    /// </summary>
+    public static string LayerOf(string path)
+    {
+        var p = path.Replace('\\', '/').ToLowerInvariant();
+        if (p.EndsWith(".sql") || p.Contains("migration") || p.EndsWith(".db")
+            || p.EndsWith(".db-shm") || p.EndsWith(".db-wal") || p.EndsWith(".sqlite")
+            || p.Contains("/dbscripts") || p.Contains("/schema")) return "Database";
+        if (p.Contains("controller") || p.Contains("/routes") || p.Contains("/api/")
+            && !p.Contains("client")) return "Controllers";
+        if (p.Contains("dbcontext") || p.Contains("repositor")
+            || p.Contains("api-client") || p.Contains("api-zod") || p.Contains("api-spec")
+            || p.Contains("/data/") || p.Contains("dao") || p.Contains("persistence")) return "Data Adapter";
+        if (p.EndsWith(".cshtml") || p.EndsWith(".tsx") || p.EndsWith(".css")
+            || p.EndsWith(".jsx") || p.EndsWith(".vue") || p.EndsWith(".html")
+            || p.Contains("/views/") || p.Contains("/components/") || p.Contains("/pages/")) return "Frontend";
+        return "Server";
+    }
+
+    /// <summary>
+    /// Detects real change/enhancement patterns from the captured commit
+    /// history: groups commits by (module, layer) of their touched paths and
+    /// surfaces the recurring waves — the honest signal of where the
+    /// repository's maintenance effort actually goes.
+    /// </summary>
+    public IReadOnlyList<PmChangePattern> ChangePatterns(SourceSnapshot snapshot)
+    {
+        var patterns = new List<PmChangePattern>();
+        foreach (var commit in snapshot.History)
+        {
+            var code = commit.TouchedPaths.Where(t => !t.EndsWith(".db") && !t.EndsWith(".db-shm")
+                && !t.EndsWith(".db-wal") && !t.Contains("attached_assets")).ToList();
+            if (code.Count == 0) continue;
+            foreach (var group in code.GroupBy(LayerOf))
+            {
+                var module = group.Select(FirstProductFolder).GroupBy(m => m)
+                    .OrderByDescending(g => g.Count()).First().Key;
+                patterns.Add(new PmChangePattern
+                {
+                    Module = module,
+                    Layer = group.Key,
+                    Headline = FirstLine(commit.Message),
+                    Examples = group.OrderBy(p => p.Length).Take(3).ToList(),
+                    Commits = 1,
+                    Last = commit.Date
+                });
+            }
+        }
+        return patterns
+            .GroupBy(p => (p.Module, p.Layer))
+            .Select(g => new PmChangePattern
+            {
+                Module = g.Key.Module, Layer = g.Key.Layer,
+                Headline = g.OrderByDescending(p => p.Last).First().Headline,
+                Examples = g.SelectMany(p => p.Examples).Distinct().Take(3).ToList(),
+                Commits = g.Count(), Last = g.Max(p => p.Last)
+            })
+            .OrderByDescending(p => p.Commits).ThenBy(p => p.Layer).ToList();
+    }
+
+    private static string FirstLine(string message) =>
+        message.Split('\n', 2)[0].Trim();
+
+    private static string FirstProductFolder(string path)
+    {
+        var segments = path.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        return segments.Length == 0 ? "core" : segments[0];
+    }
+
     private static string KindOf(string className, string path) =>
         className.Contains("Controller", StringComparison.OrdinalIgnoreCase) ? "Controller"
         : path.Contains("Hub", StringComparison.OrdinalIgnoreCase) && className.EndsWith("Hub") ? "Hub"

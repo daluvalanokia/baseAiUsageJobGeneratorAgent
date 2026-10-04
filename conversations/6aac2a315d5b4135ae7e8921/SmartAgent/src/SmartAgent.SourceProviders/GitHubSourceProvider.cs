@@ -1,4 +1,5 @@
 using System.Formats.Tar;
+using System.Text.Json;
 using SmartAgent.Domain;
 
 namespace SmartAgent.SourceProviders;
@@ -30,13 +31,74 @@ public sealed class GitHubSourceProvider(HttpClient http) : ISourceProvider
         if (files.Count == 0)
             throw new InvalidOperationException($"No analyzable files found in {owner}/{repo}.");
 
+        var history = await TryFetchHistoryAsync(owner, repo, request, maxCommits: 30);
+
         return new SourceSnapshot
         {
             SourceType = SourceType.GitHub,
             SourceName = $"{owner}/{repo}",
-            SourceDetail = $"branch {(branch ?? "HEAD")}, {files.Count} files analyzed",
-            Files = files
+            SourceDetail = $"branch {(branch ?? "HEAD")}, {files.Count} files analyzed"
+                + (history.Count > 0 ? $", {history.Count} commits reviewed" : string.Empty),
+            Files = files,
+            History = history
         };
+    }
+
+    /// <summary>
+    /// Best-effort commit history review: recent commits with their touched
+    /// paths, so downstream planning can detect real change/enhancement
+    /// patterns in the repository. Any failure degrades to empty history.
+    /// </summary>
+    private async Task<IReadOnlyList<SourceCommit>> TryFetchHistoryAsync(
+        string owner, string repo, SourceRequest request, int maxCommits)
+    {
+        try
+        {
+            using var listReq = new HttpRequestMessage(HttpMethod.Get,
+                $"https://api.github.com/repos/{owner}/{repo}/commits?per_page={maxCommits}");
+            if (!string.IsNullOrWhiteSpace(request.GitHubToken))
+                listReq.Headers.Add("Authorization", $"Bearer {request.GitHubToken}");
+            listReq.Headers.Add("User-Agent", "SmartAgent-PM");
+            using var listResp = await http.SendAsync(listReq, request.CancellationToken);
+            listResp.EnsureSuccessStatusCode();
+            using var listDoc = JsonDocument.Parse(await listResp.Content.ReadAsStringAsync(request.CancellationToken));
+            var commits = new List<SourceCommit>();
+            foreach (var entry in listDoc.RootElement.EnumerateArray())
+            {
+                var sha = entry.GetProperty("sha").GetString()!;
+                var commit = entry.GetProperty("commit");
+                var message = commit.GetProperty("message").GetString() ?? "";
+                var date = commit.GetProperty("author").TryGetProperty("date", out var d) && d.GetString() is { } ds
+                    ? DateTimeOffset.Parse(ds) : DateTimeOffset.UtcNow;
+                commits.Add(new SourceCommit { Sha = sha, Message = message, Date = date });
+            }
+
+            foreach (var c in commits.Take(30))
+            {
+                using var detailReq = new HttpRequestMessage(HttpMethod.Get,
+                    $"https://api.github.com/repos/{owner}/{repo}/commits/{c.Sha}");
+                if (!string.IsNullOrWhiteSpace(request.GitHubToken))
+                    detailReq.Headers.Add("Authorization", $"Bearer {request.GitHubToken}");
+                detailReq.Headers.Add("User-Agent", "SmartAgent-PM");
+                using var detailResp = await http.SendAsync(detailReq, request.CancellationToken);
+                if (!detailResp.IsSuccessStatusCode) continue;
+                using var detailDoc = JsonDocument.Parse(await detailResp.Content.ReadAsStringAsync(request.CancellationToken));
+                if (!detailDoc.RootElement.TryGetProperty("files", out var filesEl)) continue;
+                var paths = new List<string>();
+                foreach (var f in filesEl.EnumerateArray().Take(40))
+                {
+                    if (f.TryGetProperty("filename", out var fn) && fn.GetString() is { } fp)
+                        paths.Add(fp);
+                }
+                var idx = commits.FindIndex(x => x.Sha == c.Sha);
+                commits[idx] = c with { TouchedPaths = paths };
+            }
+            return commits;
+        }
+        catch
+        {
+            return Array.Empty<SourceCommit>();
+        }
     }
 
     public static (string Owner, string Repo, string? Branch) Parse(string raw)

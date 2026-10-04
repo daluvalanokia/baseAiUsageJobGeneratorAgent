@@ -8,6 +8,15 @@ public sealed class SourceFile
     public long SizeBytes => Content.Length;
 }
 
+/// <summary>A commit captured from the source repository history.</summary>
+public sealed record SourceCommit
+{
+    public required string Sha { get; init; }
+    public required string Message { get; init; }
+    public required DateTimeOffset Date { get; init; }
+    public IReadOnlyList<string> TouchedPaths { get; init; } = Array.Empty<string>();
+}
+
 /// <summary>
 /// A normalized, size-capped snapshot of the target app gathered from one of
 /// the supported sources. All downstream analysis works only against this.
@@ -19,6 +28,8 @@ public sealed class SourceSnapshot
     public required string SourceDetail { get; init; }
     public required IReadOnlyList<SourceFile> Files { get; init; }
     public DateTimeOffset CapturedAtUtc { get; init; } = DateTimeOffset.UtcNow;
+    /// <summary>Recent repository history (commits + touched paths), when the source exposes it.</summary>
+    public IReadOnlyList<SourceCommit> History { get; init; } = Array.Empty<SourceCommit>();
 
     public int TotalFiles => Files.Count;
     public long TotalSizeBytes => Files.Sum(f => f.SizeBytes);

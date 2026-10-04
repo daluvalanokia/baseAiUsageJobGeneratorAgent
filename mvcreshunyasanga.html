@@ -156,6 +156,7 @@
     <div class="x-tabs" id="tabs">
         <button data-sec="overview" class="active">Overview</button>
         <button data-sec="sprints">Sprints</button>
+        <button data-sec="layers">Module &times; Layers</button>
         <button data-sec="backlog">Requirements</button>
         <button data-sec="team">Team &amp; Budget</button>
     </div>
@@ -165,9 +166,9 @@
             <div class="pm-kpi"><b>52</b><span>SPRINTS</span></div>
             <div class="pm-kpi"><b>104</b><span>WEEKS</span></div>
             <div class="pm-kpi"><b>12</b><span>TEAM MEMBERS</span></div>
-            <div class="pm-kpi"><b>313</b><span>STORY POINTS</span></div>
-            <div class="pm-kpi"><b>53</b><span>USER STORIES</span></div>
-            <div class="pm-kpi green"><b>560</b><span>TEST CASES</span></div>
+            <div class="pm-kpi"><b>322</b><span>STORY POINTS</span></div>
+            <div class="pm-kpi"><b>59</b><span>USER STORIES</span></div>
+            <div class="pm-kpi green"><b>601</b><span>TEST CASES</span></div>
         </div>
 
         <div class="pm-card">
@@ -184,28 +185,28 @@
                     </tr>
                     <tr>
                         <td><span class="pm-badge phase-build">build</span></td>
-                        <td>4–41 (32)</td>
+                        <td>4–35 (27)</td>
                         <td>42</td>
                         <td>216</td>
                         <td>basic module with functionality in vertical slices (db &#x2B; server &#x2B; controllers &#x2B; frontend per sprint)</td>
                     </tr>
                     <tr>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>43–47 (5)</td>
-                        <td>6</td>
-                        <td>50</td>
+                        <td>37–47 (10)</td>
+                        <td>12</td>
+                        <td>59</td>
                         <td>field extensions and change patterns from the repository&#x27;s commit history</td>
                     </tr>
                     <tr>
                         <td><span class="pm-badge phase-release">release</span></td>
-                        <td>49–51 (3)</td>
-                        <td>3</td>
+                        <td>49–52 (4)</td>
+                        <td>4</td>
                         <td>26</td>
                         <td>hardening, security review and the GA train</td>
                     </tr>
                     <tr>
                         <td><span class="pm-badge phase-stab">stabilization</span></td>
-                        <td>6–52 (9)</td>
+                        <td>6–48 (8)</td>
                         <td>0</td>
                         <td>0</td>
                         <td>regression, hardening and readiness sprints</td>
@@ -376,7 +377,7 @@
                             <td>Library</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>13</td>
-                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>Create behaves per the source contract</li>  <li>Edit behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>LibraryController.Index() pairs with view Library/Index.cshtml (fields: search, id, title, language, type)</li>  <li>LibraryController.Create() paired with the Library views per the source layout; binds and validates Id (string), Title (string), Language (string), Type (LibraryItemType), LinesJson (string), CreatedBy (string)</li>  <li>LibraryController.Edit() paired with the Library views per the source layout; binds and validates Id (string), Title (string), Language (string), Type (LibraryItemType), LinesJson (string), CreatedBy (string)</li>  <li>LibraryController.Delete() paired with the Library views per the source layout</li>  <li>LibraryController.GetItem() paired with the Library views per the source layout</li>  <li>LibraryController.DiscoverScriptures() paired with the Library views per the source layout</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-005</b></td>
@@ -385,7 +386,7 @@
                             <td>Library</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>LibraryItem round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
+                            <td><ul class="ac-list"> <li>LibraryItem fields (Id (string), Title (string), Language (string), Type (LibraryItemType), LinesJson (string), CreatedBy (string), CreatedAt (DateTime), UpdatedAt (DateTime?), Lines (List&lt;string&gt;)) round-trip through the data adapter identically</li>  <li>Required fields (Id (string), Title (string), Language (string), LinesJson (string)) enforced: null/empty submissions rejected with validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-006</b></td>
@@ -394,7 +395,7 @@
                             <td>Library</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>UserProfile round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
+                            <td><ul class="ac-list"> <li>UserProfile fields (Uid (string), UserId (string), Username (string), Email (string), UserType (UserType), UserLevel (UserLevel), Name (string), Address (string?), Phone (string?), Password (string?), CreatedAt (DateTime), UpdatedAt (DateTime?)) round-trip through the data adapter identically</li>  <li>Required fields (Uid (string), UserId (string), Username (string), Email (string)) enforced: null/empty submissions rejected with validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -413,7 +414,7 @@
                             <td>Library</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>Index render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Library/Index.cshtml &#x2014; fields: search, id, title, language, type, linesText; behaviors: fetch /Library/GetItem/, fetch /Library/DiscoverScriptures, fetch /Library/ImportDiscovered</li>  <li>Auth guards every screen and action; navigation and error states handled</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-008</b></td>
@@ -422,7 +423,7 @@
                             <td>Library</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Tables and constraints scripted for LibraryItem, UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
+                            <td><ul class="ac-list"> <li>LibraryItem &#x2192; table with columns Id (string), Title (string), Language (string), Type (LibraryItemType), LinesJson (string), CreatedBy (string), CreatedAt (DateTime), UpdatedAt (DateTime?), Lines (List&lt;string&gt;) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>UserProfile &#x2192; table with columns Uid (string), UserId (string), Username (string), Email (string), UserType (UserType), UserLevel (UserLevel), Name (string), Address (string?), Phone (string?), Password (string?), CreatedAt (DateTime), UpdatedAt (DateTime?) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>Seed data idempotent for LibraryItem, UserProfile; rollback scripts documented</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -447,7 +448,7 @@
                             <td>Events</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>View behaves per the source contract</li>  <li>GetSession behaves per the source contract</li>  <li>UpdateSession behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>EventsController.View() pairs with view Events/View.cshtml (fields: viewport)</li>  <li>EventsController.GetSession() paired with the Events views per the source layout</li>  <li>EventsController.UpdateSession() paired with the Events views per the source layout</li>  <li>EventsController.Finalize() paired with the Events views per the source layout</li>  <li>EventsController.SendChat() paired with the Events views per the source layout</li>  <li>EventsController.GetChats() paired with the Events views per the source layout</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -485,7 +486,7 @@
                             <td>Events</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>ChatMessage round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
+                            <td><ul class="ac-list"> <li>ChatMessage fields (Id (string), EventId (string), SenderId (string), SenderName (string), Text (string), Timestamp (DateTime)) round-trip through the data adapter identically</li>  <li>Required fields (Id (string), EventId (string), SenderId (string), SenderName (string)) enforced: null/empty submissions rejected with validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-012</b></td>
@@ -494,7 +495,7 @@
                             <td>Events</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>View render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Events/View.cshtml &#x2014; fields: viewport; behaviors: fetch /Events/UpdateSession/, fetch /Events/SendChat, fetch /Events/GetSession/, fetch /Events/GetChats/</li>  <li>Auth guards every screen and action; navigation and error states handled</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-013</b></td>
@@ -503,19 +504,13 @@
                             <td>Events</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Tables and constraints scripted for ChatMessage, LibraryItem, RecitalRecord, SessionState, UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
+                            <td><ul class="ac-list"> <li>ChatMessage &#x2192; table with columns Id (string), EventId (string), SenderId (string), SenderName (string), Text (string), Timestamp (DateTime) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>LibraryItem &#x2192; table with columns Id (string), Title (string), Language (string), Type (LibraryItemType), LinesJson (string), CreatedBy (string), CreatedAt (DateTime), UpdatedAt (DateTime?), Lines (List&lt;string&gt;) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>RecitalRecord &#x2192; table with columns Id (string), EventId (string), Transcription (string), AttendanceJson (string), CommentsSummary (string), RecordedAt (DateTime), Attendance (List&lt;string&gt;) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>Seed data idempotent for ChatMessage, LibraryItem, RecitalRecord, SessionState, UserProfile; rollback scripts documented</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 10 — Sprint 10</h4>
             <div class="d">
-                Q2 · 0 pts · Weeks 19–20
-                <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; core domain readiness</p>
-            <h4>Sprint 11 — Sprint 11</h4>
-            <div class="d">
-                Q2 · 8 pts · Weeks 21–22
+                Q2 · 8 pts · Weeks 19–20
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
@@ -528,19 +523,13 @@
                             <td>Admin</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>CreateEvent behaves per the source contract</li>  <li>EditEvent behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>AdminController.Index() pairs with view Admin/Index.cshtml (fields: id, title, hostId, venue, dressCode)</li>  <li>AdminController.CreateEvent() paired with the Admin views per the source layout; binds and validates Id (string), Title (string), Venue (string), DressCode (string), StartTime (DateTime), EndTime (DateTime)</li>  <li>AdminController.EditEvent() paired with the Admin views per the source layout; binds and validates Id (string), Title (string), Venue (string), DressCode (string), StartTime (DateTime), EndTime (DateTime)</li>  <li>AdminController.DeleteEvent() paired with the Admin views per the source layout</li>  <li>AdminController.GetEvent() paired with the Admin views per the source layout</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 12 — Sprint 12</h4>
+            <h4>Sprint 11 — Sprint 11</h4>
             <div class="d">
-                Q2 · 0 pts · Weeks 23–24
-                <span class="pm-badge phase-stab">stabilization</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; core domain readiness</p>
-            <h4>Sprint 13 — Sprint 13</h4>
-            <div class="d">
-                Q2 · 5 pts · Weeks 25–26
+                Q2 · 5 pts · Weeks 21–22
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
@@ -557,9 +546,15 @@
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 14 — Sprint 14</h4>
+            <h4>Sprint 12 — Sprint 12</h4>
             <div class="d">
-                Q2 · 9 pts · Weeks 27–28
+                Q2 · 0 pts · Weeks 23–24
+                <span class="pm-badge phase-stab">stabilization</span>
+            </div>
+                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; core domain readiness</p>
+            <h4>Sprint 13 — Sprint 13</h4>
+            <div class="d">
+                Q2 · 9 pts · Weeks 25–26
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
@@ -572,7 +567,7 @@
                             <td>Admin</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>EventModel round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
+                            <td><ul class="ac-list"> <li>EventModel fields (Id (string), Title (string), Venue (string), DressCode (string), StartTime (DateTime), EndTime (DateTime), ParticipantsJson (string), SequenceJson (string), HostId (string?), CreatedBy (string), CreatedAt (DateTime), UpdatedAt (DateTime?)) round-trip through the data adapter identically</li>  <li>Required fields (Id (string), Title (string), Venue (string), DressCode (string)) enforced: null/empty submissions rejected with validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-017</b></td>
@@ -581,7 +576,7 @@
                             <td>Admin</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>RecitalSequenceItem round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
+                            <td><ul class="ac-list"> <li>RecitalSequenceItem fields (LibraryItemId (string), Order (int)) round-trip through the data adapter identically</li>  <li>Required fields (LibraryItemId (string)) enforced: null/empty submissions rejected with validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-018</b></td>
@@ -590,13 +585,13 @@
                             <td>Admin</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>Index render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Admin/Index.cshtml &#x2014; fields: id, title, hostId, venue, dressCode, fontSize, startTime, endTime, participants, sequence; behaviors: fetch /Admin/GetEvent/</li>  <li>Auth guards every screen and action; navigation and error states handled</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 15 — Sprint 15</h4>
+            <h4>Sprint 14 — Sprint 14</h4>
             <div class="d">
-                Q3 · 10 pts · Weeks 29–30
+                Q2 · 10 pts · Weeks 27–28
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
@@ -609,7 +604,7 @@
                             <td>Admin</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Tables and constraints scripted for EventModel, RecitalSequenceItem, LibraryItem, SessionState, UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
+                            <td><ul class="ac-list"> <li>EventModel &#x2192; table with columns Id (string), Title (string), Venue (string), DressCode (string), StartTime (DateTime), EndTime (DateTime), ParticipantsJson (string), SequenceJson (string), HostId (string?), CreatedBy (string), CreatedAt (DateTime), UpdatedAt (DateTime?) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>RecitalSequenceItem &#x2192; table with columns LibraryItemId (string), Order (int) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>LibraryItem &#x2192; table with columns Id (string), Title (string), Language (string), Type (LibraryItemType), LinesJson (string), CreatedBy (string), CreatedAt (DateTime), UpdatedAt (DateTime?), Lines (List&lt;string&gt;) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>Seed data idempotent for EventModel, RecitalSequenceItem, LibraryItem, SessionState, UserProfile; rollback scripts documented</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-020</b></td>
@@ -622,15 +617,9 @@
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 16 — Sprint 16</h4>
+            <h4>Sprint 15 — Sprint 15</h4>
             <div class="d">
-                Q3 · 0 pts · Weeks 31–32
-                <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; integration &amp; api readiness</p>
-            <h4>Sprint 17 — Sprint 17</h4>
-            <div class="d">
-                Q3 · 14 pts · Weeks 33–34
+                Q3 · 14 pts · Weeks 29–30
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
@@ -643,7 +632,7 @@
                             <td>Governance</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>SaveUser behaves per the source contract</li>  <li>DeleteUser behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>GovernanceController.Index() pairs with view Governance/Index.cshtml (fields: search, uid, name, region, volumeMin)</li>  <li>GovernanceController.SaveUser() paired with the Governance views per the source layout</li>  <li>GovernanceController.DeleteUser() paired with the Governance views per the source layout</li>  <li>GovernanceController.UpdateConfig() paired with the Governance views per the source layout</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-022</b></td>
@@ -652,7 +641,7 @@
                             <td>Governance</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>GlobalConfig round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
+                            <td><ul class="ac-list"> <li>GlobalConfig fields (Id (int), Name (string), Region (string), VolumeMin (int), VolumeMax (int), WaveSensitivity (double), LineFadeTiming (int), BoldTiming (int), DefaultSpeed (int), AutoScrollRules (string)) round-trip through the data adapter identically</li>  <li>Required fields (Name (string), Region (string), AutoScrollRules (string)) enforced: null/empty submissions rejected with validation errors</li>  <li>Seed data covers representative records</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-023</b></td>
@@ -661,19 +650,13 @@
                             <td>Governance</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>Index render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Governance/Index.cshtml &#x2014; fields: search, uid, name, region, volumeMin, volumeMax, waveSensitivity, defaultSpeed, lineFadeTiming, boldTiming</li>  <li>Auth guards every screen and action; navigation and error states handled</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 18 — Sprint 18</h4>
+            <h4>Sprint 16 — Sprint 16</h4>
             <div class="d">
-                Q3 · 0 pts · Weeks 35–36
-                <span class="pm-badge phase-stab">stabilization</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; integration &amp; api readiness</p>
-            <h4>Sprint 19 — Sprint 19</h4>
-            <div class="d">
-                Q3 · 5 pts · Weeks 37–38
+                Q3 · 5 pts · Weeks 31–32
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
@@ -686,20 +669,20 @@
                             <td>Governance</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Tables and constraints scripted for GlobalConfig, UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
+                            <td><ul class="ac-list"> <li>GlobalConfig &#x2192; table with columns Id (int), Name (string), Region (string), VolumeMin (int), VolumeMax (int), WaveSensitivity (double), LineFadeTiming (int), BoldTiming (int), DefaultSpeed (int), AutoScrollRules (string) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>UserProfile &#x2192; table with columns Uid (string), UserId (string), Username (string), Email (string), UserType (UserType), UserLevel (UserLevel), Name (string), Address (string?), Phone (string?), Password (string?), CreatedAt (DateTime), UpdatedAt (DateTime?) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>Seed data idempotent for GlobalConfig, UserProfile; rollback scripts documented</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 20 — Sprint 20</h4>
+            <h4>Sprint 17 — Sprint 17</h4>
             <div class="d">
-                Q3 · 8 pts · Weeks 39–40
+                Q3 · 8 pts · Weeks 33–34
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-050</b></td>
+                            <td><b>US-056</b></td>
                             <td>Database schema, migrations &amp; seed data</td>
                             <td> <span class="pm-badge layer-db">Database</span> </td>
                             <td>MVCSolutionBase</td>
@@ -709,9 +692,15 @@
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 21 — Sprint 21</h4>
+            <h4>Sprint 18 — Sprint 18</h4>
             <div class="d">
-                Q3 · 13 pts · Weeks 41–42
+                Q3 · 0 pts · Weeks 35–36
+                <span class="pm-badge phase-stab">stabilization</span>
+            </div>
+                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; integration &amp; api readiness</p>
+            <h4>Sprint 19 — Sprint 19</h4>
+            <div class="d">
+                Q3 · 13 pts · Weeks 37–38
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
@@ -728,15 +717,9 @@
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 22 — Sprint 22</h4>
+            <h4>Sprint 20 — Sprint 20</h4>
             <div class="d">
-                Q4 · 0 pts · Weeks 43–44
-                <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; hardening &amp; rc readiness</p>
-            <h4>Sprint 23 — Sprint 23</h4>
-            <div class="d">
-                Q4 · 5 pts · Weeks 45–46
+                Q3 · 5 pts · Weeks 39–40
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
@@ -753,22 +736,16 @@
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 24 — Sprint 24</h4>
+            <h4>Sprint 21 — Sprint 21</h4>
             <div class="d">
-                Q4 · 0 pts · Weeks 47–48
-                <span class="pm-badge phase-stab">stabilization</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; hardening &amp; rc readiness</p>
-            <h4>Sprint 25 — Sprint 25</h4>
-            <div class="d">
-                Q4 · 8 pts · Weeks 49–50
+                Q3 · 8 pts · Weeks 41–42
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-051</b></td>
+                            <td><b>US-057</b></td>
                             <td>Automated test suites per capability</td>
                             <td> <span class="pm-badge layer-srv">Server</span> </td>
                             <td>MVCSolutionBase</td>
@@ -778,9 +755,9 @@
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 26 — Sprint 26</h4>
+            <h4>Sprint 22 — Sprint 22</h4>
             <div class="d">
-                Q4 · 6 pts · Weeks 51–52
+                Q4 · 6 pts · Weeks 43–44
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
@@ -793,7 +770,7 @@
                             <td>Dashboard</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>DashboardController.Index()</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-028</b></td>
@@ -802,13 +779,13 @@
                             <td>Dashboard</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>Index render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Index render with model validation per the source markup</li>  <li>Auth guards every screen and action; navigation and error states handled</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 27 — Sprint 27</h4>
+            <h4>Sprint 23 — Sprint 23</h4>
             <div class="d">
-                Q4 · 5 pts · Weeks 53–54
+                Q4 · 5 pts · Weeks 45–46
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
@@ -825,9 +802,15 @@
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 28 — Sprint 28</h4>
+            <h4>Sprint 24 — Sprint 24</h4>
             <div class="d">
-                Q4 · 5 pts · Weeks 55–56
+                Q4 · 0 pts · Weeks 47–48
+                <span class="pm-badge phase-stab">stabilization</span>
+            </div>
+                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; hardening &amp; rc readiness</p>
+            <h4>Sprint 25 — Sprint 25</h4>
+            <div class="d">
+                Q4 · 5 pts · Weeks 49–50
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
@@ -840,25 +823,13 @@
                             <td>Dashboard</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Tables and constraints scripted for EventModel, UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
+                            <td><ul class="ac-list"> <li>EventModel &#x2192; table with columns Id (string), Title (string), Venue (string), DressCode (string), StartTime (DateTime), EndTime (DateTime), ParticipantsJson (string), SequenceJson (string), HostId (string?), CreatedBy (string), CreatedAt (DateTime), UpdatedAt (DateTime?) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>UserProfile &#x2192; table with columns Uid (string), UserId (string), Username (string), Email (string), UserType (UserType), UserLevel (UserLevel), Name (string), Address (string?), Phone (string?), Password (string?), CreatedAt (DateTime), UpdatedAt (DateTime?) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>Seed data idempotent for EventModel, UserProfile; rollback scripts documented</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 29 — Sprint 29</h4>
+            <h4>Sprint 26 — Sprint 26</h4>
             <div class="d">
-                Q5 · 0 pts · Weeks 57–58
-                <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</p>
-            <h4>Sprint 30 — Sprint 30</h4>
-            <div class="d">
-                Q5 · 0 pts · Weeks 59–60
-                <span class="pm-badge phase-stab">stabilization</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</p>
-            <h4>Sprint 31 — Sprint 31</h4>
-            <div class="d">
-                Q5 · 13 pts · Weeks 61–62
+                Q4 · 13 pts · Weeks 51–52
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
@@ -867,7 +838,7 @@
                         <tr>
                             <td><b>US-042</b></td>
                             <td>Migrate live lib capabilities into Shunya Sangha &#x2014; Cultural Recital Management System</td>
-                            <td>—</td>
+                            <td> <span class="pm-badge layer-srv">Server</span> </td>
                             <td>lib</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>13</td>
@@ -875,9 +846,9 @@
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 32 — Sprint 32</h4>
+            <h4>Sprint 27 — Sprint 27</h4>
             <div class="d">
-                Q5 · 5 pts · Weeks 63–64
+                Q4 · 5 pts · Weeks 53–54
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
@@ -894,9 +865,9 @@
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 33 — Sprint 33</h4>
+            <h4>Sprint 28 — Sprint 28</h4>
             <div class="d">
-                Q5 · 8 pts · Weeks 65–66
+                Q4 · 8 pts · Weeks 55–56
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
@@ -909,7 +880,7 @@
                             <td>Home</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>HomeController.Index()</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-032</b></td>
@@ -918,13 +889,13 @@
                             <td>Home</td>
                             <td><span class="pm-badge could">Could</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Index, Privacy render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Index, Privacy render with model validation per the source markup</li>  <li>Auth guards every screen and action; navigation and error states handled</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 34 — Sprint 34</h4>
+            <h4>Sprint 29 — Sprint 29</h4>
             <div class="d">
-                Q5 · 8 pts · Weeks 67–68
+                Q5 · 8 pts · Weeks 57–58
                 <span class="pm-badge phase-build">build</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
@@ -938,6 +909,124 @@
                             <td><span class="pm-badge could">Could</span></td>
                             <td>8</td>
                             <td><ul class="ac-list"> <li>Retired lib paths deleted</li>  <li>No consumer references remain</li>  <li>Regression suite green after removal</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 30 — Sprint 30</h4>
+            <div class="d">
+                Q5 · 0 pts · Weeks 59–60
+                <span class="pm-badge phase-stab">stabilization</span>
+            </div>
+                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; scale &amp; optimization (year 2) readiness</p>
+            <h4>Sprint 31 — Sprint 31</h4>
+            <div class="d">
+                Q5 · 5 pts · Weeks 61–62
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-033</b></td>
+                            <td>Home integration &amp; contract tests</td>
+                            <td> <span class="pm-badge layer-srv">Server</span> </td>
+                            <td>Home</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>HomeController contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 32 — Sprint 32</h4>
+            <div class="d">
+                Q5 · 11 pts · Weeks 63–64
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-034</b></td>
+                            <td>Records: browse user profiles end to end</td>
+                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
+                            <td>Records</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>RecordsController.Index() pairs with view Records/Index.cshtml (fields: search)</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-035</b></td>
+                            <td>Records screens (Index)</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Records</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Records/Index.cshtml &#x2014; fields: search</li>  <li>Auth guards every screen and action; navigation and error states handled</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-036</b></td>
+                            <td>Records schema, migrations &amp; seeds</td>
+                            <td> <span class="pm-badge layer-db">Database</span> </td>
+                            <td>Records</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>UserProfile &#x2192; table with columns Uid (string), UserId (string), Username (string), Email (string), UserType (UserType), UserLevel (UserLevel), Name (string), Address (string?), Phone (string?), Password (string?), CreatedAt (DateTime), UpdatedAt (DateTime?) (dual-provider DDL: SQL Server &#x2B; Oracle, per the source schema)</li>  <li>Seed data idempotent for UserProfile; rollback scripts documented</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 33 — Sprint 33</h4>
+            <div class="d">
+                Q5 · 5 pts · Weeks 65–66
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-037</b></td>
+                            <td>Records integration &amp; contract tests</td>
+                            <td> <span class="pm-badge layer-srv">Server</span> </td>
+                            <td>Records</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>RecordsController contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 34 — Sprint 34</h4>
+            <div class="d">
+                Q5 · 9 pts · Weeks 67–68
+                <span class="pm-badge phase-build">build</span>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-038</b></td>
+                            <td>DateTimeModel persistence &amp; invariants</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Domain data model</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>DateTimeModel fields (Date (string), Time (string)) round-trip through the data adapter identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Consumers of DateTimeModel validated against its contract</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-039</b></td>
+                            <td>ErrorViewModel persistence &amp; invariants</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Domain data model</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>ErrorViewModel fields (RequestId (string?)) round-trip through the data adapter identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Consumers of ErrorViewModel validated against its contract</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-040</b></td>
+                            <td>DateTimeViewModel persistence &amp; invariants</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Domain data model</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>DateTimeViewModel fields (Date (string), Time (string), DateTime (string)) round-trip through the data adapter identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Consumers of DateTimeViewModel validated against its contract</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -955,131 +1044,7 @@
                 <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; advanced features (year 2) readiness</p>
             <h4>Sprint 37 — Sprint 37</h4>
             <div class="d">
-                Q6 · 5 pts · Weeks 73–74
-                <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#16A34A">B</span>             </div>
-                <table class="pm-tbl">
-                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
-                    <tbody>
-                        <tr>
-                            <td><b>US-033</b></td>
-                            <td>Home integration &amp; contract tests</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>Home</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>5</td>
-                            <td><ul class="ac-list"> <li>HomeController contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
-                        </tr>
-                    </tbody>
-                </table>
-            <h4>Sprint 38 — Sprint 38</h4>
-            <div class="d">
-                Q6 · 11 pts · Weeks 75–76
-                <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#2563EB">A</span>             </div>
-                <table class="pm-tbl">
-                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
-                    <tbody>
-                        <tr>
-                            <td><b>US-034</b></td>
-                            <td>Records: browse user profiles end to end</td>
-                            <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
-                            <td>Records</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Index behaves per the source contract</li>  <li>Authorization and validation enforced on every action</li>  <li>Error paths return correct status codes</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-035</b></td>
-                            <td>Records screens (Index)</td>
-                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
-                            <td>Records</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>Index render with model validation</li>  <li>Auth guards every screen and action</li>  <li>Navigation and error states handled</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-036</b></td>
-                            <td>Records schema, migrations &amp; seeds</td>
-                            <td> <span class="pm-badge layer-db">Database</span> </td>
-                            <td>Records</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>5</td>
-                            <td><ul class="ac-list"> <li>Tables and constraints scripted for UserProfile</li>  <li>Seed data idempotent</li>  <li>Rollback documented</li> </ul></td>
-                        </tr>
-                    </tbody>
-                </table>
-            <h4>Sprint 39 — Sprint 39</h4>
-            <div class="d">
-                Q6 · 5 pts · Weeks 77–78
-                <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#2563EB">A</span>             </div>
-                <table class="pm-tbl">
-                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
-                    <tbody>
-                        <tr>
-                            <td><b>US-037</b></td>
-                            <td>Records integration &amp; contract tests</td>
-                            <td> <span class="pm-badge layer-srv">Server</span> </td>
-                            <td>Records</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>5</td>
-                            <td><ul class="ac-list"> <li>RecordsController contracts asserted against consumers</li>  <li>Critical paths integration-tested in CI</li>  <li>Contract drift breaks the build</li> </ul></td>
-                        </tr>
-                    </tbody>
-                </table>
-            <h4>Sprint 40 — Sprint 40</h4>
-            <div class="d">
-                Q6 · 9 pts · Weeks 79–80
-                <span class="pm-badge phase-build">build</span>
- <span class="pm-chip" style="background:#16A34A">B</span>             </div>
-                <table class="pm-tbl">
-                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
-                    <tbody>
-                        <tr>
-                            <td><b>US-038</b></td>
-                            <td>DateTimeModel persistence &amp; invariants</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>Domain data model</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>DateTimeModel round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Consumers of DateTimeModel validated against its contract</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-039</b></td>
-                            <td>ErrorViewModel persistence &amp; invariants</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>Domain data model</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>ErrorViewModel round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Consumers of ErrorViewModel validated against its contract</li> </ul></td>
-                        </tr>
-                        <tr>
-                            <td><b>US-040</b></td>
-                            <td>DateTimeViewModel persistence &amp; invariants</td>
-                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
-                            <td>Domain data model</td>
-                            <td><span class="pm-badge could">Could</span></td>
-                            <td>3</td>
-                            <td><ul class="ac-list"> <li>DateTimeViewModel round-trips through persistence identically</li>  <li>Constraint violations surface as validation errors</li>  <li>Consumers of DateTimeViewModel validated against its contract</li> </ul></td>
-                        </tr>
-                    </tbody>
-                </table>
-            <h4>Sprint 41 — Sprint 41</h4>
-            <div class="d">
-                Q7 · 0 pts · Weeks 81–82
-                <span class="pm-badge phase-build">build</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[build] Stabilization, hardening &amp; platform extensions (year 2) readiness</p>
-            <h4>Sprint 42 — Sprint 42</h4>
-            <div class="d">
-                Q7 · 0 pts · Weeks 83–84
-                <span class="pm-badge phase-stab">stabilization</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; platform extensions (year 2) readiness</p>
-            <h4>Sprint 43 — Sprint 43</h4>
-            <div class="d">
-                Q7 · 21 pts · Weeks 85–86
+                Q6 · 21 pts · Weeks 73–74
                 <span class="pm-badge phase-enhance">enhance</span>
  <span class="pm-chip" style="background:#2563EB">A</span>  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
@@ -1092,7 +1057,7 @@
                             <td>Events</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>13</td>
-                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Fix error in gathering sequence builder and update database&#x27; (15 commits touched frontend code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Views/Admin/Index.cshtml, MVCSolutionBase/MVCSolutionBase/Views/Events/View.cshtml</li>  <li>Regression tests prove the enhanced frontend behavior</li>  <li>Frontend, server and database components updated together</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Fix error in gathering sequence builder and update database&#x27; (15 commits touched frontend code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Views/Admin/Index.cshtml, MVCSolutionBase/MVCSolutionBase/Views/Events/View.cshtml</li>  <li>Sprint components &#x2014; frontend: Index.cshtml, View.cshtml, sangha.css; database: schema unchanged or migration not required</li>  <li>Regression tests prove the enhanced frontend behavior</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-045</b></td>
@@ -1101,13 +1066,13 @@
                             <td>Library</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Add AI-powered scripture discovery and enhance event viewing features&#x27; (4 commits touched controllers code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Controllers/LibraryController.cs, MVCSolutionBase/MVCSolutionBase/Controllers/AdminController.cs</li>  <li>Regression tests prove the enhanced controllers behavior</li>  <li>Frontend, server and database components updated together</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Add AI-powered scripture discovery and enhance event viewing features&#x27; (4 commits touched controllers code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Controllers/LibraryController.cs, MVCSolutionBase/MVCSolutionBase/Controllers/AdminController.cs</li>  <li>Sprint components &#x2014; Server: LibraryController.cs, AdminController.cs, GovernanceController.cs; database: schema unchanged or migration not required</li>  <li>Regression tests prove the enhanced controllers behavior</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 44 — Sprint 44</h4>
+            <h4>Sprint 38 — Sprint 38</h4>
             <div class="d">
-                Q7 · 5 pts · Weeks 87–88
+                Q6 · 5 pts · Weeks 75–76
                 <span class="pm-badge phase-enhance">enhance</span>
  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
@@ -1120,13 +1085,13 @@
                             <td>Library</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Build a comprehensive .NET MVC application for managing cultural re...&#x27; (1 commits touched data adapter code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Data/ShunyaSanghaDbContext.cs</li>  <li>Regression tests prove the enhanced data adapter behavior</li>  <li>Frontend, server and database components updated together</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Change wave mirrors the source pattern &#x27;Build a comprehensive .NET MVC application for managing cultural re...&#x27; (1 commits touched data adapter code)</li>  <li>Touched paths covered: MVCSolutionBase/MVCSolutionBase/Data/ShunyaSanghaDbContext.cs</li>  <li>Sprint components &#x2014; Server: ShunyaSanghaDbContext.cs; database: schema unchanged or migration not required</li>  <li>Regression tests prove the enhanced data adapter behavior</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 45 — Sprint 45</h4>
+            <h4>Sprint 39 — Sprint 39</h4>
             <div class="d">
-                Q7 · 8 pts · Weeks 89–90
+                Q6 · 3 pts · Weeks 77–78
                 <span class="pm-badge phase-enhance">enhance</span>
  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
@@ -1134,37 +1099,37 @@
                     <tbody>
                         <tr>
                             <td><b>US-047</b></td>
-                            <td>Extend library data model: new fields end to end</td>
+                            <td>library: add fields Status, DisplayOrder &#x2014; database migration</td>
                             <td> <span class="pm-badge layer-db">Database</span> </td>
                             <td>Library</td>
                             <td><span class="pm-badge should">Should</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>New columns added via versioned migration (LibraryItem, UserProfile)</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Dual-provider DDL (SQL Server &#x2B; Oracle): ALTER TABLE LibraryItem ADD Status (string), DisplayOrder (int)</li>  <li>Columns nullable-safe for existing LibraryItem rows; migration idempotent and reversible</li>  <li>Rollback script verified: dropping Status, DisplayOrder restores the source schema</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 46 — Sprint 46</h4>
+            <h4>Sprint 40 — Sprint 40</h4>
             <div class="d">
-                Q7 · 8 pts · Weeks 91–92
+                Q6 · 3 pts · Weeks 79–80
                 <span class="pm-badge phase-enhance">enhance</span>
- <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
                             <td><b>US-048</b></td>
-                            <td>Extend events data model: new fields end to end</td>
-                            <td> <span class="pm-badge layer-db">Database</span> </td>
-                            <td>Events</td>
+                            <td>library: add fields Status, DisplayOrder &#x2014; server &amp; data adapter</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Library</td>
                             <td><span class="pm-badge should">Should</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>New columns added via versioned migration (ChatMessage, LibraryItem, RecitalRecord, SessionState, UserProfile)</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Data adapter maps Status (string), DisplayOrder (int) onto LibraryItem (persistence round-trip verified)</li>  <li>Server validation for Status, DisplayOrder: values conform to their CLR types before persistence</li>  <li>Service/API contract for library exposes Status, DisplayOrder; contract tests updated</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 47 — Sprint 47</h4>
+            <h4>Sprint 41 — Sprint 41</h4>
             <div class="d">
-                Q8 · 8 pts · Weeks 93–94
+                Q7 · 5 pts · Weeks 81–82
                 <span class="pm-badge phase-enhance">enhance</span>
  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
@@ -1172,12 +1137,122 @@
                     <tbody>
                         <tr>
                             <td><b>US-049</b></td>
-                            <td>Extend admin data model: new fields end to end</td>
+                            <td>library: add fields Status, DisplayOrder &#x2014; frontend forms &amp; views</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Library</td>
+                            <td><span class="pm-badge should">Should</span></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>Library/Index.cshtml render and bind Status, DisplayOrder per the source markup patterns</li>  <li>Client-side validation of Status, DisplayOrder mirrors the server rules</li>  <li>Existing library views degrade gracefully for rows without Status, DisplayOrder</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 42 — Sprint 42</h4>
+            <div class="d">
+                Q7 · 0 pts · Weeks 83–84
+                <span class="pm-badge phase-stab">stabilization</span>
+            </div>
+                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; platform extensions (year 2) readiness</p>
+            <h4>Sprint 43 — Sprint 43</h4>
+            <div class="d">
+                Q7 · 6 pts · Weeks 85–86
+                <span class="pm-badge phase-enhance">enhance</span>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-050</b></td>
+                            <td>events: add fields CreatedAt, UpdatedAt &#x2014; database migration</td>
+                            <td> <span class="pm-badge layer-db">Database</span> </td>
+                            <td>Events</td>
+                            <td><span class="pm-badge should">Should</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Dual-provider DDL (SQL Server &#x2B; Oracle): ALTER TABLE ChatMessage ADD CreatedAt (DateTime), UpdatedAt (DateTime)</li>  <li>Columns nullable-safe for existing ChatMessage rows; migration idempotent and reversible</li>  <li>Rollback script verified: dropping CreatedAt, UpdatedAt restores the source schema</li> </ul></td>
+                        </tr>
+                        <tr>
+                            <td><b>US-051</b></td>
+                            <td>events: add fields CreatedAt, UpdatedAt &#x2014; server &amp; data adapter</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Events</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Data adapter maps CreatedAt (DateTime), UpdatedAt (DateTime) onto ChatMessage (persistence round-trip verified)</li>  <li>Server validation for CreatedAt, UpdatedAt: values conform to their CLR types before persistence</li>  <li>Service/API contract for events exposes CreatedAt, UpdatedAt; contract tests updated</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 44 — Sprint 44</h4>
+            <div class="d">
+                Q7 · 5 pts · Weeks 87–88
+                <span class="pm-badge phase-enhance">enhance</span>
+ <span class="pm-chip" style="background:#2563EB">A</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-052</b></td>
+                            <td>events: add fields CreatedAt, UpdatedAt &#x2014; frontend forms &amp; views</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Events</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>Events/View.cshtml render and bind CreatedAt, UpdatedAt per the source markup patterns</li>  <li>Client-side validation of CreatedAt, UpdatedAt mirrors the server rules</li>  <li>Existing events views degrade gracefully for rows without CreatedAt, UpdatedAt</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 45 — Sprint 45</h4>
+            <div class="d">
+                Q7 · 3 pts · Weeks 89–90
+                <span class="pm-badge phase-enhance">enhance</span>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-053</b></td>
+                            <td>admin: add fields Status, DisplayOrder &#x2014; database migration</td>
                             <td> <span class="pm-badge layer-db">Database</span> </td>
                             <td>Admin</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>New columns added via versioned migration (EventModel, RecitalSequenceItem, LibraryItem, SessionState, UserProfile)</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Dual-provider DDL (SQL Server &#x2B; Oracle): ALTER TABLE EventModel ADD Status (string), DisplayOrder (int)</li>  <li>Columns nullable-safe for existing EventModel rows; migration idempotent and reversible</li>  <li>Rollback script verified: dropping Status, DisplayOrder restores the source schema</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 46 — Sprint 46</h4>
+            <div class="d">
+                Q7 · 3 pts · Weeks 91–92
+                <span class="pm-badge phase-enhance">enhance</span>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-054</b></td>
+                            <td>admin: add fields Status, DisplayOrder &#x2014; server &amp; data adapter</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                            <td>Admin</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Data adapter maps Status (string), DisplayOrder (int) onto EventModel (persistence round-trip verified)</li>  <li>Server validation for Status, DisplayOrder: values conform to their CLR types before persistence</li>  <li>Service/API contract for admin exposes Status, DisplayOrder; contract tests updated</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 47 — Sprint 47</h4>
+            <div class="d">
+                Q8 · 5 pts · Weeks 93–94
+                <span class="pm-badge phase-enhance">enhance</span>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-055</b></td>
+                            <td>admin: add fields Status, DisplayOrder &#x2014; frontend forms &amp; views</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Admin</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>Admin/Index.cshtml render and bind Status, DisplayOrder per the source markup patterns</li>  <li>Client-side validation of Status, DisplayOrder mirrors the server rules</li>  <li>Existing admin views degrade gracefully for rows without Status, DisplayOrder</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1189,33 +1264,52 @@
                 <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</p>
             <h4>Sprint 49 — Sprint 49</h4>
             <div class="d">
-                Q8 · 8 pts · Weeks 97–98
+                Q8 · 3 pts · Weeks 97–98
                 <span class="pm-badge phase-release">release</span>
  <span class="pm-chip" style="background:#16A34A">B</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-049</b></td>
-                            <td>Extend admin data model: new fields end to end</td>
-                            <td> <span class="pm-badge layer-db">Database</span> </td>
+                            <td><b>US-054</b></td>
+                            <td>admin: add fields Status, DisplayOrder &#x2014; server &amp; data adapter</td>
+                            <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                             <td>Admin</td>
-                            <td><span class="pm-badge should">Should</span></td>
-                            <td>8</td>
-                            <td><ul class="ac-list"> <li>New columns added via versioned migration (EventModel, RecitalSequenceItem, LibraryItem, SessionState, UserProfile)</li>  <li>Server validation and data adapter mapping updated for the new fields</li>  <li>Frontend forms display and edit the new fields</li>  <li>Existing data migrates losslessly</li> </ul></td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>3</td>
+                            <td><ul class="ac-list"> <li>Data adapter maps Status (string), DisplayOrder (int) onto EventModel (persistence round-trip verified)</li>  <li>Server validation for Status, DisplayOrder: values conform to their CLR types before persistence</li>  <li>Service/API contract for admin exposes Status, DisplayOrder; contract tests updated</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
             <h4>Sprint 50 — Sprint 50</h4>
             <div class="d">
-                Q8 · 13 pts · Weeks 99–100
+                Q8 · 5 pts · Weeks 99–100
+                <span class="pm-badge phase-release">release</span>
+ <span class="pm-chip" style="background:#16A34A">B</span>             </div>
+                <table class="pm-tbl">
+                    <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>US-055</b></td>
+                            <td>admin: add fields Status, DisplayOrder &#x2014; frontend forms &amp; views</td>
+                            <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                            <td>Admin</td>
+                            <td><span class="pm-badge could">Could</span></td>
+                            <td>5</td>
+                            <td><ul class="ac-list"> <li>Admin/Index.cshtml render and bind Status, DisplayOrder per the source markup patterns</li>  <li>Client-side validation of Status, DisplayOrder mirrors the server rules</li>  <li>Existing admin views degrade gracefully for rows without Status, DisplayOrder</li> </ul></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <h4>Sprint 51 — Sprint 51</h4>
+            <div class="d">
+                Q8 · 13 pts · Weeks 101–102
                 <span class="pm-badge phase-release">release</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-052</b></td>
+                            <td><b>US-058</b></td>
                             <td>Security review &amp; performance hardening</td>
                             <td> <span class="pm-badge layer-fw">Framework</span> </td>
                             <td>MVCSolutionBase</td>
@@ -1225,16 +1319,16 @@
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 51 — Sprint 51</h4>
+            <h4>Sprint 52 — Sprint 52</h4>
             <div class="d">
-                Q8 · 5 pts · Weeks 101–102
+                Q8 · 5 pts · Weeks 103–104
                 <span class="pm-badge phase-release">release</span>
  <span class="pm-chip" style="background:#2563EB">A</span>             </div>
                 <table class="pm-tbl">
                     <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>Module</th><th>Priority</th><th>Points</th><th>Acceptance criteria</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><b>US-053</b></td>
+                            <td><b>US-059</b></td>
                             <td>GA release &amp; operations handover</td>
                             <td> <span class="pm-badge layer-fw">Framework</span> </td>
                             <td>MVCSolutionBase</td>
@@ -1244,18 +1338,115 @@
                         </tr>
                     </tbody>
                 </table>
-            <h4>Sprint 52 — Sprint 52</h4>
-            <div class="d">
-                Q8 · 0 pts · Weeks 103–104
-                <span class="pm-badge phase-stab">stabilization</span>
-            </div>
-                <p style="font-size:12px;color:#6b7280;margin:0 0 14px">[stabilization] Stabilization, hardening &amp; sustain &amp; ga (year 2) readiness</p>
+        </div>
+    </section>
+
+    <section id="layers" class="x-sec">
+        <div class="pm-card">
+            <h3>Module &times; Layer Breakdown</h3>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 14px">
+                Every module broken into its architecture layers — framework, controllers/actions, server side,
+                data adapter, frontend and database (dbscript) — with the stories and points feeding each layer.
+                Sprint waves: base framework code generation &rarr; basic module functionality &rarr; field/enhancement waves.
+            </p>
+            <table class="pm-tbl">
+                <thead><tr><th>Epic</th><th>Module</th> <th>Framework</th>  <th>Controllers</th>  <th>Server</th>  <th>Data Adapter</th>  <th>Frontend</th>  <th>Database</th> <th>Total</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td><b>E01</b></td>
+                        <td>Foundation &amp; platform</td>
+ <td>3 stories / 29 pts</td>  <td>—</td>  <td>—</td>  <td>—</td>  <td>—</td>  <td>—</td>                         <td><b>3 stories / 29 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E02</b></td>
+                        <td>Library</td>
+ <td>—</td>  <td>1 stories / 13 pts</td>  <td>1 stories / 5 pts</td>  <td>2 stories / 6 pts</td>  <td>1 stories / 3 pts</td>  <td>1 stories / 5 pts</td>                         <td><b>6 stories / 32 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E03</b></td>
+                        <td>Events</td>
+ <td>—</td>  <td>1 stories / 8 pts</td>  <td>1 stories / 5 pts</td>  <td>1 stories / 3 pts</td>  <td>1 stories / 3 pts</td>  <td>1 stories / 5 pts</td>                         <td><b>5 stories / 24 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E04</b></td>
+                        <td>Admin</td>
+ <td>—</td>  <td>1 stories / 8 pts</td>  <td>1 stories / 5 pts</td>  <td>2 stories / 6 pts</td>  <td>1 stories / 3 pts</td>  <td>1 stories / 5 pts</td>                         <td><b>6 stories / 27 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E05</b></td>
+                        <td>Governance</td>
+ <td>—</td>  <td>1 stories / 8 pts</td>  <td>1 stories / 5 pts</td>  <td>1 stories / 3 pts</td>  <td>1 stories / 3 pts</td>  <td>1 stories / 5 pts</td>                         <td><b>5 stories / 24 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E06</b></td>
+                        <td>Session</td>
+ <td>—</td>  <td>—</td>  <td>1 stories / 13 pts</td>  <td>—</td>  <td>—</td>  <td>—</td>                         <td><b>1 stories / 13 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E07</b></td>
+                        <td>Dashboard</td>
+ <td>—</td>  <td>1 stories / 3 pts</td>  <td>1 stories / 5 pts</td>  <td>—</td>  <td>1 stories / 3 pts</td>  <td>1 stories / 5 pts</td>                         <td><b>4 stories / 16 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E08</b></td>
+                        <td>Home</td>
+ <td>—</td>  <td>1 stories / 3 pts</td>  <td>1 stories / 5 pts</td>  <td>—</td>  <td>1 stories / 5 pts</td>  <td>—</td>                         <td><b>3 stories / 13 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E09</b></td>
+                        <td>Records</td>
+ <td>—</td>  <td>1 stories / 3 pts</td>  <td>1 stories / 5 pts</td>  <td>—</td>  <td>1 stories / 3 pts</td>  <td>1 stories / 5 pts</td>                         <td><b>4 stories / 16 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E10</b></td>
+                        <td>Domain data model</td>
+ <td>—</td>  <td>—</td>  <td>—</td>  <td>3 stories / 9 pts</td>  <td>—</td>  <td>—</td>                         <td><b>3 stories / 9 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E11</b></td>
+                        <td>lib platform consolidation</td>
+ <td>—</td>  <td>—</td>  <td>3 stories / 26 pts</td>  <td>—</td>  <td>—</td>  <td>—</td>                         <td><b>3 stories / 26 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E12</b></td>
+                        <td>Field &amp; enhancement waves</td>
+ <td>—</td>  <td>1 stories / 8 pts</td>  <td>—</td>  <td>4 stories / 14 pts</td>  <td>4 stories / 28 pts</td>  <td>3 stories / 9 pts</td>                         <td><b>12 stories / 59 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E13</b></td>
+                        <td>Data &amp; persistence</td>
+ <td>—</td>  <td>—</td>  <td>—</td>  <td>—</td>  <td>—</td>  <td>1 stories / 8 pts</td>                         <td><b>1 stories / 8 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E14</b></td>
+                        <td>Testing &amp; QA</td>
+ <td>—</td>  <td>—</td>  <td>1 stories / 8 pts</td>  <td>—</td>  <td>—</td>  <td>—</td>                         <td><b>1 stories / 8 pts</b></td>
+                    </tr>
+                    <tr>
+                        <td><b>E15</b></td>
+                        <td>Hardening &amp; release</td>
+ <td>2 stories / 18 pts</td>  <td>—</td>  <td>—</td>  <td>—</td>  <td>—</td>  <td>—</td>                         <td><b>2 stories / 18 pts</b></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2"><b>All modules</b></td>
+                            <td><b>5 / 47 pts</b></td>
+                            <td><b>8 / 54 pts</b></td>
+                            <td><b>12 / 82 pts</b></td>
+                            <td><b>13 / 41 pts</b></td>
+                            <td><b>11 / 51 pts</b></td>
+                            <td><b>10 / 47 pts</b></td>
+                        <td><b>59 / 322 pts</b></td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
     </section>
 
     <section id="backlog" class="x-sec">
         <div class="pm-card">
-            <h3>Requirement Backlog (53 stories)</h3>
+            <h3>Requirement Backlog (59 stories)</h3>
             <table class="pm-tbl">
                 <thead><tr><th>ID</th><th>Sprint</th><th>Title</th><th>Layer</th><th>Phase</th><th>Module</th><th>As a</th><th>Priority</th><th>Points</th><th>Risk</th></tr></thead>
                 <tbody>
@@ -1417,7 +1608,7 @@
                     </tr>
                     <tr>
                         <td><b>US-014</b></td>
-                        <td>13</td>
+                        <td>11</td>
                         <td>Events integration &amp; contract tests</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1429,7 +1620,7 @@
                     </tr>
                     <tr>
                         <td><b>US-015</b></td>
-                        <td>11</td>
+                        <td>10</td>
                         <td>Admin: browse, create, edit, delete and view event models, recital sequence items end to end</td>
                         <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1441,7 +1632,7 @@
                     </tr>
                     <tr>
                         <td><b>US-016</b></td>
-                        <td>14</td>
+                        <td>13</td>
                         <td>EventModel persistence &amp; invariants</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1453,7 +1644,7 @@
                     </tr>
                     <tr>
                         <td><b>US-017</b></td>
-                        <td>14</td>
+                        <td>13</td>
                         <td>RecitalSequenceItem persistence &amp; invariants</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1465,7 +1656,7 @@
                     </tr>
                     <tr>
                         <td><b>US-018</b></td>
-                        <td>14</td>
+                        <td>13</td>
                         <td>Admin screens (Index)</td>
                         <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1477,7 +1668,7 @@
                     </tr>
                     <tr>
                         <td><b>US-019</b></td>
-                        <td>15</td>
+                        <td>14</td>
                         <td>Admin schema, migrations &amp; seeds</td>
                         <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1489,7 +1680,7 @@
                     </tr>
                     <tr>
                         <td><b>US-020</b></td>
-                        <td>15</td>
+                        <td>14</td>
                         <td>Admin integration &amp; contract tests</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1501,7 +1692,7 @@
                     </tr>
                     <tr>
                         <td><b>US-021</b></td>
-                        <td>17</td>
+                        <td>15</td>
                         <td>Governance: browse, delete and edit global configs, user profiles end to end</td>
                         <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1513,7 +1704,7 @@
                     </tr>
                     <tr>
                         <td><b>US-022</b></td>
-                        <td>17</td>
+                        <td>15</td>
                         <td>GlobalConfig persistence &amp; invariants</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1525,7 +1716,7 @@
                     </tr>
                     <tr>
                         <td><b>US-023</b></td>
-                        <td>17</td>
+                        <td>15</td>
                         <td>Governance screens (Index)</td>
                         <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1537,7 +1728,7 @@
                     </tr>
                     <tr>
                         <td><b>US-024</b></td>
-                        <td>19</td>
+                        <td>16</td>
                         <td>Governance schema, migrations &amp; seeds</td>
                         <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1549,7 +1740,7 @@
                     </tr>
                     <tr>
                         <td><b>US-025</b></td>
-                        <td>23</td>
+                        <td>20</td>
                         <td>Governance integration &amp; contract tests</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1561,7 +1752,7 @@
                     </tr>
                     <tr>
                         <td><b>US-026</b></td>
-                        <td>21</td>
+                        <td>19</td>
                         <td>Session real-time sync</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1573,7 +1764,7 @@
                     </tr>
                     <tr>
                         <td><b>US-027</b></td>
-                        <td>26</td>
+                        <td>22</td>
                         <td>Dashboard: browse event models, user profiles end to end</td>
                         <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1585,7 +1776,7 @@
                     </tr>
                     <tr>
                         <td><b>US-028</b></td>
-                        <td>26</td>
+                        <td>22</td>
                         <td>Dashboard screens (Index)</td>
                         <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1597,7 +1788,7 @@
                     </tr>
                     <tr>
                         <td><b>US-029</b></td>
-                        <td>28</td>
+                        <td>25</td>
                         <td>Dashboard schema, migrations &amp; seeds</td>
                         <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1609,7 +1800,7 @@
                     </tr>
                     <tr>
                         <td><b>US-030</b></td>
-                        <td>32</td>
+                        <td>27</td>
                         <td>Dashboard integration &amp; contract tests</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1621,7 +1812,7 @@
                     </tr>
                     <tr>
                         <td><b>US-031</b></td>
-                        <td>33</td>
+                        <td>28</td>
                         <td>Home: browse homes end to end</td>
                         <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1633,7 +1824,7 @@
                     </tr>
                     <tr>
                         <td><b>US-032</b></td>
-                        <td>33</td>
+                        <td>28</td>
                         <td>Home screens (Index, Privacy)</td>
                         <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1645,7 +1836,7 @@
                     </tr>
                     <tr>
                         <td><b>US-033</b></td>
-                        <td>37</td>
+                        <td>31</td>
                         <td>Home integration &amp; contract tests</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1657,7 +1848,7 @@
                     </tr>
                     <tr>
                         <td><b>US-034</b></td>
-                        <td>38</td>
+                        <td>32</td>
                         <td>Records: browse user profiles end to end</td>
                         <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1669,7 +1860,7 @@
                     </tr>
                     <tr>
                         <td><b>US-035</b></td>
-                        <td>38</td>
+                        <td>32</td>
                         <td>Records screens (Index)</td>
                         <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1681,7 +1872,7 @@
                     </tr>
                     <tr>
                         <td><b>US-036</b></td>
-                        <td>38</td>
+                        <td>32</td>
                         <td>Records schema, migrations &amp; seeds</td>
                         <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1693,7 +1884,7 @@
                     </tr>
                     <tr>
                         <td><b>US-037</b></td>
-                        <td>39</td>
+                        <td>33</td>
                         <td>Records integration &amp; contract tests</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1705,7 +1896,7 @@
                     </tr>
                     <tr>
                         <td><b>US-038</b></td>
-                        <td>40</td>
+                        <td>34</td>
                         <td>DateTimeModel persistence &amp; invariants</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1717,7 +1908,7 @@
                     </tr>
                     <tr>
                         <td><b>US-039</b></td>
-                        <td>40</td>
+                        <td>34</td>
                         <td>ErrorViewModel persistence &amp; invariants</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1729,7 +1920,7 @@
                     </tr>
                     <tr>
                         <td><b>US-040</b></td>
-                        <td>40</td>
+                        <td>34</td>
                         <td>DateTimeViewModel persistence &amp; invariants</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1741,7 +1932,7 @@
                     </tr>
                     <tr>
                         <td><b>US-041</b></td>
-                        <td>27</td>
+                        <td>23</td>
                         <td>lib audit: what is live, legacy or duplicated</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1753,9 +1944,9 @@
                     </tr>
                     <tr>
                         <td><b>US-042</b></td>
-                        <td>31</td>
+                        <td>26</td>
                         <td>Migrate live lib capabilities into Shunya Sangha &#x2014; Cultural Recital Management System</td>
-                        <td>—</td>
+                        <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
                         <td>lib</td>
                         <td>developer</td>
@@ -1765,7 +1956,7 @@
                     </tr>
                     <tr>
                         <td><b>US-043</b></td>
-                        <td>34</td>
+                        <td>29</td>
                         <td>Decommission retired lib surface</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1777,7 +1968,7 @@
                     </tr>
                     <tr>
                         <td><b>US-044</b></td>
-                        <td>43</td>
+                        <td>37</td>
                         <td>Enhance events: Fix error in gathering sequence builder and update database</td>
                         <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
@@ -1789,7 +1980,7 @@
                     </tr>
                     <tr>
                         <td><b>US-045</b></td>
-                        <td>43</td>
+                        <td>37</td>
                         <td>Enhance library: Add AI-powered scripture discovery and enhance event viewing features</td>
                         <td> <span class="pm-badge layer-ctl">Controllers</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
@@ -1801,7 +1992,7 @@
                     </tr>
                     <tr>
                         <td><b>US-046</b></td>
-                        <td>44</td>
+                        <td>38</td>
                         <td>Enhance library: Build a comprehensive .NET MVC application for managing cultural re...</td>
                         <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
@@ -1813,43 +2004,115 @@
                     </tr>
                     <tr>
                         <td><b>US-047</b></td>
-                        <td>45</td>
-                        <td>Extend library data model: new fields end to end</td>
+                        <td>39</td>
+                        <td>library: add fields Status, DisplayOrder &#x2014; database migration</td>
                         <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
                         <td>Library</td>
-                        <td>product owner</td>
+                        <td>database admin</td>
                         <td><span class="pm-badge should">Should</span></td>
-                        <td>8</td>
+                        <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-048</b></td>
-                        <td>46</td>
-                        <td>Extend events data model: new fields end to end</td>
-                        <td> <span class="pm-badge layer-db">Database</span> </td>
+                        <td>40</td>
+                        <td>library: add fields Status, DisplayOrder &#x2014; server &amp; data adapter</td>
+                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>Events</td>
-                        <td>product owner</td>
+                        <td>Library</td>
+                        <td>developer</td>
                         <td><span class="pm-badge should">Should</span></td>
-                        <td>8</td>
+                        <td>3</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-049</b></td>
-                        <td>47</td>
-                        <td>Extend admin data model: new fields end to end</td>
-                        <td> <span class="pm-badge layer-db">Database</span> </td>
+                        <td>41</td>
+                        <td>library: add fields Status, DisplayOrder &#x2014; frontend forms &amp; views</td>
+                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
                         <td><span class="pm-badge phase-enhance">enhance</span></td>
-                        <td>Admin</td>
-                        <td>product owner</td>
+                        <td>Library</td>
+                        <td>user</td>
                         <td><span class="pm-badge should">Should</span></td>
-                        <td>8</td>
+                        <td>5</td>
                         <td>Medium</td>
                     </tr>
                     <tr>
                         <td><b>US-050</b></td>
-                        <td>20</td>
+                        <td>43</td>
+                        <td>events: add fields CreatedAt, UpdatedAt &#x2014; database migration</td>
+                        <td> <span class="pm-badge layer-db">Database</span> </td>
+                        <td><span class="pm-badge phase-enhance">enhance</span></td>
+                        <td>Events</td>
+                        <td>database admin</td>
+                        <td><span class="pm-badge should">Should</span></td>
+                        <td>3</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><b>US-051</b></td>
+                        <td>43</td>
+                        <td>events: add fields CreatedAt, UpdatedAt &#x2014; server &amp; data adapter</td>
+                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                        <td><span class="pm-badge phase-enhance">enhance</span></td>
+                        <td>Events</td>
+                        <td>developer</td>
+                        <td><span class="pm-badge could">Could</span></td>
+                        <td>3</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><b>US-052</b></td>
+                        <td>44</td>
+                        <td>events: add fields CreatedAt, UpdatedAt &#x2014; frontend forms &amp; views</td>
+                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                        <td><span class="pm-badge phase-enhance">enhance</span></td>
+                        <td>Events</td>
+                        <td>user</td>
+                        <td><span class="pm-badge could">Could</span></td>
+                        <td>5</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><b>US-053</b></td>
+                        <td>45</td>
+                        <td>admin: add fields Status, DisplayOrder &#x2014; database migration</td>
+                        <td> <span class="pm-badge layer-db">Database</span> </td>
+                        <td><span class="pm-badge phase-enhance">enhance</span></td>
+                        <td>Admin</td>
+                        <td>database admin</td>
+                        <td><span class="pm-badge could">Could</span></td>
+                        <td>3</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><b>US-054</b></td>
+                        <td>46</td>
+                        <td>admin: add fields Status, DisplayOrder &#x2014; server &amp; data adapter</td>
+                        <td> <span class="pm-badge layer-da">Data Adapter</span> </td>
+                        <td><span class="pm-badge phase-enhance">enhance</span></td>
+                        <td>Admin</td>
+                        <td>developer</td>
+                        <td><span class="pm-badge could">Could</span></td>
+                        <td>3</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><b>US-055</b></td>
+                        <td>47</td>
+                        <td>admin: add fields Status, DisplayOrder &#x2014; frontend forms &amp; views</td>
+                        <td> <span class="pm-badge layer-fe">Frontend</span> </td>
+                        <td><span class="pm-badge phase-enhance">enhance</span></td>
+                        <td>Admin</td>
+                        <td>user</td>
+                        <td><span class="pm-badge could">Could</span></td>
+                        <td>5</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td><b>US-056</b></td>
+                        <td>17</td>
                         <td>Database schema, migrations &amp; seed data</td>
                         <td> <span class="pm-badge layer-db">Database</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1860,8 +2123,8 @@
                         <td>Medium</td>
                     </tr>
                     <tr>
-                        <td><b>US-051</b></td>
-                        <td>25</td>
+                        <td><b>US-057</b></td>
+                        <td>21</td>
                         <td>Automated test suites per capability</td>
                         <td> <span class="pm-badge layer-srv">Server</span> </td>
                         <td><span class="pm-badge phase-build">build</span></td>
@@ -1872,8 +2135,8 @@
                         <td>Medium</td>
                     </tr>
                     <tr>
-                        <td><b>US-052</b></td>
-                        <td>50</td>
+                        <td><b>US-058</b></td>
+                        <td>51</td>
                         <td>Security review &amp; performance hardening</td>
                         <td> <span class="pm-badge layer-fw">Framework</span> </td>
                         <td><span class="pm-badge phase-release">release</span></td>
@@ -1884,8 +2147,8 @@
                         <td>High</td>
                     </tr>
                     <tr>
-                        <td><b>US-053</b></td>
-                        <td>51</td>
+                        <td><b>US-059</b></td>
+                        <td>52</td>
                         <td>GA release &amp; operations handover</td>
                         <td> <span class="pm-badge layer-fw">Framework</span> </td>
                         <td><span class="pm-badge phase-release">release</span></td>

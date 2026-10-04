@@ -70,12 +70,13 @@ public sealed partial class RequirementIngestor
 
         void AddStory(PmEpic epic, string title, string asA, string want, string soThat,
             int points, int priority, string risk, string[] ac,
-            string layer = "", string phase = "build")
+            string layer = "", string phase = "build", string module = "")
         {
             storyNo++;
             stories.Add(new PmStory { Key = $"US-{storyNo:D3}", EpicKey = epic.Key, Title = title,
                 AsA = asA, IWant = want, SoThat = soThat, Points = points, Priority = priority,
-                Risk = risk, Module = epic.Module, TestCaseCount = Math.Max(2, points * 2),
+                Risk = risk, Module = module.Length > 0 ? module : epic.Module,
+                TestCaseCount = Math.Max(2, points * 2),
                 AcceptanceCriteria = ac, Layer = layer, Phase = phase });
         }
 
@@ -282,13 +283,13 @@ public sealed partial class RequirementIngestor
                         $"Touched paths covered: {string.Join(", ", pattern.Examples.Take(2))}",
                         $"Regression tests prove the enhanced {pattern.Layer.ToLowerInvariant()} behavior",
                         "Frontend, server and database components updated together" },
-                pattern.Layer, "enhance");
+                pattern.Layer, "enhance", pattern.Module);
             enhancePriority -= 2;
         }
         // field extensions: extend each data-bearing module with new fields end to end
-        var fieldModules = new[] { modules[0], modules[^1] }.Concat(modules.Where(m =>
+        var fieldModules = modules.Where(m =>
             snapshot.Files.Any(f => ModuleOf(f.Path).Equals(m, StringComparison.OrdinalIgnoreCase)
-                && SourceAnalyzer.LayerOf(f.Path) == "Data Adapter"))).Distinct().Take(4);
+                && SourceAnalyzer.LayerOf(f.Path) is "Data Adapter" or "Database")).Take(4);
         foreach (var module in fieldModules)
         {
             if (stories.Count >= MaxStories) break;
@@ -298,8 +299,8 @@ public sealed partial class RequirementIngestor
                 new[] { $"New {module} columns added via versioned migration",
                         "Server validation and data adapter mapping updated for the new fields",
                         "Frontend forms display and edit the new fields",
-                        "Existing {module} data migrates losslessly" },
-                "Database", "enhance");
+                        "Existing data migrates losslessly" },
+                "Database", "enhance", module);
             enhancePriority -= 2;
         }
 

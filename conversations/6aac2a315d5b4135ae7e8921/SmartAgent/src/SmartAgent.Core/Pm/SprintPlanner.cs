@@ -109,8 +109,12 @@ public sealed partial class SprintPlanner
 
         var reserveCount = Math.Clamp(sprints.Count / 13, 1, 4);          // tail sprints: hardening/release train
         var deliverable = sprints.Count - reserveCount;
-        var frameworkEnd = Math.Clamp((int)Math.Round(deliverable * 0.12), 2, 10);
-        var enhanceCount = phases.Contains("enhance") ? Math.Clamp((int)Math.Round(deliverable * 0.4), 2, deliverable) : 0;
+        // adaptive band sizes: the framework band fits its scaffold backlog,
+        // the enhance band fits its change-pattern backlog (capped at 40%)
+        var frameworkEnd = Math.Clamp(framework.Count > 0 ? framework.Count : 2, 2, Math.Max(2, deliverable / 8));
+        var enhanceCount = enhance.Count > 0
+            ? Math.Clamp(enhance.Count + 1, 2, Math.Max(2, (int)Math.Round(deliverable * 0.4)))
+            : 0;
         var enhanceStart = deliverable - enhanceCount;
         List<int> Band(int from, int toExclusive) =>
             Enumerable.Range(from, Math.Max(0, toExclusive - from)).Where(i => i % 6 != 5).ToList();
@@ -119,44 +123,57 @@ public sealed partial class SprintPlanner
         var phasesOf = sprints.Select(_ => "").ToList();
         foreach (var i in Enumerable.Range(0, sprints.Count))
             phasesOf[i] = i % 6 == 5 ? "stabilization" : "";
+        // proportional placement: item j of M lands at position j*N/M of the
+        // band's N eligible sprints, so each band is evenly populated
+        int PlaceAt(List<int> band, int j, int m) =>
+            band.Count == 0 ? -1 : band[Math.Min(band.Count - 1, j * band.Count / Math.Max(1, m))];
 
         // framework band: scaffold stories first, then move on
-        var fwCursor = 0;
-        foreach (var i in Band(0, frameworkEnd))
+        var fwBand = Band(0, frameworkEnd);
+        foreach (var i in fwBand) phasesOf[i] = "framework";
+        for (var j = 0; j < framework.Count; j++)
         {
-            phasesOf[i] = "framework";
-            if (fwCursor < framework.Count)
-                assignments[i].Add(framework[fwCursor++]);
+            var i = PlaceAt(fwBand, j, framework.Count);
+            if (i >= 0) assignments[i].Add(framework[j]);
         }
-        if (fwCursor < framework.Count)   // overflow joins the build band
-            build = framework.Skip(fwCursor).Concat(build).ToList();
+        if (framework.Count > fwBand.Count)   // overflow joins the build band
+            build = framework.Skip(fwBand.Count).Concat(build).ToList();
 
-        // build band: vertical module slices — up to 3 stories of the same module per sprint
-        var buildCursor = 0;
+        // build band: vertical module slices — up to 3 stories of the same
+        // module per sprint, waves spread evenly across the band
+        var waves = new List<List<PmStory>>();
         var wave = new List<PmStory>();
-        foreach (var i in Band(frameworkEnd, enhanceStart))
+        foreach (var st in build)
         {
-            phasesOf[i] = "build";
-            while (buildCursor < build.Count && wave.Count < 3
-                   && (wave.Count == 0 || wave[0].Module == build[buildCursor].Module))
-                wave.Add(build[buildCursor++]);
-            if (wave.Count > 0)
+            if (wave.Count >= 3 || (wave.Count > 0 && wave[0].Module != st.Module))
             {
-                assignments[i].AddRange(wave);
-                wave.Clear();
+                waves.Add(wave);
+                wave = new List<PmStory>();
             }
+            wave.Add(st);
         }
-        if (build.Count > buildCursor)   // overflow joins the enhance band
-            enhance = build.Skip(buildCursor).Concat(enhance).ToList();
+        if (wave.Count > 0) waves.Add(wave);
+        var buildBand = Band(frameworkEnd, enhanceStart);
+        foreach (var i in buildBand) phasesOf[i] = "build";
+        for (var j = 0; j < waves.Count; j++)
+        {
+            var i = PlaceAt(buildBand, j, waves.Count);
+            if (i >= 0) assignments[i].AddRange(waves[j]);
+        }
+        var placedWaves = Math.Min(waves.Count, buildBand.Count);
+        if (waves.Count > placedWaves)        // overflow joins the enhance band
+            enhance = waves.Skip(placedWaves).SelectMany(w => w).Concat(enhance).ToList();
 
         // enhance band: field extensions & change-pattern stories
-        var enhanceCursor = 0;
-        foreach (var i in Band(enhanceStart, deliverable))
+        var enhanceBand = Band(enhanceStart, deliverable);
+        foreach (var i in enhanceBand) phasesOf[i] = "enhance";
+        for (var j = 0; j < enhance.Count; j++)
         {
-            phasesOf[i] = "enhance";
-            if (enhanceCursor < enhance.Count)
-                assignments[i].Add(enhance[enhanceCursor++]);
+            var i = PlaceAt(enhanceBand, j, enhance.Count);
+            if (i >= 0) assignments[i].Add(enhance[j]);
         }
+        if (enhance.Count > enhanceBand.Count)  // overflow joins the release train
+            releaseTrain = enhance.Skip(enhanceBand.Count).Concat(releaseTrain).ToList();
 
         // release train on the tail sprints
         var reserve = Enumerable.Range(sprints.Count - reserveCount, reserveCount).ToList();

@@ -143,6 +143,7 @@ public sealed partial class RequirementIngestor
         }
         var appWords = WordsOf(profile.AppName);
         var platforms = string.Join(", ", profile.Platforms);
+        var persistedEntities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         // ── E01 foundation, grounded in the app's own identity ──
         var foundation = new PmEpic { Key = "E01", Name = "Foundation & platform",
@@ -207,7 +208,7 @@ public sealed partial class RequirementIngestor
 
             if (cap.Kind == "Hub")
             {
-                AddStory(epic, $"{feature} real-time session sync",
+                AddStory(epic, $"{feature} real-time sync",
                     persona, $"live {featureWords} state broadcast to every connected client",
                     $"all participants see the same {featureWords} state at once",
                     ClampFibonacci(5 + cap.Methods.Count), priority, "High",
@@ -220,6 +221,7 @@ public sealed partial class RequirementIngestor
             {
                 foreach (var entity in cap.Entities.Take(3))
                 {
+                    if (!persistedEntities.Add(entity)) continue;
                     AddStory(epic, $"{entity} persistence & invariants",
                         persona, $"{WordsOf(entity)}s stored with enforced validation",
                         $"{appWords} data stays consistent", ClampFibonacci(3), Math.Max(20, priority - 5), "Medium",
@@ -243,6 +245,8 @@ public sealed partial class RequirementIngestor
                     "Controllers");
 
                 foreach (var entity in cap.Entities.Take(2))
+                {
+                    if (!persistedEntities.Add(entity)) continue;
                     AddStory(epic, $"{entity} persistence & invariants",
                         persona, $"{WordsOf(entity)}s stored with enforced validation",
                         $"{appWords} data stays consistent", ClampFibonacci(3), Math.Max(20, priority - 3), "Medium",
@@ -250,6 +254,7 @@ public sealed partial class RequirementIngestor
                                 "Constraint violations surface as validation errors",
                                 "Seed data covers representative records" },
                         "Data Adapter");
+                }
 
                 if (cap.Views.Count > 0)
                     AddStory(epic, $"{feature} screens ({string.Join(", ", cap.Views.Take(4))})",
@@ -315,9 +320,14 @@ public sealed partial class RequirementIngestor
                 + $"({snapshot.History.Count} commits reviewed), each mapped to the capability it evolves" };
         AddEpic(enhanceEpic);
         var enhancePriority = 52;
-        foreach (var pattern in patterns.Where(p => p.Commits >= 1))
+        var seenHeadlines = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pattern in patterns.Where(p => p.Commits >= 1
+                     && !p.Headline.Trim().Equals("Initial commit", StringComparison.OrdinalIgnoreCase)
+                     && !p.Headline.Trim().Equals("initial commit", StringComparison.OrdinalIgnoreCase)))
         {
             if (stories.Count >= MaxStories) break;
+            var headline0 = pattern.Headline.Length > 70 ? pattern.Headline[..67] + "..." : pattern.Headline;
+            if (!seenHeadlines.Add(headline0)) continue;
             // map the pattern's touched paths to the capability it evolves
             var capOfPattern = profile.Capabilities.FirstOrDefault(c =>
                 pattern.Examples.Any(x => x.Contains($"/{c.Feature}", StringComparison.OrdinalIgnoreCase)

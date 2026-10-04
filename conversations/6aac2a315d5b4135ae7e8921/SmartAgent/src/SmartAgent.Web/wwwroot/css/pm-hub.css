@@ -100,3 +100,16 @@
 .checklist li::before { content: "☐ "; color: #9ca3af; }
 .seq-step { display: flex; gap: 8px; font-size: 12px; padding: 3px 0; }
 .seq-step .arrow { color: #9ca3af; }
+
+/* phase & layer badges */
+.pm-badge.phase-framework { background:#ede9fe; color:#5b21b6; }
+.pm-badge.phase-build     { background:#dbeafe; color:#1d4ed8; }
+.pm-badge.phase-enhance   { background:#fef3c7; color:#b45309; }
+.pm-badge.phase-release   { background:#d1fae5; color:#047857; }
+.pm-badge.phase-stab      { background:#f3f4f6; color:#4b5563; }
+.pm-badge.layer-db   { background:#fce7f3; color:#9d174d; }
+.pm-badge.layer-da   { background:#e0f2fe; color:#075985; }
+.pm-badge.layer-ctl  { background:#ffedd5; color:#c2410c; }
+.pm-badge.layer-fe   { background:#ecfccb; color:#4d7c0f; }
+.pm-badge.layer-srv  { background:#e2e8f0; color:#334155; }
+.pm-badge.layer-fw   { background:#ede9fe; color:#5b21b6; }

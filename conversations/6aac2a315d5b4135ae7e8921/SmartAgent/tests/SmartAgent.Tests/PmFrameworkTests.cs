@@ -54,6 +54,89 @@ public class PmFrameworkTests : IDisposable
         }
     }
 
+
+    // ---------- phase & layer model (iteration B) ----------
+
+    [Fact]
+    public async Task Plan_has_phase_bands_and_layer_tagged_stories()
+    {
+        var snapshot = new SourceSnapshot
+        {
+            SourceType = SourceType.GitHub, SourceName = "owner/repo", SourceDetail = "branch main, 8 files, 4 commits reviewed",
+            Files = new List<SourceFile>
+            {
+                new() { Path = "repo/src/App.Web/Controllers/HomeController.cs",
+                    Content = "public class HomeController { public IActionResult Index() => View(); }" },
+                new() { Path = "repo/src/App.Web/Views/Home/Index.cshtml", Content = "<h1>hi</h1>" },
+                new() { Path = "repo/src/App.Core/Services/CatalogService.cs", Content = "public class CatalogService {}" },
+                new() { Path = "repo/src/App.Core/Models/Product.cs",
+                    Content = "public class Product { public int Id { get; set; } public string Name { get; set; } }" },
+                new() { Path = "repo/db/schema.sql", Content = "CREATE TABLE products;" },
+                new() { Path = "repo/README.md", Content = "# readme" }
+            },
+            History = new List<SourceCommit>
+            {
+                new() { Sha = "a1", Message = "Add catalog search filters", Date = DateTimeOffset.UtcNow,
+                    TouchedPaths = new List<string> { "repo/src/App.Web/Controllers/HomeController.cs" } },
+                new() { Sha = "b2", Message = "Improve catalog search filters", Date = DateTimeOffset.UtcNow,
+                    TouchedPaths = new List<string> { "repo/src/App.Web/Controllers/HomeController.cs" } },
+                new() { Sha = "c3", Message = "Update product schema", Date = DateTimeOffset.UtcNow,
+                    TouchedPaths = new List<string> { "repo/db/schema.sql" } }
+            }
+        };
+
+        var ingestor = new RequirementIngestor();
+        var planner = new SprintPlanner();
+        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner);
+        var options = new PmOptions { Name = "Phase Programme", Years = 2, TeamSize = 18 };
+
+        var plan = await governor.GenerateAsync(snapshot, options, Path.Combine(_root, "programs"));
+
+        // stories carry layer + phase
+        Assert.Contains(plan.Stories, s => s.Layer == "Controllers");
+        Assert.Contains(plan.Stories, s => s.Layer == "Frontend");
+        Assert.Contains(plan.Stories, s => s.Layer == "Database");
+        Assert.Contains(plan.Stories, s => s.Phase == "framework");
+        Assert.Contains(plan.Stories, s => s.Phase == "enhance");
+
+        // commit history becomes enhancement stories grounded in the pattern
+        var enhance = plan.Stories.Where(s => s.Phase == "enhance").ToList();
+        Assert.Contains(enhance, s => s.Title.Contains("catalog search filters"));
+        Assert.Contains(enhance, s => s.Layer == "Controllers" && s.Title.Contains("HomeController") == false);
+
+        // sprints are phase-banded: framework before build before enhance
+        var numbered = plan.SprintPlans.OrderBy(s => s.Number).ToList();
+        var phases = numbered.Select(s => s.Phase).ToList();
+        var lastFramework = phases.FindLastIndex(p => p == "framework");
+        var firstEnhance = phases.FindIndex(p => p == "enhance");
+        var firstBuild = phases.FindIndex(p => p == "build");
+        Assert.True(firstBuild < 0 || lastFramework < firstBuild, "framework sprints must precede build sprints");
+        Assert.True(firstEnhance < 0 || firstBuild < firstEnhance, "build sprints must precede enhance sprints");
+
+        // build waves are vertical slices: stories in one sprint share a module
+        var waveSprint = plan.SprintPlans.FirstOrDefault(s => s.StoryKeys.Count >= 2
+            && s.Phase == "build"
+            && s.StoryKeys.Select(k => plan.Stories.First(x => x.Key == k)).Select(x => x.Module).Distinct().Count() == 1);
+        Assert.NotNull(waveSprint);
+        var waveLayers = waveSprint.StoryKeys.Select(k => plan.Stories.First(x => x.Key == k))
+            .Select(x => x.Layer).Distinct().ToList();
+        Assert.True(waveLayers.Count >= 2, $"vertical slice expected multiple layers, got {string.Join(",", waveLayers)}");
+
+        // enhancement stories keep the target module, not the epic's default
+        Assert.Contains(enhance, s => s.Module != plan.Epics[0].Module || s.Layer == "Database");
+    }
+
+    [Fact]
+    public void Layer_taxonomy_classifies_paths()
+    {
+        Assert.Equal("Database", SourceAnalyzer.LayerOf("repo/db/schema.sql"));
+        Assert.Equal("Controllers", SourceAnalyzer.LayerOf("repo/src/App.Web/Controllers/HomeController.cs"));
+        Assert.Equal("Frontend", SourceAnalyzer.LayerOf("repo/src/App.Web/Views/Home/Index.cshtml"));
+        Assert.Equal("Frontend", SourceAnalyzer.LayerOf("client/src/components/ui/dialog.tsx"));
+        Assert.Equal("Data Adapter", SourceAnalyzer.LayerOf("client/src/api-client/api-client.ts"));
+        Assert.Equal("Server", SourceAnalyzer.LayerOf("repo/src/App.Core/Services/CatalogService.cs"));
+    }
+
     // ---------- requirement ingestor ----------
 
     private static SourceSnapshot Snapshot() => new()

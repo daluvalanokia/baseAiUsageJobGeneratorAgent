@@ -67,14 +67,14 @@
 <div class="pm-card">
     <h3>Stories (@stories.Count)</h3>
     <table class="pm-tbl">
-        <thead><tr><th>ID</th><th>Title</th><th>As a / I want / So that</th><th>Priority</th><th>Points</th><th>Squad</th><th>AC</th></tr></thead>
+        <thead><tr><th>ID</th><th>Title</th><th>Layer</th><th>As a / I want / So that</th><th>Priority</th><th>Points</th><th>Squad</th><th>AC</th></tr></thead>
         <tbody>
         @foreach (var s in stories)
         {
             var (label, css) = PmHub.MoScow(s.Priority);
             <tr>
                 <td><b>@s.Key</b></td>
-                <td>@s.Title</td>
+                <td>@s.Title @if (s.Layer.Length > 0) { <span class="pm-badge @PmPhaseBadge.Layer(s.Layer).Css">@s.Layer</span> }</td>
                 <td>As a @s.AsA I want @s.IWant so that @s.SoThat</td>
                 <td><span class="pm-badge @css">@label</span></td>
                 <td>@s.Points</td>

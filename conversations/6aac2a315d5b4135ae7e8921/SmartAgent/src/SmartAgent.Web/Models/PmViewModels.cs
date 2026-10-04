@@ -25,3 +25,27 @@ public static class PmLayout
             plan.Weeks, plan.Resources.Count, plan.Platform?.ShortName ?? "Platform");
     }
 }
+
+public static partial class PmPhaseBadge
+{
+    public static (string Label, string Css) Phase(string phase) => phase switch
+    {
+        "framework" => ("framework", "phase-framework"),
+        "build" => ("build", "phase-build"),
+        "enhance" => ("enhance", "phase-enhance"),
+        "release" => ("release", "phase-release"),
+        "stabilization" => ("stabilization", "phase-stab"),
+        _ => ("build", "phase-build")
+    };
+
+    public static (string Label, string Css) Layer(string layer) => layer switch
+    {
+        "Database" => ("Database", "layer-db"),
+        "Data Adapter" => ("Data Adapter", "layer-da"),
+        "Controllers" => ("Controllers", "layer-ctl"),
+        "Frontend" => ("Frontend", "layer-fe"),
+        "Server" => ("Server", "layer-srv"),
+        "Framework" => ("Framework", "layer-fw"),
+        _ => ("Server", "layer-srv")
+    };
+}

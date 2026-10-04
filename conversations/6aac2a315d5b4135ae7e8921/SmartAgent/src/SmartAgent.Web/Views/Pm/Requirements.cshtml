@@ -18,7 +18,7 @@
 <div class="pm-card">
     <table class="pm-tbl">
         <thead>
-        <tr><th>ID</th><th>Sprint</th><th>Title</th><th>As a</th><th>Priority</th><th>Points</th><th>Risk</th><th>Squad</th></tr>
+        <tr><th>ID</th><th>Sprint</th><th>Title</th><th>Layer</th><th>As a</th><th>Priority</th><th>Points</th><th>Risk</th><th>Squad</th></tr>
         </thead>
         <tbody>
         @foreach (var s in Model.Stories)
@@ -29,6 +29,7 @@
                 <td><b>@s.Key</b></td>
                 <td>@(sprintOf.TryGetValue(s.Key, out var sn) ? $"S{sn:D2}" : "—")</td>
                 <td>@s.Title</td>
+                <td>@if (s.Layer.Length > 0) { <span class="pm-badge @PmPhaseBadge.Layer(s.Layer).Css">@s.Layer</span> } else { <text>—</text> }</td>
                 <td>@s.AsA</td>
                 <td><span class="pm-badge @css">@label</span></td>
                 <td>@s.Points</td>

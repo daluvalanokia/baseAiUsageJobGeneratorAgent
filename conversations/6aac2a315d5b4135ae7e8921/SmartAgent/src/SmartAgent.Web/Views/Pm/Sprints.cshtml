@@ -21,6 +21,10 @@
                 <div class="t">Sprint @s.Number — @(story?.Title ?? s.Goal)</div>
                 <div class="d">
                     @s.Quarter · @s.Points pts · Weeks @s.StartWeek–@s.EndWeek
+                    @if (PmPhaseBadge.Phase(s.Phase).Label is { } ph && s.Phase.Length > 0)
+                    {
+                        <span class="pm-badge @PmPhaseBadge.Phase(s.Phase).Css">@ph</span>
+                    }
                     <span class="pm-chip" style="background:@PmHub.SquadColor(squad)">@squad</span>
                     @if (!string.IsNullOrEmpty(s.Milestone))
                     {

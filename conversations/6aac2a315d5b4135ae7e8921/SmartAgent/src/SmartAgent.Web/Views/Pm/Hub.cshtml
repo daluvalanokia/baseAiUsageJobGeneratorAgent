@@ -31,6 +31,40 @@
     <div class="pm-kpi green"><b>@(Model.UnitTestCount + Model.SystemTestCount)</b><span>TEST CASES</span></div>
 </div>
 
+<div class="pm-card">
+    <h3>Delivery Phases — framework → build → enhance → release</h3>
+    @{
+        var phaseSprints = Model.SprintPlans.GroupBy(s => s.Phase is { Length: > 0 } ? s.Phase : "build")
+            .ToDictionary(g => g.Key, g => g.ToList());
+        var phaseOrder = new[] { "framework", "build", "enhance", "release", "stabilization" };
+        var phaseDesc = new Dictionary<string, string> {
+            ["framework"] = "base framework code generation: scaffold, auth, tooling",
+            ["build"] = "basic module functionality in vertical slices (db + server + controllers + frontend per sprint)",
+            ["enhance"] = "field extensions and change patterns from the repository's commit history",
+            ["release"] = "hardening, security review and the GA train",
+            ["stabilization"] = "regression, hardening and readiness sprints" };
+    }
+    <table class="pm-tbl">
+        <thead><tr><th>Phase</th><th>Sprints</th><th>Stories</th><th>Points</th><th>Focus</th></tr></thead>
+        <tbody>
+        @foreach (var ph in phaseOrder.Where(x => phaseSprints.ContainsKey(x)))
+        {
+            var (label, css) = PmPhaseBadge.Phase(ph);
+            var sprintsIn = phaseSprints[ph];
+            var keys = sprintsIn.SelectMany(x => x.StoryKeys).ToList();
+            var pts = keys.Select(k => Model.Stories.FirstOrDefault(y => y.Key == k)).Where(y => y != null).Sum(y => y!.Points);
+            <tr>
+                <td><span class="pm-badge @css">@label</span></td>
+                <td>@sprintsIn.Min(x => x.Number)–@sprintsIn.Max(x => x.Number) (@sprintsIn.Count)</td>
+                <td>@keys.Count</td>
+                <td>@pts</td>
+                <td>@phaseDesc[ph]</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
 <div class="pm-cols">
     <div class="pm-card">
         <h3>Quarter Schedule</h3>

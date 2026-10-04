@@ -284,9 +284,37 @@ POST /api/pm/program
 - `POST /api/pm/program` — generate + persist a program plan (JSON)
 - `GET /api/pm/programs` / `GET /api/pm/programs/{slug}` — list/load plans
 - MVC PM Hub (user interaction): `/Pm` (plan form driving budget/team/years)
-  → `/Pm/Hub?slug=...` renders KPIs, quarter schedule with releases,
-  sprint-level task management, squads, the requirement backlog, the team
-  RACI chart and budget rollup per role.
+  → `/Pm/Hub?slug=...` renders KPIs, delivery phases, quarter schedule with
+  releases, sprint-level task management, squads, the requirement backlog,
+  the team RACI chart and budget rollup per role.
+
+**Deep source review** (any GitHub repo): the analyzer resolves the real
+module inventory — controllers, domain entities, services, Hubs, UI files,
+database scripts — and each module's stories are grounded in its actual
+classes, files and endpoints.
+
+**Commit-history pattern review**: for GitHub sources the provider also
+captures recent commits with their touched paths. Recurring
+(module, layer) change patterns become Year-2 enhancement stories, so the
+plan stretches across the horizon with change waves the repository itself
+demonstrated ("Add AI-powered scripture discovery", "Fix gathering sequence
+builder", ...).
+
+**Architecture layer taxonomy**: every source path classifies into one of
+five layers — Database, Data Adapter, Controllers, Frontend, Server — and
+every story carries its layer. The backlog breaks each module into these
+layers (server-side domain, data adapter & persistence, controllers &
+actions, frontend screens, database scripts), so a sprint shows exactly
+which frontend/server/database components change together.
+
+**Phase-banded planning**: sprints resolve into four explicit phases:
+1. *framework* — base framework code generation (scaffold, auth, tooling)
+2. *build* — basic module functionality in vertical slices: one module's
+   database + server + controllers + frontend changes land in the same
+   sprint wave
+3. *enhance* — field extensions (new fields end to end: DB column + server
+   validation + form input) and history-detected change patterns
+4. *release* — hardening, security review and the GA train
 
 Budget model: each resource's engagement is RACI-weighted (R=1.0, A=0.5,
 C=0.25, I=0.05 across phases) and priced at blended role rates per sprint;

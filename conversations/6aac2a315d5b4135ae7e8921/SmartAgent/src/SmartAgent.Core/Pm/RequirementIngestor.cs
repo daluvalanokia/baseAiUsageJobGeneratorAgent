@@ -247,15 +247,18 @@ public sealed partial class RequirementIngestor
                     var view = cap.ViewDetails.FirstOrDefault(v =>
                         Path.GetFileNameWithoutExtension(v.Name).Equals(m, StringComparison.OrdinalIgnoreCase));
                     var req = $"{cap.Class}.{m}()";
+                    if (cap.MethodParams.TryGetValue(m, out var realParams) && realParams.Count > 0)
+                        req += $" — binds parameters: {string.Join(", ", realParams.Take(8))}";
                     if (view != null)
-                        req += $" pairs with view {feature}/{view.Name}"
+                        req += $"; pairs with view {feature}/{view.Name}"
                             + (view.Fields.Count > 0 ? $" (fields: {string.Join(", ", view.Fields.Take(5))})" : "");
                     else if (cap.ViewDetails.Count > 0)
-                        req += $" paired with the {feature} views per the source layout";
+                        req += $"; paired with the {feature} views per the source layout";
                     if (fieldList.Length > 0 && (m.StartsWith("Create", StringComparison.OrdinalIgnoreCase)
                         || m.StartsWith("Edit", StringComparison.OrdinalIgnoreCase)
-                        || m.StartsWith("Add", StringComparison.OrdinalIgnoreCase)))
-                        req += $"; binds and validates {fieldList}";
+                        || m.StartsWith("Add", StringComparison.OrdinalIgnoreCase)
+                        || m.StartsWith("Save", StringComparison.OrdinalIgnoreCase)))
+                        req += $"; persists entity fields: {fieldList}";
                     acs.Add(req);
                 }
                 acs.Add("Authorization and model validation enforced on every action; error paths return correct status codes");
@@ -271,20 +274,63 @@ public sealed partial class RequirementIngestor
                     if (!persistedEntities.Add(entity)) continue;
                     var detail = cap.EntityDetails.FirstOrDefault(d => d.Name == entity);
                     var fields = detail != null ? string.Join(", ", detail.Fields) : "";
-                    var required = detail != null
-                        ? string.Join(", ", detail.Fields.Where(f => f.Contains("(string)") && !f.Contains("?")).Take(4))
+                    var required = detail != null && detail.RequiredFields.Count > 0
+                        ? string.Join(", ", detail.RequiredFields.Take(5))
                         : "";
+                    var sizeAcs = detail != null && detail.FieldSizes.Count > 0
+                        ? detail.FieldSizes.Take(6)
+                            .Select(kv => $"{entity}.{kv.Key} sized exactly: {kv.Value}").ToList()
+                        : new List<string>();
+                    var acList = new List<string>();
+                    if (fields.Length > 0)
+                        acList.Add($"{entity} fields ({fields}) round-trip through the data adapter identically");
+                    else
+                        acList.Add($"{entity} round-trips through persistence identically");
+                    if (required.Length > 0)
+                        acList.Add($"Required fields ({required}) enforced: null/empty submissions rejected with validation errors");
+                    else
+                        acList.Add("Constraint violations surface as validation errors");
+                    acList.AddRange(sizeAcs);
+                    acList.Add("Seed data covers representative records");
                     AddStory(epic, $"{entity} persistence & invariants",
-                        persona, $"{WordsOf(entity)}s stored with enforced validation",
+                        persona, $"{WordsOf(entity)}s stored with enforced validation, field sizes and constraints",
                         $"{appWords} data stays consistent", ClampFibonacci(3), Math.Max(20, priority - 3), "Medium",
-                        new[] { fields.Length > 0
-                                ? $"{entity} fields ({fields}) round-trip through the data adapter identically"
-                                : $"{entity} round-trips through persistence identically",
-                                required.Length > 0
-                                ? $"Required fields ({required}) enforced: null/empty submissions rejected with validation errors"
-                                : "Constraint violations surface as validation errors",
-                                "Seed data covers representative records" },
-                        "Data Adapter");
+                        acList.ToArray(), "Data Adapter");
+                }
+
+                // settings & configuration: config-type entities drive other modules'
+                // behavior — state per setting where it is edited and which module consumes it
+                var settingEntity = cap.Entities.FirstOrDefault(e =>
+                    Regex.IsMatch(e, "config|setting|preference|option", RegexOptions.IgnoreCase));
+                if (settingEntity != null)
+                {
+                    var sDetail = cap.EntityDetails.FirstOrDefault(d => d.Name == settingEntity);
+                    if (sDetail != null)
+                    {
+                        var usage = new SourceAnalyzer().SettingUsageOf(snapshot, sDetail);
+                        var editorMethod = cap.Methods.FirstOrDefault(m =>
+                            Regex.IsMatch(m, "UpdateConfig|SaveConfig|Setting|Config", RegexOptions.IgnoreCase))
+                            ?? cap.Methods.FirstOrDefault();
+                        var settingAcs = new List<string>();
+                        var usageAcs = usage.GroupBy(u => u.Field).Take(8).Select(g =>
+                            $"{settingEntity}.{g.Key} setting — edited in the {feature} screens, persisted via {cap.Class}.{editorMethod}(), "
+                            + $"consumed by {string.Join(", ", g.Select(x => x.Module).Distinct())} "
+                            + $"(e.g. {Path.GetFileName(g.First().File)}) to drive that module's runtime behavior").ToList();
+                        settingAcs.AddRange(usageAcs);
+                        var unused = sDetail.Fields.Where(f =>
+                            !usage.Any(u => f.StartsWith(u.Field + " ", StringComparison.Ordinal))).Take(6);
+                        settingAcs.AddRange(unused.Select(f =>
+                        {
+                            var col = f[..f.LastIndexOf(" (", StringComparison.Ordinal)];
+                            return $"{settingEntity}.{col} persisted and exposed for runtime consumption (no consumer found in the source scan)";
+                        }));
+                        settingAcs.Add("Setting changes take effect without redeploying; invalid values rejected at the {feature} boundary");
+                        AddStory(epic, $"{feature} settings & configuration ({settingEntity})",
+                            "admin", $"every {settingEntity} setting wired to the module behavior it drives",
+                            $"{appWords} behavior stays configurable without code changes",
+                            ClampFibonacci(3 + usage.Count / 3), Math.Max(20, priority - 2), "Medium",
+                            settingAcs.ToArray(), "Controllers");
+                    }
                 }
 
                 if (cap.Views.Count > 0)
@@ -313,8 +359,17 @@ public sealed partial class RequirementIngestor
                 {
                     var ddlAcs = new List<string>();
                     foreach (var d in cap.EntityDetails.Take(3))
-                        ddlAcs.Add($"{d.Name} → table with columns {string.Join(", ", d.Fields)} "
+                    {
+                        var cols = d.Fields.Select(f =>
+                        {
+                            var col = f[..f.LastIndexOf(" (", StringComparison.Ordinal)];
+                            return d.FieldSizes.TryGetValue(col, out var size)
+                                ? $"{f} [{size}]"
+                                : f;
+                        }).ToList();
+                        ddlAcs.Add($"{d.Name} → table with columns {string.Join(", ", cols)} "
                             + "(dual-provider DDL: SQL Server + Oracle, per the source schema)");
+                    }
                     ddlAcs.Add($"Seed data idempotent for {string.Join(", ", cap.Entities)}; rollback scripts documented");
                     AddStory(epic, $"{feature} schema, migrations & seeds",
                         "database admin", $"versioned DDL and seeds for the {featureWords} tables",
@@ -392,6 +447,48 @@ public sealed partial class RequirementIngestor
                         LayerComponentsOf(pattern.Examples),
                         $"Regression tests prove the enhanced {pattern.Layer.ToLowerInvariant()} behavior" },
                 pattern.Layer, "enhance", capOfPattern?.Feature ?? pattern.Module);
+            enhancePriority -= 2;
+        }
+        // history-grounded field additions: fields the source repo itself added over
+        // its commit history — each becomes one requirement spanning data model,
+        // controller actions, database and views, exactly as the source evolved
+        var profileEntities = profile.Capabilities.SelectMany(c => c.Entities)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var fieldHistory = new SourceAnalyzer().FieldHistoryPatterns(snapshot)
+            .Where(f => !f.Field.StartsWith("Dispose") && f.Field != "Id") // lifecycle noise / key columns
+            .Where(f => !Regex.IsMatch(f.Entity,
+                @"ViewModel$|Dto$|Options$|Result$|Error|Program$|Startup$|Model$"))
+            .GroupBy(f => (f.Entity, f.Field)).Select(g => g.First()) // distinct entity.field
+            .OrderByDescending(f => profileEntities.Contains(f.Entity)) // real entities first
+            .ThenByDescending(f => f.Commits)
+            .Take(6).ToList();
+        foreach (var fh in fieldHistory)
+        {
+            if (stories.Count >= MaxStories) break;
+            var capOfField = profile.Capabilities.FirstOrDefault(c =>
+                    c.Entities.Contains(fh.Entity, StringComparer.OrdinalIgnoreCase))
+                ?? profile.Capabilities.FirstOrDefault(c =>
+                    c.Feature.Equals(fh.Module, StringComparison.OrdinalIgnoreCase));
+            var module = capOfField?.Feature ?? fh.Module;
+            var actionList = capOfField != null
+                ? capOfField.Methods.Where(m =>
+                      Regex.IsMatch(m, "Create|Edit|Add|Save|Update", RegexOptions.IgnoreCase)).Take(3).ToList()
+                : new List<string>();
+            var bindingActions = actionList.Count > 0
+                ? string.Join(", ", actionList.Select(m => $"{capOfField!.Class}.{m}()"))
+                : $"the {module} create/edit/save action methods";
+            var sizeTxt = fh.Type.Contains("string", StringComparison.OrdinalIgnoreCase)
+                ? $"{fh.Field} ({fh.Type}, max 255 chars unless declared otherwise)" : $"{fh.Field} ({fh.Type})";
+            AddStory(enhanceEpic, $"Add field {fh.Field} to {fh.Entity} in {module}",
+                "user", $"the {fh.Field} addition the source itself made, carried through every layer",
+                $"{module} evolves exactly the way the source history shows",
+                5, Math.Max(30, enhancePriority), "Medium",
+                new[] { $"Data model: extend {fh.Entity} with {sizeTxt} (mirrors the source's own '{fh.Field}' addition in {Path.GetFileName(fh.File)})",
+                        $"Controller: modify {module} action methods ({bindingActions}) to bind and validate {fh.Field} per the source binding pattern",
+                        $"Database: ALTER TABLE {fh.Entity} ADD {fh.Field} column via versioned, dual-provider migration (SQL Server + Oracle)",
+                        $"Views: the {module} forms render and submit {fh.Field} with client validation mirroring server rules",
+                        $"Grounding: the source repository added this field in its own history ({fh.Commits} commit(s), last seen {fh.Last:yyyy-MM-dd})" },
+                "Data Adapter", "enhance", module);
             enhancePriority -= 2;
         }
         foreach (var cap in profile.Capabilities.Where(c => c.EntityDetails.Count > 0).Take(3))

@@ -8,6 +8,15 @@ public sealed class SourceFile
     public long SizeBytes => Content.Length;
 }
 
+/// <summary>A single file's diff hunk captured for a commit (truncated).</summary>
+public sealed record SourcePatch
+{
+    public required string Path { get; init; }
+    /// <summary>Added/removed diff lines only (truncated) — evidence for
+    /// field-level history analysis (e.g. properties added to an entity).</summary>
+    public required string Patch { get; init; }
+}
+
 /// <summary>A commit captured from the source repository history.</summary>
 public sealed record SourceCommit
 {
@@ -15,6 +24,8 @@ public sealed record SourceCommit
     public required string Message { get; init; }
     public required DateTimeOffset Date { get; init; }
     public IReadOnlyList<string> TouchedPaths { get; init; } = Array.Empty<string>();
+    /// <summary>Per-file diffs for code files (truncated), when the source exposes them.</summary>
+    public IReadOnlyList<SourcePatch> Patches { get; init; } = Array.Empty<SourcePatch>();
 }
 
 /// <summary>

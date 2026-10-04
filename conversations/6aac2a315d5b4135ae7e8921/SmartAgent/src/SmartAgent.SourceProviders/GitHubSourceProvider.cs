@@ -85,13 +85,31 @@ public sealed class GitHubSourceProvider(HttpClient http) : ISourceProvider
                 using var detailDoc = JsonDocument.Parse(await detailResp.Content.ReadAsStringAsync(request.CancellationToken));
                 if (!detailDoc.RootElement.TryGetProperty("files", out var filesEl)) continue;
                 var paths = new List<string>();
+                var patches = new List<SourcePatch>();
                 foreach (var f in filesEl.EnumerateArray().Take(40))
                 {
                     if (f.TryGetProperty("filename", out var fn) && fn.GetString() is { } fp)
+                    {
                         paths.Add(fp);
+                        // keep code diffs (added/removed lines only) for field-history analysis
+                        if ((fp.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                                || fp.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
+                            && f.TryGetProperty("patch", out var pe)
+                            && pe.GetString() is { } patchText && patchText.Length > 0)
+                        {
+                            var lines = patchText.Split('\n')
+                                .Where(l => l.StartsWith('+') || l.StartsWith('-')).ToList();
+                            if (lines.Count > 0)
+                                patches.Add(new SourcePatch
+                                {
+                                    Path = fp,
+                                    Patch = string.Join("\n", lines.Take(400))[..Math.Min(2000, string.Join("\n", lines.Take(400)).Length)]
+                                });
+                        }
+                    }
                 }
                 var idx = commits.FindIndex(x => x.Sha == c.Sha);
-                commits[idx] = c with { TouchedPaths = paths };
+                commits[idx] = c with { TouchedPaths = paths, Patches = patches };
             }
             return commits;
         }

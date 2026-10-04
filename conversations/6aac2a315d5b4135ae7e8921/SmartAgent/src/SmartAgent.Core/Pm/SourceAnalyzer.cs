@@ -11,6 +11,10 @@ public sealed record PmClassInfo
     public required string Kind { get; init; }          // Controller / Service / Entity / Hub / Component / Other
     public required string File { get; init; }
     public IReadOnlyList<string> Methods { get; init; } = Array.Empty<string>();
+    /// <summary>Method name → its real parameters ("uid (string?)", "userId (string)")
+    /// — the ground truth for what a controller action actually binds.</summary>
+    public IReadOnlyDictionary<string, IReadOnlyList<string>> MethodParams { get; init; }
+        = new Dictionary<string, IReadOnlyList<string>>();
 }
 
 /// <summary>A database table extracted from entity models in the source.</summary>
@@ -37,6 +41,10 @@ public sealed record PmCapability
     public required string Root { get; init; }                   // application root folder
     public string Class { get; init; } = "";                    // controller/hub class name
     public IReadOnlyList<string> Methods { get; init; } = Array.Empty<string>();
+    /// <summary>Each action method's real parameters, copied from the owning class — the
+    /// ground truth for what a controller action actually binds and validates.</summary>
+    public IReadOnlyDictionary<string, IReadOnlyList<string>> MethodParams { get; init; }
+        = new Dictionary<string, IReadOnlyList<string>>();
     public IReadOnlyList<string> Views { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> Entities { get; init; } = Array.Empty<string>();
     public IReadOnlyList<PmEntityDetail> EntityDetails { get; init; } = Array.Empty<PmEntityDetail>();
@@ -45,10 +53,33 @@ public sealed record PmCapability
 }
 
 /// <summary>An entity with its actual fields (property + CLR type) extracted from the source model.</summary>
+/// <summary>Where a settings/config field is actually consumed: the setting's
+/// field, the module consuming it, and the file that references it.</summary>
+public sealed record PmSettingUsage(string Field, string Module, string File);
+
+/// <summary>A field the source repository ADDED to an entity over its own
+/// history — extracted from commit diffs, the ground truth for
+/// "this module evolves by adding these fields".</summary>
+public sealed record PmFieldHistory
+{
+    public required string Entity { get; init; }
+    public required string Field { get; init; }
+    public required string Type { get; init; }
+    public required string Module { get; init; }
+    public required string File { get; init; }
+    public int Commits { get; init; }
+    public DateTimeOffset First { get; init; }
+    public DateTimeOffset Last { get; init; }
+}
+
 public sealed record PmEntityDetail
 {
     public required string Name { get; init; }
     public IReadOnlyList<string> Fields { get; init; } = Array.Empty<string>();    // "Title (string)"
+    /// <summary>Field name → size info: explicit "max 100 (StringLength)" when the source
+    /// declares it, otherwise an inferred default so DDL requirements always state a size.</summary>
+    public IReadOnlyDictionary<string, string> FieldSizes { get; init; } = new Dictionary<string, string>();
+    public IReadOnlyList<string> RequiredFields { get; init; } = Array.Empty<string>();
 }
 
 /// <summary>A view (cshtml/razor) with its actual input fields and wired behaviors.</summary>
@@ -88,14 +119,20 @@ public sealed partial class SourceAnalyzer
                 var name = m.Groups["name"].Value;
                 if (string.IsNullOrWhiteSpace(name)) continue;
                 var body = ExtractBalanced(m.Index, file.Content);
-                var methods = MethodRegex().Matches(body).Cast<Match>()
-                    .Select(x => x.Groups["method"].Value)
-                    .Where(x => !string.IsNullOrWhiteSpace(x))
-                    .Distinct().Take(8).ToList();
+                var methodMatches = MethodRegex().Matches(body).Cast<Match>()
+                    .Where(x => !string.IsNullOrWhiteSpace(x.Groups["method"].Value))
+                    .DistinctBy(x => x.Groups["method"].Value).Take(8).ToList();
+                var methods = methodMatches.Select(x => x.Groups["method"].Value).ToList();
+                var methodParams = new Dictionary<string, IReadOnlyList<string>>();
+                foreach (var mm in methodMatches)
+                {
+                    var paramsText = ExtractParenBalanced(mm.Index + mm.Length - 1, body);
+                    methodParams[mm.Groups["method"].Value] = ParseParams(paramsText);
+                }
                 result.Add(new PmClassInfo
                 {
                     Name = name, Module = module, File = file.Path,
-                    Kind = KindOf(name, file.Path), Methods = methods
+                    Kind = KindOf(name, file.Path), Methods = methods, MethodParams = methodParams
                 });
             }
         }
@@ -521,7 +558,7 @@ public sealed partial class SourceAnalyzer
             capabilities.Add(new PmCapability
             {
                 Feature = feature, Kind = c.Kind, Root = root, Class = c.Name,
-                Methods = c.Methods, Views = views, Entities = entities,
+                Methods = c.Methods, MethodParams = c.MethodParams, Views = views, Entities = entities,
                 EntityDetails = entityDetails.Where(d => entities.Contains(d.Name)).ToList(),
                 ViewDetails = viewDetails.Where(v => v.Feature.Equals(feature, StringComparison.OrdinalIgnoreCase)).ToList(),
                 FileCount = Math.Max(1, fileCountByRoot.GetValueOrDefault(root, 1) / 4 + views.Count + entities.Count)
@@ -626,17 +663,102 @@ public sealed partial class SourceAnalyzer
                 .FirstOrDefault(m => m.Groups["name"].Value == c.Name);
             if (classMatch == null) continue;
             var body = ExtractBalanced(classMatch.Index, content);
-            var fields = ColumnRegex().Matches(body).Cast<Match>()
-                .Select(x => $"{x.Groups["col"].Value} ({x.Groups["type"].Value.Trim()})")
-                .Distinct().Take(12).ToList();
+            var colMatches = ColumnRegex().Matches(body).Cast<Match>()
+                .DistinctBy(x => x.Groups["col"].Value).Take(12).ToList();
+            var fields = colMatches
+                .Select(x => $"{x.Groups["col"].Value} ({x.Groups["type"].Value.Trim()})").ToList();
+            var sizes = new Dictionary<string, string>();
+            var required = new List<string>();
+            var prevEnd = 0;
+            foreach (var cm in colMatches)
+            {
+                var window = body[prevEnd..cm.Index];      // attributes sit just before the property
+                prevEnd = cm.Index + cm.Length;
+                var col = cm.Groups["col"].Value;
+                var type = cm.Groups["type"].Value.Trim();
+                var sl = Regex.Match(window, @"(?:StringLength|MaxLength)\((?<n>\d+)");
+                var isKey = Regex.IsMatch(window, @"\[Key\]");
+                var isRequiredAttr = Regex.IsMatch(window, @"\[Required\]");
+                if (sl.Success)
+                    sizes[col] = $"max {sl.Groups["n"].Value} chars (declared via StringLength/MaxLength)";
+                else if (type.Contains("string", StringComparison.OrdinalIgnoreCase))
+                    sizes[col] = type.Contains('?')
+                        ? "max 255 chars (inferred default — source does not declare an explicit size)"
+                        : "max 255 chars (inferred default — source does not declare an explicit size; required)";
+                if (isKey || isRequiredAttr
+                    || (type.Contains("string", StringComparison.OrdinalIgnoreCase) && !type.Contains('?')))
+                    required.Add(col);
+            }
             if (fields.Count > 0 && !details.Any(d => d.Name == c.Name))
-                details.Add(new PmEntityDetail { Name = c.Name, Fields = fields });
+                details.Add(new PmEntityDetail
+                {
+                    Name = c.Name, Fields = fields, FieldSizes = sizes, RequiredFields = required
+                });
         }
         return details;
     }
 
     /// <summary>Views with their real form fields (asp-for/name inputs) and
     /// behaviors (form posts, fetches, SignalR invokes, in-feature links).</summary>
+    /// <summary>
+    /// For a settings/config entity, finds every file (outside the model itself)
+    /// that references one of its fields — the grounded answer to "this setting
+    /// is used by this module and drives this functionality".
+    /// </summary>
+    public IReadOnlyList<PmSettingUsage> SettingUsageOf(SourceSnapshot snapshot, PmEntityDetail config)
+    {
+        var result = new List<PmSettingUsage>();
+        var cols = config.Fields
+            .Select(f => f[..f.LastIndexOf(" (", StringComparison.Ordinal)]).ToList();
+        foreach (var f in snapshot.Files.Where(f =>
+                     (IsCode(f.Path) || f.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
+                     && !f.Path.EndsWith($"{config.Name}.cs", StringComparison.OrdinalIgnoreCase)))
+        {
+            foreach (var col in cols)
+            {
+                if (f.Content.Contains($".{col}"))
+                    result.Add(new PmSettingUsage(col, ModuleOf(f.Path), f.Path));
+            }
+        }
+        return result.GroupBy(u => (u.Field, u.File)).Select(g => g.First()).ToList();
+    }
+
+    /// <summary>
+    /// Fields the repository itself added over its commit history (properties
+    /// appearing in '+' diff lines of entity/model files). Each distinct
+    /// (entity, field) with its module and commit evidence.
+    /// </summary>
+    public IReadOnlyList<PmFieldHistory> FieldHistoryPatterns(SourceSnapshot snapshot)
+    {
+        var result = new List<PmFieldHistory>();
+        foreach (var commit in snapshot.History)
+        foreach (var patch in commit.Patches.Where(p => p.Path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)))
+        {
+            var entity = Path.GetFileNameWithoutExtension(patch.Path);
+            foreach (var m in AddedPropertyRegex().Matches(patch.Patch).Cast<Match>())
+            {
+                var type = m.Groups["type"].Value.Trim();
+                if (type is "new" or "override" or "static" or "return" or "await") continue;
+                result.Add(new PmFieldHistory
+                {
+                    Entity = entity, Field = m.Groups["col"].Value, Type = type,
+                    Module = ModuleOf(patch.Path), File = patch.Path,
+                    Commits = 1, First = commit.Date, Last = commit.Date
+                });
+            }
+        }
+        return result
+            .GroupBy(r => (r.Entity, r.Field))
+            .Select(g => new PmFieldHistory
+            {
+                Entity = g.Key.Entity, Field = g.Key.Field,
+                Type = g.OrderByDescending(r => r.Last).First().Type,
+                Module = g.First().Module, File = g.First().File,
+                Commits = g.Count(), First = g.Min(r => r.First), Last = g.Max(r => r.Last)
+            })
+            .OrderByDescending(r => r.Commits).ThenBy(r => r.Last).ToList();
+    }
+
     public IReadOnlyList<PmViewDetail> ViewDetailsOf(SourceSnapshot snapshot)
     {
         var result = new List<PmViewDetail>();
@@ -890,6 +1012,48 @@ public sealed partial class SourceAnalyzer
         ToSnakeCase(raw.Replace("[", "").Replace("]", "").Split(':')[0].Trim());
 
     /// <summary>Extracts a balanced {…} body starting at a class declaration index.</summary>
+    /// <summary>Extracts a method's real parameter list ("uid (string?)", "userId (string)")
+    /// — the ground truth for what a controller action actually binds, used instead of
+    /// guessing from entity/view field names.</summary>
+    private static string ExtractParenBalanced(int openParenIndex, string content)
+    {
+        if (openParenIndex < 0 || openParenIndex >= content.Length || content[openParenIndex] != '(')
+            return string.Empty;
+        var depth = 0;
+        for (var i = openParenIndex; i < content.Length && i < openParenIndex + 2000; i++)
+        {
+            if (content[i] == '(') depth++;
+            else if (content[i] == ')' && --depth == 0) return content[(openParenIndex + 1)..i];
+        }
+        return string.Empty;
+    }
+
+    private static List<string> ParseParams(string paramsText)
+    {
+        var result = new List<string>();
+        if (string.IsNullOrWhiteSpace(paramsText)) return result;
+        var parts = new List<string>();
+        var depth = 0; var start = 0;
+        for (var i = 0; i < paramsText.Length; i++)
+        {
+            var c = paramsText[i];
+            if (c is '<' or '[' or '(') depth++;
+            else if (c is '>' or ']' or ')') depth--;
+            else if (c == ',' && depth == 0) { parts.Add(paramsText[start..i]); start = i + 1; }
+        }
+        parts.Add(paramsText[start..]);
+
+        foreach (var raw in parts)
+        {
+            var p = Regex.Replace(raw, @"\[[^\]]*\]", "").Trim();      // strip [FromBody] etc.
+            if (p.Length == 0) continue;
+            p = Regex.Replace(p, @"\s*=\s*.+$", "").Trim();            // strip default value
+            var m = Regex.Match(p, @"^(?:this\s+)?(?<type>[A-Za-z_][A-Za-z0-9_<>\[\]\?,\s]*?)\s+(?<name>[A-Za-z_]\w*)$");
+            result.Add(m.Success ? $"{m.Groups["name"].Value} ({m.Groups["type"].Value.Trim()})" : p);
+        }
+        return result;
+    }
+
     private static string ExtractBalanced(int classIndex, string content)
     {
         var start = content.IndexOf('{', classIndex);
@@ -919,6 +1083,9 @@ public sealed partial class SourceAnalyzer
 
     [GeneratedRegex(@"\bpublic\s+(?:required\s+|virtual\s+|readonly\s+)*(?:\[[^\]]*\]\s+)*(?<type>[A-Za-z_][A-Za-z0-9_<>\[\]\?,\s]*?)\s+(?<col>[A-Z][A-Za-z0-9_]*)\s*(?:\{[^}]*\}|;)")]
     private static partial Regex ColumnRegex();
+
+    [GeneratedRegex(@"^\+\s*(?:public|private)\s+(?:virtual\s+|required\s+|readonly\s+)*(?<type>[A-Za-z_][\w<>\[\],\s\?]*)\s+(?<col>[A-Z]\w*)\s*\{\s*get;", RegexOptions.Multiline)]
+    private static partial Regex AddedPropertyRegex();
 
     [GeneratedRegex(@"\[Table\(""(?<table>[A-Za-z0-9_]+)""")]
     private static partial Regex TableAttrRegex();

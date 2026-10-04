@@ -165,6 +165,30 @@ public class PmCapabilityTests
     }
 
     [Fact]
+    public void Classes_captures_real_method_parameters()
+    {
+        var snapshot = RecitalAppSnapshot();
+        var analyzer = new SourceAnalyzer();
+        var classes = analyzer.Classes(snapshot);
+        var ctrl = classes.First(c => c.Name == "LibraryController");
+        Assert.True(ctrl.MethodParams.TryGetValue("Create", out var createParams));
+        Assert.Contains("item (LibraryItem)", createParams!);
+        Assert.True(ctrl.MethodParams.TryGetValue("Delete", out var deleteParams));
+        Assert.Contains("id (int)", deleteParams!);
+    }
+
+    [Fact]
+    public void EntityDetailsOf_captures_field_sizes_explicit_and_inferred()
+    {
+        var snapshot = RecitalAppSnapshot();
+        var analyzer = new SourceAnalyzer();
+        var entities = analyzer.EntityDetailsOf(snapshot);
+        var libraryItem = entities.Single(e => e.Name == "LibraryItem");
+        Assert.True(libraryItem.FieldSizes.ContainsKey("Title"));
+        Assert.Contains("inferred default", libraryItem.FieldSizes["Title"]);
+    }
+
+    [Fact]
     public void FromCapabilities_yields_layered_buildable_stories()
     {
         var snapshot = RecitalAppSnapshot();

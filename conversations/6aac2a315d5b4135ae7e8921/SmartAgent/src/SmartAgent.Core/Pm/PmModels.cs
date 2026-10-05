@@ -230,4 +230,6 @@ public sealed class ProgramPlan
     public string GovernorReportFile { get; set; } = string.Empty;
     /// <summary>Quality engine verdict: standard-of-expectation score and repair history.</summary>
     public PmQualityReport? Quality { get; set; }
+    /// <summary>Functional spec generator verdict: live app surface + requirement validation.</summary>
+    public PmFunctionalSpec? FunctionalSpec { get; set; }
 }

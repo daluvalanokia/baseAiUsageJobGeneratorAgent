@@ -14,6 +14,11 @@ public sealed class PmPlanInput
     /// <summary>Free-form prompt requirements (used when no GitHub URL is given).</summary>
     public string? Prompt { get; set; }
 
+    /// <summary>Live application to validate requirements against (functional spec generator).</summary>
+    public string? FunctionalUrl { get; set; }
+    public string? FunctionalUser { get; set; }
+    public string? FunctionalPassword { get; set; }
+
     [Range(1, 5)]
     public int Years { get; set; } = 2;
 

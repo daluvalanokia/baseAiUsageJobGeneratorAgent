@@ -78,7 +78,7 @@ public class PmPlatformTests : IDisposable
     {
         var ingestor = new RequirementIngestor();
         var planner = new SprintPlanner();
-        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner, new PmQualityEngine());
+        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner, new PmQualityEngine(), new FunctionalSpecGenerator());
         var options = new PmOptions { Name = "Claft Platform Programme", Years = 2, TeamSize = 18 };
         return await governor.GenerateAsync(RichSnapshot(), options, Path.Combine(root, "programs"));
     }

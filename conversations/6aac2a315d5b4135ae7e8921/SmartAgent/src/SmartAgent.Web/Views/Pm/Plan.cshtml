@@ -23,6 +23,15 @@
             <label>…or prompt requirements <span class="hint">(used when no GitHub URL)</span>
                 <textarea asp-for="Prompt" rows="4" placeholder="Build a family safety tracking platform in ASP.NET Core 8 MVC with location history, chat and device management."></textarea>
             </label>
+            <label>Functional app URL <span class="hint">(live app to validate requirements against)</span>
+                <input asp-for="FunctionalUrl" placeholder="https://app.example.com/Dashboard" />
+            </label>
+            <label>App user id <span class="hint">(for the authenticated crawl)</span>
+                <input asp-for="FunctionalUser" />
+            </label>
+            <label>App password <span class="hint">(used once at capture; never stored)</span>
+                <input asp-for="FunctionalPassword" type="password" />
+            </label>
             <label>Years
                 <input asp-for="Years" type="number" min="1" max="5" />
             </label>

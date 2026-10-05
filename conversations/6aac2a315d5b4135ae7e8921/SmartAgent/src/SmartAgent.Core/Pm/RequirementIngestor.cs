@@ -13,6 +13,10 @@ public sealed record PmOptions
     public int VelocityPerDev { get; init; } = 10;         // story points per sprint per developer
     public int SprintLengthWeeks { get; init; } = 2;
     public DateOnly? StartDate { get; init; }
+    /// <summary>Live application to crawl and validate requirements against (functional spec generator).</summary>
+    public string? FunctionalUrl { get; init; }
+    public string? FunctionalUser { get; init; }           // credentials are used only at capture time
+    public string? FunctionalPassword { get; init; }
 }
 
 /// <summary>

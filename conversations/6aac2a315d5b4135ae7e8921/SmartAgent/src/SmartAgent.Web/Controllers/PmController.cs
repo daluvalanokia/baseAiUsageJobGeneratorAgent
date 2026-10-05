@@ -204,7 +204,10 @@ public sealed class PmController(
         var options = new PmOptions
         {
             Name = input.Name.Trim(), Years = input.Years, TeamSize = input.TeamSize,
-            BudgetCapPerYearUsd = input.BudgetCapPerYearUsd, VelocityPerDev = input.VelocityPerDev
+            BudgetCapPerYearUsd = input.BudgetCapPerYearUsd, VelocityPerDev = input.VelocityPerDev,
+            FunctionalUrl = string.IsNullOrWhiteSpace(input.FunctionalUrl) ? null : input.FunctionalUrl.Trim(),
+            FunctionalUser = string.IsNullOrWhiteSpace(input.FunctionalUser) ? null : input.FunctionalUser.Trim(),
+            FunctionalPassword = string.IsNullOrWhiteSpace(input.FunctionalPassword) ? null : input.FunctionalPassword
         };
 
         SourceSnapshot snapshot;

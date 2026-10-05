@@ -62,6 +62,7 @@
         <button data-sec="layers">Module &times; Layers</button>
         <button data-sec="architecture">Architecture</button>
         <button data-sec="quality">Quality</button>
+        <button data-sec="functional">Functional Spec</button>
         <button data-sec="backlog">Requirements</button>
         <button data-sec="team">Team &amp; Budget</button>
     </div>
@@ -345,6 +346,69 @@
         else
         {
             <p style="color:#4b5563">Quality report not present on this plan (generated before the quality engine).</p>
+        }
+    </section>
+
+    @* ---------------- Functional spec (live app validation) ---------------- *@
+    <section id="functional" class="x-sec">
+        @if (Model.FunctionalSpec != null)
+        {
+            var f = Model.FunctionalSpec;
+            <div class="pm-kpis">
+                <div class="pm-kpi"><b>@f.Pages.Count</b><span>LIVE ROUTES CRAWLED</span></div>
+                <div class="pm-kpi"><b>@f.VerifiedFunctions</b><span>BOUND ACTIONS VERIFIED</span></div>
+                <div class="pm-kpi"><b style="color:@(f.UncoveredLiveFunctions > 0 ? "#b45309" : "#059669")">@f.UncoveredLiveFunctions</b><span>LIVE FUNCTIONS CONSOLIDATED</span></div>
+                <div class="pm-kpi"><b>@f.VerifiedStoryKeys.Count</b><span>STORIES LIVE-VALIDATED</span></div>
+            </div>
+            <p style="color:#4b5563;max-width:960px">@f.Summary — captured from <code>@f.BaseUrl</code> at @f.CapturedUtc (@(f.Authenticated ? "authenticated" : "anonymous") crawl).</p>
+            <h3 style="font-size:14px;color:#111827;margin:18px 0 6px">Live functional surface</h3>
+            <table class="pm-tbl">
+                <thead><tr><th>Route</th><th>Status</th><th>Page</th><th>Forms (action → fields)</th></tr></thead>
+                <tbody>
+                @foreach (var livePage in f.Pages)
+                {
+                    <tr>
+                        <td><code>@livePage.Route</code></td>
+                        <td>@(livePage.Status == 200 ? "ok" : livePage.Status.ToString())</td>
+                        <td>@livePage.Title</td>
+                        <td>
+                            @if (livePage.Forms.Count == 0)
+                            {
+                                <span style="color:#9ca3af">read-only surface</span>
+                            }
+                            else
+                            {
+                                @foreach (var form in livePage.Forms)
+                                {
+                                    <div style="margin:2px 0"><code>@form.Action</code> → @(string.Join(", ", form.Fields))</div>
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            @if (f.Findings.Count > 0)
+            {
+                <h3 style="font-size:14px;color:#111827;margin:18px 0 6px">Validation findings</h3>
+                <table class="pm-tbl">
+                    <thead><tr><th>#</th><th>Finding</th></tr></thead>
+                    <tbody>
+                    @for (var i = 0; i < f.Findings.Count; i++)
+                    {
+                        <tr><td>@(i + 1)</td><td>@f.Findings[i]</td></tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p style="color:#059669">Every live function is covered by a requirement; every bound action responds in the running app.</p>
+            }
+        }
+        else
+        {
+            <p style="color:#4b5563">No functional spec on this plan (generated without a live app URL).</p>
         }
     </section>
 

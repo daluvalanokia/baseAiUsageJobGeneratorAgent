@@ -16,7 +16,7 @@ public class ScratchTraceTests
     {
         var ingestor = new RequirementIngestor();
         var planner = new SprintPlanner();
-        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner, new PmQualityEngine());
+        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner, new PmQualityEngine(), new FunctionalSpecGenerator());
         var options = new PmOptions { Name = "Trace Run", Years = 1 };
         var snapshot = new SourceSnapshot
         {

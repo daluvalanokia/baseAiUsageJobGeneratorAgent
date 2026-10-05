@@ -14,7 +14,7 @@ namespace SmartAgent.Core.Pm;
 /// the role outputs into the generated multi-year program.
 /// </summary>
 public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor ingestor, SprintPlanner planner,
-    PmQualityEngine quality)
+    PmQualityEngine quality, FunctionalSpecGenerator functionalSpec)
 {
     /// <summary>Generates a full program plan from a source snapshot.</summary>
     public async Task<ProgramPlan> GenerateAsync(SourceSnapshot snapshot, PmOptions options,
@@ -28,6 +28,20 @@ public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor inge
         var (epics, stories) = snapshot.SourceType == SourceType.GitHub || snapshot.Files.Count > 0
             ? ingestor.FromSource(snapshot, classes, profile)
             : ingestor.FromPrompt(snapshot.SourceDetail);
+        // functional spec generator: crawl the live application, validate the
+        // source-generated requirements against its real surface, consolidate
+        // uncovered live functions into new requirements
+        PmFunctionalSpec? functional = null;
+        if (!string.IsNullOrWhiteSpace(options.FunctionalUrl))
+        {
+            var captured = await functionalSpec.CaptureAsync(
+                options.FunctionalUrl!, options.FunctionalUser, options.FunctionalPassword, ct);
+            var validation = functionalSpec.ValidateAndConsolidate(epics, stories, captured);
+            epics = validation.Epics;
+            stories = validation.Stories;
+            functional = validation.Spec;
+        }
+
         var squads = planner.FormSquads(resources, epics);
 
         // one threaded task per RACI role — parallel lanes per role in the project
@@ -49,6 +63,7 @@ public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor inge
         // quality engine: compare against the standard of expectation, regenerate
         // failing stories/sprints/test cases until the plan meets the standard
         plan.Quality = quality.ReviewAndImprove(plan);
+        plan.FunctionalSpec = functional;
 
         plan.RoleOutputs = roleOutputs;
         plan.GovernorReportFile = reportPath;

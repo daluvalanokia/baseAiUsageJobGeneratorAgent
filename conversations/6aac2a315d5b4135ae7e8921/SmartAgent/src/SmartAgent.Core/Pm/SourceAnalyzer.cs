@@ -110,9 +110,16 @@ public sealed partial class SourceAnalyzer
     public IReadOnlyList<PmClassInfo> Classes(SourceSnapshot snapshot)
     {
         var result = new List<PmClassInfo>();
+        // Roslyn gives exact methods/params/kinds for C# — compiler truth, not heuristics
+        foreach (var rc in RoslynReader.ReadClasses(snapshot.Files))
+            result.Add(new PmClassInfo
+            {
+                Name = rc.Name, Module = ModuleOf(rc.File), File = rc.File, Kind = rc.Kind,
+                Methods = rc.Methods, MethodParams = rc.MethodParams
+            });
         foreach (var file in snapshot.Files)
         {
-            if (!IsCode(file.Path)) continue;
+            if (!IsCode(file.Path) || file.Path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)) continue;
             var module = ModuleOf(file.Path);
             foreach (var m in ClassRegex().Matches(file.Content).Cast<Match>())
             {
@@ -653,11 +660,42 @@ public sealed partial class SourceAnalyzer
     public IReadOnlyList<PmEntityDetail> EntityDetailsOf(SourceSnapshot snapshot, IReadOnlyList<PmClassInfo>? classes = null)
     {
         classes ??= Classes(snapshot);
-        var contentBy = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var f in snapshot.Files) contentBy.TryAdd(f.Path, f.Content);
+        // Roslyn path: exact properties with exact [StringLength]/[MaxLength]/[Required]/[Key] attributes
+        var roslynEntities = RoslynReader.ReadEntities(snapshot.Files)
+            .GroupBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
         var details = new List<PmEntityDetail>();
         foreach (var c in classes.Where(x => x.Kind == "Entity"))
         {
+            if (roslynEntities.TryGetValue(c.Name, out var re))
+            {
+                var fields = re.Properties.Take(12)
+                    .Select(p => $"{p.Name} ({p.Type})").ToList();
+                if (fields.Count == 0) continue;
+                var sizes = new Dictionary<string, string>();
+                var required = new List<string>();
+                foreach (var prop in re.Properties.Take(12))
+                {
+                    var isString = prop.Type.Contains("string", StringComparison.OrdinalIgnoreCase);
+                    var isNullable = prop.Type.Contains('?');
+                    if (prop.DeclaredSize is int n)
+                        sizes[prop.Name] = $"max {n} chars (declared via StringLength/MaxLength)";
+                    else if (isString)
+                        sizes[prop.Name] = isNullable
+                            ? "max 255 chars (inferred default — source does not declare an explicit size)"
+                            : "max 255 chars (inferred default — source does not declare an explicit size; required)";
+                    if (prop.KeyAttr || prop.RequiredAttr || (isString && !isNullable))
+                        required.Add(prop.Name);
+                }
+                if (!details.Any(d => d.Name == c.Name))
+                    details.Add(new PmEntityDetail
+                    {
+                        Name = c.Name, Fields = fields, FieldSizes = sizes, RequiredFields = required
+                    });
+                continue;
+            }
+            var contentBy = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var f in snapshot.Files) contentBy.TryAdd(f.Path, f.Content);
             if (!contentBy.TryGetValue(c.File, out var content)) continue;
             var classMatch = ClassRegex().Matches(content).Cast<Match>()
                 .FirstOrDefault(m => m.Groups["name"].Value == c.Name);
@@ -665,10 +703,10 @@ public sealed partial class SourceAnalyzer
             var body = ExtractBalanced(classMatch.Index, content);
             var colMatches = ColumnRegex().Matches(body).Cast<Match>()
                 .DistinctBy(x => x.Groups["col"].Value).Take(12).ToList();
-            var fields = colMatches
+            var legacyFields = colMatches
                 .Select(x => $"{x.Groups["col"].Value} ({x.Groups["type"].Value.Trim()})").ToList();
-            var sizes = new Dictionary<string, string>();
-            var required = new List<string>();
+            var legacySizes = new Dictionary<string, string>();
+            var legacyRequired = new List<string>();
             var prevEnd = 0;
             foreach (var cm in colMatches)
             {
@@ -680,19 +718,19 @@ public sealed partial class SourceAnalyzer
                 var isKey = Regex.IsMatch(window, @"\[Key\]");
                 var isRequiredAttr = Regex.IsMatch(window, @"\[Required\]");
                 if (sl.Success)
-                    sizes[col] = $"max {sl.Groups["n"].Value} chars (declared via StringLength/MaxLength)";
+                    legacySizes[col] = $"max {sl.Groups["n"].Value} chars (declared via StringLength/MaxLength)";
                 else if (type.Contains("string", StringComparison.OrdinalIgnoreCase))
-                    sizes[col] = type.Contains('?')
+                    legacySizes[col] = type.Contains('?')
                         ? "max 255 chars (inferred default — source does not declare an explicit size)"
                         : "max 255 chars (inferred default — source does not declare an explicit size; required)";
                 if (isKey || isRequiredAttr
                     || (type.Contains("string", StringComparison.OrdinalIgnoreCase) && !type.Contains('?')))
-                    required.Add(col);
+                    legacyRequired.Add(col);
             }
-            if (fields.Count > 0 && !details.Any(d => d.Name == c.Name))
+            if (legacyFields.Count > 0 && !details.Any(d => d.Name == c.Name))
                 details.Add(new PmEntityDetail
                 {
-                    Name = c.Name, Fields = fields, FieldSizes = sizes, RequiredFields = required
+                    Name = c.Name, Fields = legacyFields, FieldSizes = legacySizes, RequiredFields = legacyRequired
                 });
         }
         return details;
@@ -961,6 +999,9 @@ public sealed partial class SourceAnalyzer
         var segments = path.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
         return segments.Length == 0 ? "core" : segments[0];
     }
+
+    /// <summary>Kind heuristic shared with the Roslyn reader (path/name based).</summary>
+    internal static string KindOfPublic(string className, string path) => KindOf(className, path);
 
     private static string KindOf(string className, string path) =>
         className.Contains("Controller", StringComparison.OrdinalIgnoreCase) ? "Controller"

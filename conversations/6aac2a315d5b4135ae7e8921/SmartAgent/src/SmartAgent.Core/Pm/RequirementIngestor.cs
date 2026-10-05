@@ -134,6 +134,10 @@ public sealed partial class RequirementIngestor
             int points, int priority, string risk, string[] ac,
             string layer = "", string phase = "build", string module = "")
         {
+            // reasoning quality gate: long bullet lists are consolidated into a few
+            // themed sentences aligned to the story's want — never 7+ loose bullets
+            if (ac.Length > 4)
+                ac = AcComposer.Consolidate(ac, want);
             storyNo++;
             stories.Add(new PmStory { Key = $"US-{storyNo:D3}", EpicKey = epic.Key, Title = title,
                 AsA = asA, IWant = want, SoThat = soThat, Points = points, Priority = priority,
@@ -912,12 +916,21 @@ public sealed partial class RequirementIngestor
         var stories = new List<PmStory>();
         for (var i = 0; i < sentences.Count; i++)
         {
+            // reasoned criteria — a few sentences bound to the requirement, not filler
+            var want = sentences[i].ToLowerInvariant();
+            var ac = AcComposer.Compose(new AcComposer.StoryEvidence
+            {
+                Title = Truncate(sentences[i], 80), Module = "Core Platform",
+                Persona = "user", Want = want,
+                SoThat = $"the platform delivers this capability ({Truncate(sentences[i], 60)})",
+                Layer = "Framework", Phase = "build"
+            });
             stories.Add(new PmStory { Key = $"US-{i + 1:D3}", EpicKey = "E01",
                 Title = Truncate(sentences[i], 80), AsA = "user",
-                IWant = sentences[i].ToLowerInvariant(), SoThat = "the requirement is delivered",
+                IWant = want, SoThat = $"the platform delivers this capability ({Truncate(sentences[i], 60)})",
                 Points = ClampFibonacci(2 + i % 4), Priority = 100 - i, Risk = i < 5 ? "High" : "Medium",
                 Module = "Core Platform", TestCaseCount = 4,
-                AcceptanceCriteria = new[] { "Behavior matches the requirement", "Covered by tests" } });
+                AcceptanceCriteria = ac });
         }
         return (epics, stories);
     }

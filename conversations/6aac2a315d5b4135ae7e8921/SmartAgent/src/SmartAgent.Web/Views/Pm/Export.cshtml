@@ -61,6 +61,7 @@
         <button data-sec="sprints">Sprints</button>
         <button data-sec="layers">Module &times; Layers</button>
         <button data-sec="architecture">Architecture</button>
+        <button data-sec="quality">Quality</button>
         <button data-sec="backlog">Requirements</button>
         <button data-sec="team">Team &amp; Budget</button>
     </div>
@@ -309,6 +310,42 @@
                 </table>
             </div>
         </div>
+    </section>
+
+    @* ---------------- Quality (standard of expectation) ---------------- *@
+    <section id="quality" class="x-sec">
+        @if (Model.Quality != null)
+        {
+            var q = Model.Quality;
+            <div class="pm-kpis">
+                <div class="pm-kpi"><b>@q.Score</b><span>QUALITY SCORE / 100</span></div>
+                <div class="pm-kpi"><b style="color:@(q.Pass ? "#059669" : "#dc2626")">@(q.Pass ? "PASS" : "BELOW STANDARD")</b><span>STANDARD @PmQualityEngine.StandardScore</span></div>
+                <div class="pm-kpi"><b>@q.RepairPasses</b><span>REPAIR PASSES</span></div>
+                <div class="pm-kpi"><b>@q.IssuesFixed</b><span>ISSUES REPAIRED</span></div>
+            </div>
+            <p style="color:#4b5563;max-width:960px">@q.Summary</p>
+            @if (q.Issues.Count > 0)
+            {
+                <h3 style="font-size:14px;color:#111827;margin:18px 0 6px">Open issues</h3>
+                <table class="pm-tbl">
+                    <thead><tr><th>Area</th><th>Key</th><th>Standard of expectation</th><th>Issue</th></tr></thead>
+                    <tbody>
+                    @foreach (var i in q.Issues)
+                    {
+                        <tr><td>@i.Area</td><td>@i.Key</td><td>@i.Standard</td><td>@i.Issue</td></tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p style="color:#059669">All stories, sprints and test cases meet the standard of expectation.</p>
+            }
+        }
+        else
+        {
+            <p style="color:#4b5563">Quality report not present on this plan (generated before the quality engine).</p>
+        }
     </section>
 
     @* ---------------- Architecture (arc42 + C4) ---------------- *@

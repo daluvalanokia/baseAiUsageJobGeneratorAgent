@@ -99,12 +99,16 @@ public sealed partial class SprintPlanner
         var releaseTrain = stories
             .Where(s => themeOf.GetValueOrDefault(s.EpicKey, "Core") == "Release" || s.Phase == "release")
             .ToList();
-        var framework = stories.Where(s => s.Phase == "framework")
+        // a story is owned by exactly one band: release-train stories never
+        // double back into the framework/build/enhance waves (quality standard:
+        // every story scheduled exactly once)
+        var trainKeys = releaseTrain.Select(s => s.Key).ToHashSet();
+        var framework = stories.Where(s => s.Phase == "framework" && !trainKeys.Contains(s.Key))
             .OrderByDescending(s => s.Priority).ToList();
-        var build = stories.Where(s => s.Phase == "build" || s.Phase == string.Empty)
+        var build = stories.Where(s => (s.Phase == "build" || s.Phase == string.Empty) && !trainKeys.Contains(s.Key))
             .OrderByDescending(s => s.Priority).ThenBy(s => s.Risk == "High" ? 0 : 1).ThenBy(s => s.Key)
             .ToList();
-        var enhance = stories.Where(s => s.Phase == "enhance")
+        var enhance = stories.Where(s => s.Phase == "enhance" && !trainKeys.Contains(s.Key))
             .OrderByDescending(s => s.Priority).ToList();
 
         var reserveCount = Math.Clamp(sprints.Count / 13, 1, 4);          // tail sprints: hardening/release train
@@ -131,13 +135,14 @@ public sealed partial class SprintPlanner
         // framework band: scaffold stories first, then move on
         var fwBand = Band(0, frameworkEnd);
         foreach (var i in fwBand) phasesOf[i] = "framework";
-        for (var j = 0; j < framework.Count; j++)
+        var placedFramework = Math.Min(framework.Count, fwBand.Count);
+        for (var j = 0; j < placedFramework; j++)   // only what fits — overflow joins the build band exactly once
         {
-            var i = PlaceAt(fwBand, j, framework.Count);
+            var i = PlaceAt(fwBand, j, placedFramework);
             if (i >= 0) assignments[i].Add(framework[j]);
         }
-        if (framework.Count > fwBand.Count)   // overflow joins the build band
-            build = framework.Skip(fwBand.Count).Concat(build).ToList();
+        if (framework.Count > placedFramework)
+            build = framework.Skip(placedFramework).Concat(build).ToList();
 
         // build band: vertical module slices — up to 3 stories of the same
         // module per sprint, waves spread evenly across the band
@@ -155,25 +160,26 @@ public sealed partial class SprintPlanner
         if (wave.Count > 0) waves.Add(wave);
         var buildBand = Band(frameworkEnd, enhanceStart);
         foreach (var i in buildBand) phasesOf[i] = "build";
-        for (var j = 0; j < waves.Count; j++)
+        var placedWaves = Math.Min(waves.Count, buildBand.Count);
+        for (var j = 0; j < placedWaves; j++)  // only what fits — overflow joins the enhance band exactly once
         {
-            var i = PlaceAt(buildBand, j, waves.Count);
+            var i = PlaceAt(buildBand, j, placedWaves);
             if (i >= 0) assignments[i].AddRange(waves[j]);
         }
-        var placedWaves = Math.Min(waves.Count, buildBand.Count);
-        if (waves.Count > placedWaves)        // overflow joins the enhance band
+        if (waves.Count > placedWaves)
             enhance = waves.Skip(placedWaves).SelectMany(w => w).Concat(enhance).ToList();
 
         // enhance band: field extensions & change-pattern stories
         var enhanceBand = Band(enhanceStart, deliverable);
         foreach (var i in enhanceBand) phasesOf[i] = "enhance";
-        for (var j = 0; j < enhance.Count; j++)
+        var placedEnhance = Math.Min(enhance.Count, enhanceBand.Count);
+        for (var j = 0; j < placedEnhance; j++) // only what fits — overflow joins the release train exactly once
         {
-            var i = PlaceAt(enhanceBand, j, enhance.Count);
+            var i = PlaceAt(enhanceBand, j, placedEnhance);
             if (i >= 0) assignments[i].Add(enhance[j]);
         }
-        if (enhance.Count > enhanceBand.Count)  // overflow joins the release train
-            releaseTrain = enhance.Skip(enhanceBand.Count).Concat(releaseTrain).ToList();
+        if (enhance.Count > placedEnhance)
+            releaseTrain = enhance.Skip(placedEnhance).Concat(releaseTrain).ToList();
 
         // release train on the tail sprints
         var reserve = Enumerable.Range(sprints.Count - reserveCount, reserveCount).ToList();

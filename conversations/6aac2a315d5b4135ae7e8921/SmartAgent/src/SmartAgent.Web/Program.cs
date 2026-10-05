@@ -108,6 +108,7 @@ builder.Services.AddSingleton<SmartAgent.Core.Dat.ThreadGovernor>();
 // requirements, sprints, budget) + MVC PM Hub.
 builder.Services.AddSingleton<SmartAgent.Core.Pm.RequirementIngestor>();
 builder.Services.AddSingleton<SmartAgent.Core.Pm.SprintPlanner>();
+builder.Services.AddSingleton<SmartAgent.Core.Pm.PmQualityEngine>();
 builder.Services.AddSingleton<SmartAgent.Core.Pm.PmGovernor>();
 builder.Services.AddSingleton(sp =>
 {

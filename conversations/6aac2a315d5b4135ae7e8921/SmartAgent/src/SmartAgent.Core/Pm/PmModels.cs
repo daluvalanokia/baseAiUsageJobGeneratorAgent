@@ -114,10 +114,10 @@ public sealed record PmStory
     public required string AsA { get; init; }
     public required string IWant { get; init; }
     public required string SoThat { get; init; }
-    public int Points { get; init; }                        // Fibonacci
+    public int Points { get; set; }                        // Fibonacci (repairable by the quality engine)
     public int Priority { get; init; }                       // higher = earlier
     public string Risk { get; init; } = "Medium";
-    public IReadOnlyList<string> AcceptanceCriteria { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> AcceptanceCriteria { get; set; } = Array.Empty<string>();
     public string Module { get; init; } = string.Empty;
     public int TestCaseCount { get; init; }
     /// <summary>Architecture layer: Database, Data Adapter, Controllers, Frontend, Server, Framework.</summary>
@@ -137,8 +137,8 @@ public sealed record PmSprint
     public int EndWeek { get; init; }
     public DateOnly StartDate { get; init; }
     public DateOnly EndDate { get; init; }
-    public IReadOnlyList<string> StoryKeys { get; init; } = Array.Empty<string>();
-    public int Points { get; init; }
+    public IReadOnlyList<string> StoryKeys { get; set; } = Array.Empty<string>();
+    public int Points { get; set; }
     public int CapacityPoints { get; init; }
     public decimal BudgetUsd { get; init; }
     public string Release { get; init; } = string.Empty;
@@ -228,4 +228,6 @@ public sealed class ProgramPlan
     public IReadOnlyList<PmIssue> IssueRegister { get; set; } = Array.Empty<PmIssue>();
     public Dictionary<string, string> RoleOutputs { get; set; } = new();  // role → threaded deliverable
     public string GovernorReportFile { get; set; } = string.Empty;
+    /// <summary>Quality engine verdict: standard-of-expectation score and repair history.</summary>
+    public PmQualityReport? Quality { get; set; }
 }

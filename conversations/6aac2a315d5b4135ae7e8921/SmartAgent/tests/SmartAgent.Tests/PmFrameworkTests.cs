@@ -87,7 +87,7 @@ public class PmFrameworkTests : IDisposable
 
         var ingestor = new RequirementIngestor();
         var planner = new SprintPlanner();
-        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner);
+        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner, new PmQualityEngine());
         var options = new PmOptions { Name = "Phase Programme", Years = 2, TeamSize = 18 };
 
         var plan = await governor.GenerateAsync(snapshot, options, Path.Combine(_root, "programs"));
@@ -200,7 +200,7 @@ public class PmFrameworkTests : IDisposable
     {
         var ingestor = new RequirementIngestor();
         var planner = new SprintPlanner();
-        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner);
+        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner, new PmQualityEngine());
         var options = new PmOptions { Name = "Test Programme", Years = 2, TeamSize = 18, BudgetCapPerYearUsd = 2_000_000m };
 
         var plan = await governor.GenerateAsync(Snapshot(), options, Path.Combine(_root, "programs"));
@@ -281,7 +281,7 @@ public class PmFrameworkTests : IDisposable
     {
         var ingestor = new RequirementIngestor();
         var planner = new SprintPlanner();
-        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner);
+        var governor = new PmGovernor(new ThreadGovernor(), ingestor, planner, new PmQualityEngine());
         var options = new PmOptions { Name = "Spread Programme", Years = 2, TeamSize = 18 };
 
         var plan = await governor.GenerateAsync(Snapshot(), options, Path.Combine(_root, "spread"));

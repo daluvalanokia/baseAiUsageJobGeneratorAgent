@@ -13,7 +13,8 @@ namespace SmartAgent.Core.Pm;
 /// delivery role contributes its implementation notes — then consolidates
 /// the role outputs into the generated multi-year program.
 /// </summary>
-public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor ingestor, SprintPlanner planner)
+public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor ingestor, SprintPlanner planner,
+    PmQualityEngine quality)
 {
     /// <summary>Generates a full program plan from a source snapshot.</summary>
     public async Task<ProgramPlan> GenerateAsync(SourceSnapshot snapshot, PmOptions options,
@@ -44,6 +45,11 @@ public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor inge
             snapshot.SourceType.ToString(), snapshot.SourceName, snapshot.SourceDetail,
             resources, epics, stories, squads, options);
         plan = planner.AttachArtifacts(plan, snapshot);   // deep source capture: tests, DB scripts, HLD/DDD, issues, milestones
+
+        // quality engine: compare against the standard of expectation, regenerate
+        // failing stories/sprints/test cases until the plan meets the standard
+        plan.Quality = quality.ReviewAndImprove(plan);
+
         plan.RoleOutputs = roleOutputs;
         plan.GovernorReportFile = reportPath;
         return plan;

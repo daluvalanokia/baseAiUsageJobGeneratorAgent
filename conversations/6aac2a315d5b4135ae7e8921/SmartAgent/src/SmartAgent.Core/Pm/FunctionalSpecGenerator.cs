@@ -18,6 +18,8 @@ public sealed record PmFunctionalPage
     public string Title { get; init; } = string.Empty;
     public IReadOnlyList<PmFunctionalForm> Forms { get; init; } = Array.Empty<PmFunctionalForm>();
     public IReadOnlyList<string> Links { get; init; } = Array.Empty<string>();
+    /// <summary>Rendered table rows on the page — the Fluent 2 data-density signal.</summary>
+    public int RowCount { get; init; }
 }
 
 /// <summary>The functional spec captured from a running app, plus validation verdicts.</summary>
@@ -35,6 +37,8 @@ public sealed record PmFunctionalSpec
     public int UnverifiableFunctions { get; init; }
     public int UncoveredLiveFunctions { get; init; }
     public int FieldMismatches { get; init; }
+    /// <summary>Design system spec (Material 3 / Fluent 2 / HIG), captured from the same crawl.</summary>
+    public PmDesignSpec? Design { get; init; }
     public required string Summary { get; init; }
 }
 
@@ -100,6 +104,17 @@ public sealed partial class FunctionalSpecGenerator
         var routes = new List<string> { "/" };
         routes.AddRange(InternalLinks(entryBody));
         var pages = new List<PmFunctionalPage>();
+        var cssBuilder = new System.Text.StringBuilder();
+        var cssBudget = MaxCssBytes;
+        var fetchedCss = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var page in new[] { entryBody })
+        {
+            var inline = StyleBlocks(page);
+            if (cssBudget > 0) { cssBuilder.Append(inline); cssBudget -= inline.Length; }
+            foreach (var href in StylesheetHrefs(page))
+                cssBudget = await FetchCssAsync(client, href, cssBuilder, fetchedCss, cssBudget, ct);
+        }
+        var viewport = ViewportOf(entryBody);
         for (var i = 0; i < routes.Count && pages.Count < MaxRoutes; i++)
         {
             var route = routes[i];
@@ -108,21 +123,77 @@ public sealed partial class FunctionalSpecGenerator
             pages.Add(new PmFunctionalPage
             {
                 Route = route, Status = (int)resp.StatusCode, Title = TitleOf(body),
-                Forms = FormsOf(body), Links = InternalLinks(body)
+                Forms = FormsOf(body), Links = InternalLinks(body),
+                RowCount = RowCountOf(body)
             });
             foreach (var link in InternalLinks(body))
                 if (routes.Count < MaxRoutes && !routes.Contains(link))
                     routes.Add(link);
+            var inline = StyleBlocks(body);
+            if (cssBudget > 0) { cssBuilder.Append(inline); cssBudget -= inline.Length; }
+            foreach (var href in StylesheetHrefs(body))
+                cssBudget = await FetchCssAsync(client, href, cssBuilder, fetchedCss, cssBudget, ct);
         }
 
+        var design = DesignSystemAnalyzer.Analyze(cssBuilder.ToString(), pages, viewport);
         return new PmFunctionalSpec
         {
             BaseUrl = root, CapturedUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-            Authenticated = authenticated, Pages = pages,
+            Authenticated = authenticated, Pages = pages, Design = design,
             Summary = $"Captured {pages.Count} routes from the live app" +
-                      $" ({pages.Sum(p => p.Forms.Count)} forms, {pages.Sum(p => p.Forms.Sum(f => f.Fields.Count))} bound fields)" +
-                      (authenticated ? "; authenticated crawl" : "; anonymous crawl")
+                      $" ({pages.Sum(p => p.Forms.Count)} forms, {pages.Sum(p => p.Forms.Sum(f => f.Fields.Count))} bound fields);" +
+                      (authenticated ? "; authenticated crawl" : "; anonymous crawl") +
+                      $"; design spec: {design.Summary}"
         };
+    }
+
+    // ─── stylesheet capture (design token source) ───
+
+    private const int MaxCssBytes = 512 * 1024;
+
+    /// <summary>Inline &lt;style&gt; blocks from a page.</summary>
+    public static string StyleBlocks(string html)
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (var m in StyleBlockRegex().Matches(html).Cast<Match>())
+            sb.Append(m.Groups["css"].Value);
+        return sb.ToString();
+    }
+
+    /// <summary>Stylesheet hrefs (local routes only; CDNs are not authoritative for app tokens).</summary>
+    public static IReadOnlyList<string> StylesheetHrefs(string html)
+        => StylesheetLinkRegex().Matches(html).Cast<Match>()
+            .Select(m => m.Groups["href"].Value)
+            .Where(h => h.StartsWith('/') && !h.Contains("://"))
+            .Distinct().Take(6).ToList();
+
+    private static string ViewportOf(string html)
+    {
+        var m = ViewportRegex().Match(html);
+        return m.Success ? m.Groups["content"].Value : string.Empty;
+    }
+
+    private static int RowCountOf(string html)
+        => RowRegex().Matches(html).Count;
+
+    private static async Task<int> FetchCssAsync(HttpClient client, string href, System.Text.StringBuilder css,
+        HashSet<string> fetched, int budget, CancellationToken ct)
+    {
+        if (!fetched.Add(href) || budget <= 0) return budget;
+        try
+        {
+            using var resp = await client.GetAsync(href, ct);
+            if (!resp.IsSuccessStatusCode) return budget;
+            var text = await resp.Content.ReadAsStringAsync(ct);
+            if (text.Length > budget) text = text[..budget];
+            css.Append(text);
+            return budget - text.Length;
+        }
+        catch (Exception)
+        {
+            // stylesheets are best-effort for the design analysis
+            return budget;
+        }
     }
 
     /// <summary>
@@ -243,6 +314,58 @@ public sealed partial class FunctionalSpecGenerator
             }
         }
 
+        // design system consolidation: violations become one evidence-bound story
+        if (captured.Design is { } design && design.ViolationCount > 0)
+        {
+            foreach (var finding in design.Findings)
+                findings.Add($"design system: {finding}");
+            storyNo++;
+            var epic = epicList.FirstOrDefault(e => e.Module.Equals("DesignSystem", StringComparison.OrdinalIgnoreCase));
+            if (epic is null)
+            {
+                epic = new PmEpic
+                {
+                    Key = $"E{epicList.Count + 1:D2}", Name = "Design system alignment",
+                    Module = "DesignSystem", Theme = "Core",
+                    Description = "Granular design-system specifications (Material 3 layout grid, 4dp/8dp spacing, " +
+                                  "48dp touch targets, Fluent 2 data density, HIG semantic color tokens) " +
+                                  "extracted from the running app and consolidated as requirements."
+                };
+                epicList.Add(epic);
+            }
+            var criteria = new List<string>
+            {
+                $"Responsive layout defines the Material 3 tiers actually used by this app: {(
+                    design.Breakpoints.Count > 0
+                        ? string.Join(", ", design.Breakpoints.Select(b => $"{b.MinWidthPx}px {b.Tier} ({b.ExpectedColumns} columns)"))
+                        : "compact 4 columns/16dp margins (0-599dp), medium 8 columns (600-904dp), expanded 12 columns (905dp+)")}",
+                "Spacing scale uses only 4dp and 8dp increments — all off-grid declarations " +
+                $"({design.OffGridSpacing.Count}) normalize to the baseline grid (e.g. {(
+                    design.OffGridSpacing.Count > 0 ? design.OffGridSpacing[0] : "none")})",
+                $"Interactive elements meet the 48x48dp touch-target minimum{(
+                    design.TouchTargetViolations.Count > 0
+                        ? $": {design.TouchTargetViolations.Count} violations, e.g. {design.TouchTargetViolations[0].Selector} at {design.TouchTargetViolations[0].DeclaredPx}px"
+                    : string.Empty)}",
+                design.DenseRoutes.Count > 0
+                    ? $"Data density honors the Fluent 2 guideline: routes beyond ~15 rows per viewport paginate — {string.Join(", ", design.DenseRoutes.Take(3))}"
+                    : "Data density honors the Fluent 2 guideline: dense lists paginate before forced scrolling",
+                $"Semantic color tokens ship in the W3C DTCG JSON format ({design.Tokens.Count} captured tokens); " +
+                "raw hex values in components are replaced by themed tokens"
+            };
+            storyList.Add(new PmStory
+            {
+                Key = $"US-{storyNo:D3}", EpicKey = epic.Key,
+                Title = "Align the UI with the design system standard of expectation",
+                AsA = "sangha operator",
+                IWant = "the app to follow the published design system specs (Material 3 grid and spacing, Fluent 2 data density, HIG color tokens)",
+                SoThat = "layouts, spacing, touch targets and data rules behave identically across devices and themes",
+                Points = 3, Priority = 70, Risk = "Medium", Module = "DesignSystem",
+                TestCaseCount = 5, Layer = "Views", Phase = "build",
+                AcceptanceCriteria = criteria
+            });
+            findings.Add($"design system: {design.ViolationCount} violations consolidated into {epic.Key}/US-{storyNo:D3}");
+        }
+
         var verifiedFunctions = live.Keys.Count(k => covered.Contains(k));
         var spec = captured with
         {
@@ -256,6 +379,8 @@ public sealed partial class FunctionalSpecGenerator
                 .Count(a => a.Contains("live form carries extra fields", StringComparison.Ordinal)),
             Summary = $"Validated {storyList.Count} stories against {captured.Pages.Count} live routes: " +
                       $"{verifiedFunctions} bound actions verified, {uncoveredCount} live functions consolidated into new requirements" +
+                      (captured.Design is { } d && d.ViolationCount > 0
+                          ? $", {d.ViolationCount} design-standard violations consolidated" : string.Empty) +
                       (findings.Count > 0 ? $", {findings.Count} findings" : "")
         };
         return new FunctionalValidation { Spec = spec, Epics = epicList, Stories = storyList };
@@ -424,4 +549,12 @@ public sealed partial class FunctionalSpecGenerator
     private static partial Regex LinkRegex();
     [GeneratedRegex(@"<title>(?<title>[^<]*)</title>", RegexOptions.IgnoreCase)]
     private static partial Regex TitleRegex();
+    [GeneratedRegex(@"<style[^>]*>(?<css>.*?)</style>", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    private static partial Regex StyleBlockRegex();
+    [GeneratedRegex(@"<link\b[^>]*rel=[""']stylesheet[""'][^>]*href=[""'](?<href>[^""']*)[""']", RegexOptions.IgnoreCase)]
+    private static partial Regex StylesheetLinkRegex();
+    [GeneratedRegex(@"<meta\b[^>]*name=[""']viewport[""'][^>]*content=[""'](?<content>[^""]*)[""']", RegexOptions.IgnoreCase)]
+    private static partial Regex ViewportRegex();
+    [GeneratedRegex(@"<tr\b", RegexOptions.IgnoreCase)]
+    private static partial Regex RowRegex();
 }

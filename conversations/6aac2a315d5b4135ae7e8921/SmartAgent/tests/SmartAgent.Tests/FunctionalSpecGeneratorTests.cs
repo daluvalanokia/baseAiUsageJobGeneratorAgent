@@ -119,7 +119,7 @@ public class FunctionalSpecGeneratorTests
 
         var result = gen.ValidateAndConsolidate(epics, stories, spec);
 
-        var story = Assert.Single(result.Stories);
+        var story = Assert.Single(result.Stories, x => x.Key == "US-001");
         Assert.Contains(story.AcceptanceCriteria,
             a => a.Contains("Live validation:", StringComparison.Ordinal) && a.Contains("respond in the running app"));
         Assert.Contains(story.AcceptanceCriteria,

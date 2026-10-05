@@ -388,6 +388,76 @@
                 }
                 </tbody>
             </table>
+            @if (f.Design is { } d)
+            {
+                <h3 style="font-size:14px;color:#111827;margin:22px 0 6px">Design system spec — @(d.Standard)</h3>
+                <div class="pm-kpis">
+                    <div class="pm-kpi"><b>@d.Tokens.Count</b><span>DESIGN TOKENS (DTCG)</span></div>
+                    <div class="pm-kpi"><b>@d.Breakpoints.Count</b><span>RESPONSIVE BREAKPOINTS</span></div>
+                    <div class="pm-kpi"><b style="color:@(d.ViolationCount > 0 ? "#b45309" : "#059669")">@d.ViolationCount</b><span>STANDARD VIOLATIONS</span></div>
+                    <div class="pm-kpi"><b>@d.OffGridSpacing.Count</b><span>OFF-GRID SPACING</span></div>
+                    <div class="pm-kpi"><b>@d.TouchTargetViolations.Count</b><span>TOUCH TARGETS &lt; 48DP</span></div>
+                    <div class="pm-kpi"><b>@d.RawHexColors</b><span>RAW HEX COLORS</span></div>
+                </div>
+                <p style="color:#4b5563;max-width:960px">@d.Summary</p>
+                @if (d.Breakpoints.Count > 0)
+                {
+                    <h3 style="font-size:13px;color:#111827;margin:14px 0 4px">Layout grid vs Material 3 tiers</h3>
+                    <table class="pm-tbl">
+                        <thead><tr><th>App breakpoint</th><th>Material 3 tier</th><th>Columns</th><th>Expected margins</th></tr></thead>
+                        <tbody>
+                        @foreach (var b in d.Breakpoints)
+                        {
+                            <tr>
+                                <td><code>min-width: @(b.MinWidthPx)px</code></td>
+                                <td>@b.Tier</td>
+                                <td>@b.ExpectedColumns</td>
+                                <td>@(b.MinWidthPx < 600 ? "16dp" : b.MinWidthPx < 905 ? "24dp" : "24dp")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p style="color:#b45309">No breakpoints defined — the app cannot reflow across the Material 3 compact/medium/expanded tiers.</p>
+                }
+                @if (d.OffGridSpacing.Count > 0 || d.TouchTargetViolations.Count > 0)
+                {
+                    <h3 style="font-size:13px;color:#111827;margin:14px 0 4px">Spacing &amp; widget dimensions</h3>
+                    <table class="pm-tbl">
+                        <thead><tr><th>Signal</th><th>Detail</th></tr></thead>
+                        <tbody>
+                        @foreach (var off in d.OffGridSpacing.Take(10))
+                        {
+                            <tr><td>off the 4dp grid</td><td><code>@off</code></td></tr>
+                        }
+                        @foreach (var t in d.TouchTargetViolations.Take(10))
+                        {
+                            <tr><td>below 48dp touch target</td><td><code>@t.Selector</code> — @(t.DeclaredPx)px</td></tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+                @if (d.Tokens.Count > 0)
+                {
+                    <h3 style="font-size:13px;color:#111827;margin:14px 0 4px">Design tokens — W3C DTCG JSON</h3>
+                    <details style="max-width:960px">
+                        <summary style="cursor:pointer;color:#1d4ed8">View @d.Tokens.Count tokens in the W3C Design Tokens format</summary>
+                        <pre style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;overflow:auto;max-height:360px;font-size:11px">@d.DtcgJson</pre>
+                    </details>
+                }
+                @if (d.Findings.Count > 0)
+                {
+                    <h3 style="font-size:13px;color:#111827;margin:14px 0 4px">Design findings (Material 3 / Fluent 2 / Apple HIG)</h3>
+                    <ul style="max-width:960px;color:#374151">
+                        @foreach (var finding in d.Findings)
+                        {
+                            <li style="margin:4px 0">@finding</li>
+                        }
+                    </ul>
+                }
+            }
             @if (f.Findings.Count > 0)
             {
                 <h3 style="font-size:14px;color:#111827;margin:18px 0 6px">Validation findings</h3>

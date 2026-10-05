@@ -28,6 +28,18 @@ public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor inge
         var (epics, stories) = snapshot.SourceType == SourceType.GitHub || snapshot.Files.Count > 0
             ? ingestor.FromSource(snapshot, classes, profile)
             : ingestor.FromPrompt(snapshot.SourceDetail);
+        // prompt + source together: an enhancement prompt validates all
+        // affected modules and appends change-bound stories
+        if (snapshot.Files.Count > 0 && !string.IsNullOrWhiteSpace(options.Prompt)
+            && PromptStudio.IntentOf(options.Prompt) == PmPromptIntent.EnhanceApp)
+        {
+            var known = modules.Concat(epics.Select(e => e.Module))
+                .Where(m => !string.IsNullOrWhiteSpace(m))
+                .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            var (hEpics, hStories) = PromptStudio.EnhancementStories(options.Prompt, known);
+            epics = epics.Concat(hEpics).ToList();
+            stories = stories.Concat(hStories).ToList();
+        }
         // functional spec generator: crawl the live application, validate the
         // source-generated requirements against its real surface, consolidate
         // uncovered live functions into new requirements
@@ -64,6 +76,7 @@ public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor inge
         // failing stories/sprints/test cases until the plan meets the standard
         plan.Quality = quality.ReviewAndImprove(plan);
         plan.FunctionalSpec = functional;
+        plan.Prompt = options.Prompt;
 
         plan.RoleOutputs = roleOutputs;
         plan.GovernorReportFile = reportPath;

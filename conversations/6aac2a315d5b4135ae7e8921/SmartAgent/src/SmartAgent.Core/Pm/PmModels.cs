@@ -232,4 +232,6 @@ public sealed class ProgramPlan
     public PmQualityReport? Quality { get; set; }
     /// <summary>Functional spec generator verdict: live app surface + requirement validation.</summary>
     public PmFunctionalSpec? FunctionalSpec { get; set; }
+    /// <summary>Free-form user prompt that drove this generation ("create new app" / "enhance app: ...").</summary>
+    public string? Prompt { get; set; }
 }

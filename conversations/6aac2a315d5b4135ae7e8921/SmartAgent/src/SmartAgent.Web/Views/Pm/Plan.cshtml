@@ -21,7 +21,8 @@
                 <input asp-for="GitHubUrl" placeholder="https://github.com/daluvalanokia/smartagent" />
             </label>
             <label>…or prompt requirements <span class="hint">(used when no GitHub URL)</span>
-                <textarea asp-for="Prompt" rows="4" placeholder="Build a family safety tracking platform in ASP.NET Core 8 MVC with location history, chat and device management."></textarea>
+                <textarea asp-for="Prompt" rows="4" placeholder="create new app for library management with members, checkouts, fines   |   enhance app: add audit logging and exports to the Governance module"></textarea>
+                <div style="color:#6b7280;font-size:12px;margin-top:4px">"create new app ..." scaffolds the framework modules (controllers/actions, views, data models, repositories, database scripts); "enhance app: ..." validates all affected modules and updates the living artifacts (requirements, design document, sequence diagram). A plain prompt still becomes requirement stories.</div>
             </label>
             <label>Functional app URL <span class="hint">(live app to validate requirements against)</span>
                 <input asp-for="FunctionalUrl" placeholder="https://app.example.com/Dashboard" />

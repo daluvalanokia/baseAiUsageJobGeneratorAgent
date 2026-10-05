@@ -17,6 +17,8 @@ public sealed record PmOptions
     public string? FunctionalUrl { get; init; }
     public string? FunctionalUser { get; init; }           // credentials are used only at capture time
     public string? FunctionalPassword { get; init; }
+    /// <summary>Free-form user prompt steering generation ("create new app" / "enhance app: ...").</summary>
+    public string? Prompt { get; init; }
 }
 
 /// <summary>
@@ -904,6 +906,14 @@ public sealed partial class RequirementIngestor
     /// <summary>Prompt-driven capture: requirement sentences become stories.</summary>
     public (IReadOnlyList<PmEpic> Epics, IReadOnlyList<PmStory> Stories) FromPrompt(string prompt)
     {
+        // prompt studio: "create new app" scaffolds the framework modules,
+        // "enhance app" produces change-validated enhancement stories
+        var intent = PromptStudio.IntentOf(prompt);
+        if (intent == PmPromptIntent.CreateApp)
+            return PromptStudio.FrameworkStories("New app", prompt);
+        if (intent == PmPromptIntent.EnhanceApp)
+            return PromptStudio.EnhancementStories(prompt, Array.Empty<string>());
+
         var sentences = SentenceRegex().Split(prompt)
             .Select(s => s.Trim())
             .Where(s => s.Length > 12)

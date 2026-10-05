@@ -63,6 +63,7 @@
         <button data-sec="architecture">Architecture</button>
         <button data-sec="quality">Quality</button>
         <button data-sec="functional">Functional Spec</button>
+        <button data-sec="artifacts">Living Artifacts</button>
         <button data-sec="backlog">Requirements</button>
         <button data-sec="team">Team &amp; Budget</button>
     </div>
@@ -242,6 +243,36 @@
                 </tfoot>
             </table>
         </div>
+    </section>
+
+    @* ---------------- Living artifacts (requirements, design document, sequence diagram) ---------------- *@
+    <section id="artifacts" class="x-sec">
+        @{
+            var artifacts = LivingArtifactsComposer.Compose(Model, Model.Prompt);
+        }
+        <div class="pm-kpis">
+            <div class="pm-kpi"><b>@artifacts.Count</b><span>LIVING ARTIFACTS</span></div>
+            <div class="pm-kpi"><b>@(Model.Prompt is null ? "source-ingested" : PromptStudio.IntentOf(Model.Prompt).ToString())</b><span>PROMPT INTENT</span></div>
+            <div class="pm-kpi"><b>@Model.Stories.Count</b><span>STORIES DOCUMENTED</span></div>
+        </div>
+        <p style="color:#4b5563;max-width:960px">
+            The solution's living artifacts folder: <code>@(Model.Slug)/living-artifacts/</code> — regenerated from the plan on
+            every generation so requirements, design document and sequence diagrams always match the current backlog.
+            Also exposed at <code>/api/pm/artifacts?slug=@(Model.Slug)</code>.
+            @if (Model.Prompt is not null)
+            {
+                <text>Prompt: <i>@Model.Prompt</i></text>
+            }
+        </p>
+        @foreach (var (name, content) in artifacts)
+        {
+            <details style="max-width:960px;margin:8px 0">
+                <summary style="cursor:pointer;color:#1d4ed8;font-weight:600">@name <span style="color:#6b7280;font-weight:400">(@(content.Length) chars)</span></summary>
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;overflow:auto;max-height:420px">
+                    <pre style="font-size:11px;white-space:pre-wrap;margin:0">@content</pre>
+                </div>
+            </details>
+        }
     </section>
 
     @* ---------------- Requirements backlog ---------------- *@

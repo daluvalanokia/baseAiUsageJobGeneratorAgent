@@ -14,6 +14,17 @@ public sealed class ProgramStore(string rootDirectory)
     {
         Directory.CreateDirectory(Root);
         File.WriteAllText(Path.Combine(Root, $"{plan.Slug}.json"), JsonSerializer.Serialize(plan, Json));
+        // living artifacts: regenerated on every save so the solution's docs
+        // folder (requirements, design document, sequence diagram, change
+        // impact) always matches the current plan
+        LivingArtifactsComposer.Write(plan, Path.Combine(Root, plan.Slug), plan.Prompt);
+    }
+
+    /// <summary>The living artifacts folder for a plan, if written.</summary>
+    public string? ArtifactsDir(string slug)
+    {
+        var dir = Path.Combine(Root, slug, LivingArtifactsComposer.FolderName);
+        return Directory.Exists(dir) ? dir : null;
     }
 
     public ProgramPlan? Load(string slug)

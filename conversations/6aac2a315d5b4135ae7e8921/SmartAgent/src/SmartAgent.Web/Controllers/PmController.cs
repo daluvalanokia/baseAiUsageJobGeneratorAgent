@@ -160,6 +160,24 @@ public sealed class PmController(
         return View("Export", plan);
     }
 
+    /// <summary>The living artifacts for a plan (requirements, design document, sequence diagram, change impact).</summary>
+    [HttpGet("~/api/pm/artifacts")]
+    public ActionResult Artifacts(string slug)
+    {
+        var plan = programStore.Load(slug ?? "");
+        if (plan is null) return NotFound(new { error = $"no program '{slug}'" });
+        var dir = programStore.ArtifactsDir(plan.Slug);
+        return Ok(new
+        {
+            slug = plan.Slug,
+            folder = dir is null ? null : Path.GetRelativePath(programStore.Root, dir),
+            intent = string.IsNullOrWhiteSpace(plan.Prompt) ? "ingest" : PromptStudio.IntentOf(plan.Prompt!).ToString().ToLowerInvariant(),
+            prompt = plan.Prompt,
+            artifacts = LivingArtifactsComposer.Compose(plan, plan.Prompt)
+                .Select(a => new { name = a.Name, content = a.Content })
+        });
+    }
+
     [HttpGet("~/api/pm/programs")]
     public ActionResult ListPrograms() => Ok(new
     {
@@ -207,7 +225,8 @@ public sealed class PmController(
             BudgetCapPerYearUsd = input.BudgetCapPerYearUsd, VelocityPerDev = input.VelocityPerDev,
             FunctionalUrl = string.IsNullOrWhiteSpace(input.FunctionalUrl) ? null : input.FunctionalUrl.Trim(),
             FunctionalUser = string.IsNullOrWhiteSpace(input.FunctionalUser) ? null : input.FunctionalUser.Trim(),
-            FunctionalPassword = string.IsNullOrWhiteSpace(input.FunctionalPassword) ? null : input.FunctionalPassword
+            FunctionalPassword = string.IsNullOrWhiteSpace(input.FunctionalPassword) ? null : input.FunctionalPassword,
+            Prompt = string.IsNullOrWhiteSpace(input.Prompt) ? null : input.Prompt.Trim()
         };
 
         SourceSnapshot snapshot;

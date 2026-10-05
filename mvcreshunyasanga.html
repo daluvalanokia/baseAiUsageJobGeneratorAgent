@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MvcReshunyasanga Programme — PM Hub (static export)</title>
+    <title>MvcReshunyasanga — PM Hub (static export)</title>
     <style>/* ── PM Hub shell (reference-grade layout) ─────────────────────────── */
 * { box-sizing: border-box; }
 .pm-shell { display: flex; min-height: 100vh; background: #f9fafb; color: #1f2937;
@@ -155,7 +155,7 @@
 <body>
 <div class="x-wrap">
     <div class="x-head">
-        <h1>MvcReshunyasanga Programme</h1>
+        <h1>MvcReshunyasanga</h1>
         <span class="x-sub">
             static PM Hub export · 2-year program · <b>52</b> sprints (104 weeks) ·
             Oct 2026 → Oct 2028 · source: 15 epics
@@ -168,6 +168,7 @@
         <button data-sec="layers">Module &times; Layers</button>
         <button data-sec="architecture">Architecture</button>
         <button data-sec="quality">Quality</button>
+        <button data-sec="functional">Functional Spec</button>
         <button data-sec="backlog">Requirements</button>
         <button data-sec="team">Team &amp; Budget</button>
     </div>
@@ -406,7 +407,7 @@
                             <td>Library</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>13</td>
-                            <td><ul class="ac-list"> <li>LibraryController.Index() &#x2014; binds parameters: search (string?); pairs with view Library/Index.cshtml (fields: search, id, title, language, type); LibraryController.Create() &#x2014; binds parameters: title (string), language (string), type (string), linesText (string); paired with the Library views per the source layout; persists entity fields: Id (string), Title (string), Language (string), Type (LibraryItemType), LinesJson (string), CreatedBy (string); LibraryController.Edit() &#x2014; binds parameters: id (string), title (string), language (string), type (string), linesText (string); paired with the Library views per the source layout; persists entity fields: Id (string), Title (string), Language (string), Type (LibraryItemType), LinesJson (string), CreatedBy (string)</li>  <li>LibraryController.Delete() &#x2014; binds parameters: id (string); paired with the Library views per the source layout; LibraryController.GetItem() &#x2014; binds parameters: id (string); paired with the Library views per the source layout; LibraryController.DiscoverScriptures() &#x2014; binds parameters: req (DiscoverRequest); paired with the Library views per the source layout</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>LibraryController.Index() &#x2014; binds parameters: search (string?); pairs with view Library/Index.cshtml (fields: search, id, title, language, type); LibraryController.Create() &#x2014; binds parameters: title (string), language (string), type (string), linesText (string); paired with the Library views per the source layout; persists entity fields: Id (string), Title (string), Language (string), Type (LibraryItemType), LinesJson (string), CreatedBy (string); LibraryController.Edit() &#x2014; binds parameters: id (string), title (string), language (string), type (string), linesText (string); paired with the Library views per the source layout; persists entity fields: Id (string), Title (string), Language (string), Type (LibraryItemType), LinesJson (string), CreatedBy (string)</li>  <li>LibraryController.Delete() &#x2014; binds parameters: id (string); paired with the Library views per the source layout; LibraryController.GetItem() &#x2014; binds parameters: id (string); paired with the Library views per the source layout; LibraryController.DiscoverScriptures() &#x2014; binds parameters: req (DiscoverRequest); paired with the Library views per the source layout</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li>  <li>Live validation: LibraryController.Index, LibraryController.Create, LibraryController.Edit, LibraryController.Delete not reachable in the running app &#x2014; the requirement stays source-bound; confirm the deployment covers it</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-005</b></td>
@@ -477,7 +478,7 @@
                             <td>Events</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>EventsController.View() &#x2014; binds parameters: id (string); pairs with view Events/View.cshtml (fields: viewport); EventsController.GetSession() &#x2014; binds parameters: id (string); paired with the Events views per the source layout; EventsController.UpdateSession() &#x2014; binds parameters: id (string), update (SessionState); paired with the Events views per the source layout</li>  <li>EventsController.Finalize() &#x2014; binds parameters: id (string); paired with the Events views per the source layout; EventsController.SendChat() &#x2014; binds parameters: eventId (string), text (string); paired with the Events views per the source layout; EventsController.GetChats() &#x2014; binds parameters: id (string); paired with the Events views per the source layout</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>EventsController.View() &#x2014; binds parameters: id (string); pairs with view Events/View.cshtml (fields: viewport); EventsController.GetSession() &#x2014; binds parameters: id (string); paired with the Events views per the source layout; EventsController.UpdateSession() &#x2014; binds parameters: id (string), update (SessionState); paired with the Events views per the source layout</li>  <li>EventsController.Finalize() &#x2014; binds parameters: id (string); paired with the Events views per the source layout; EventsController.SendChat() &#x2014; binds parameters: eventId (string), text (string); paired with the Events views per the source layout; EventsController.GetChats() &#x2014; binds parameters: id (string); paired with the Events views per the source layout</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li>  <li>Live validation: 2 of 6 bound actions respond in the running app (verified routes: /Events/View/eb479fff-3b36-4d23-a9db-f58b72adbc61, /Events/View/49242d1a-1850-4ad4-a5ac-04d2f0d8c8a0); form fields align with the bound parameters</li>  <li>Live validation: EventsController.GetSession, EventsController.UpdateSession, EventsController.SendChat, EventsController.GetChats not reachable in the running app &#x2014; the requirement stays source-bound; confirm the deployment covers it</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -552,7 +553,7 @@
                             <td>Admin</td>
                             <td><span class="pm-badge must">Must</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>AdminController.CreateEvent() &#x2014; binds parameters: title (string), venue (string), dressCode (string), startTime (string), endTime (string), hostId (string), participants (string), sequence (string); paired with the Admin views per the source layout; persists entity fields: Id (string), Title (string), Venue (string), DressCode (string), StartTime (DateTime), EndTime (DateTime); AdminController.EditEvent() &#x2014; binds parameters: id (string), title (string), venue (string), dressCode (string), startTime (string), endTime (string), hostId (string), participants (string); paired with the Admin views per the source layout; persists entity fields: Id (string), Title (string), Venue (string), DressCode (string), StartTime (DateTime), EndTime (DateTime); AdminController.DeleteEvent() &#x2014; binds parameters: id (string); paired with the Admin views per the source layout</li>  <li>AdminController.GetEvent() &#x2014; binds parameters: id (string); paired with the Admin views per the source layout</li>  <li>AdminController.Index(); pairs with view Admin/Index.cshtml (fields: id, title, hostId, venue, dressCode)</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>AdminController.CreateEvent() &#x2014; binds parameters: title (string), venue (string), dressCode (string), startTime (string), endTime (string), hostId (string), participants (string), sequence (string); paired with the Admin views per the source layout; persists entity fields: Id (string), Title (string), Venue (string), DressCode (string), StartTime (DateTime), EndTime (DateTime); AdminController.EditEvent() &#x2014; binds parameters: id (string), title (string), venue (string), dressCode (string), startTime (string), endTime (string), hostId (string), participants (string); paired with the Admin views per the source layout; persists entity fields: Id (string), Title (string), Venue (string), DressCode (string), StartTime (DateTime), EndTime (DateTime); AdminController.DeleteEvent() &#x2014; binds parameters: id (string); paired with the Admin views per the source layout</li>  <li>AdminController.GetEvent() &#x2014; binds parameters: id (string); paired with the Admin views per the source layout</li>  <li>AdminController.Index(); pairs with view Admin/Index.cshtml (fields: id, title, hostId, venue, dressCode)</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li>  <li>Live validation: 1 of 5 bound actions respond in the running app (verified routes: /Admin); form fields align with the bound parameters; live form carries extra fields &#x2014; AdminController.CreateEvent live form captures fields not bound in the requirement: fontSize</li>  <li>Live validation: AdminController.EditEvent, AdminController.GetEvent not reachable in the running app &#x2014; the requirement stays source-bound; confirm the deployment covers it</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -661,7 +662,7 @@
                             <td>Governance</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>8</td>
-                            <td><ul class="ac-list"> <li>GovernanceController.Index() &#x2014; binds parameters: search (string?); pairs with view Governance/Index.cshtml (fields: search, uid, name, region, volumeMin); GovernanceController.SaveUser() &#x2014; binds parameters: uid (string?), userId (string), username (string), email (string), name (string), usertype (string), userlevel (string), address (string?); paired with the Governance views per the source layout; persists entity fields: Id (int), Name (string), Region (string), VolumeMin (int), VolumeMax (int), WaveSensitivity (double); GovernanceController.DeleteUser() &#x2014; binds parameters: uid (string); paired with the Governance views per the source layout</li>  <li>GovernanceController.UpdateConfig() &#x2014; binds parameters: name (string), region (string), volumeMin (int), volumeMax (int), waveSensitivity (double), lineFadeTiming (int), boldTiming (int), defaultSpeed (int); paired with the Governance views per the source layout</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>GovernanceController.Index() &#x2014; binds parameters: search (string?); pairs with view Governance/Index.cshtml (fields: search, uid, name, region, volumeMin); GovernanceController.SaveUser() &#x2014; binds parameters: uid (string?), userId (string), username (string), email (string), name (string), usertype (string), userlevel (string), address (string?); paired with the Governance views per the source layout; persists entity fields: Id (int), Name (string), Region (string), VolumeMin (int), VolumeMax (int), WaveSensitivity (double); GovernanceController.DeleteUser() &#x2014; binds parameters: uid (string); paired with the Governance views per the source layout</li>  <li>GovernanceController.UpdateConfig() &#x2014; binds parameters: name (string), region (string), volumeMin (int), volumeMax (int), waveSensitivity (double), lineFadeTiming (int), boldTiming (int), defaultSpeed (int); paired with the Governance views per the source layout</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li>  <li>Live validation: 1 of 4 bound actions respond in the running app (verified routes: /Governance); form fields align with the bound parameters; live form carries extra fields &#x2014; GovernanceController.SaveUser live form captures fields not bound in the requirement: phone, password</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-023</b></td>
@@ -670,7 +671,7 @@
                             <td>Governance</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>13</td>
-                            <td><ul class="ac-list"> <li>GlobalConfig.VolumeMax setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior</li>  <li>GlobalConfig.Id setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. AdminController.cs) to drive that module&#x27;s runtime behavior; GlobalConfig.Name setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. AuthController.cs) to drive that module&#x27;s runtime behavior; GlobalConfig.Region setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior</li>  <li>GlobalConfig.VolumeMin setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior; GlobalConfig.WaveSensitivity setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior; GlobalConfig.LineFadeTiming setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior</li>  <li>GlobalConfig.BoldTiming setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior; GlobalConfig.AutoScrollRules persisted and exposed for runtime consumption (no consumer found in the source scan)</li> </ul></td>
+                            <td><ul class="ac-list"> <li>GlobalConfig.VolumeMax setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior</li>  <li>GlobalConfig.Id setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. AdminController.cs) to drive that module&#x27;s runtime behavior; GlobalConfig.Name setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. AuthController.cs) to drive that module&#x27;s runtime behavior; GlobalConfig.Region setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior</li>  <li>GlobalConfig.VolumeMin setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior; GlobalConfig.WaveSensitivity setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior; GlobalConfig.LineFadeTiming setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior</li>  <li>GlobalConfig.BoldTiming setting &#x2014; edited in the Governance screens, persisted via GovernanceController.UpdateConfig(), consumed by MVCSolutionBase (e.g. GovernanceController.cs) to drive that module&#x27;s runtime behavior; GlobalConfig.AutoScrollRules persisted and exposed for runtime consumption (no consumer found in the source scan)</li>  <li>Live validation: 1 of 8 bound actions respond in the running app (verified routes: /Governance); form fields align with the bound parameters; live form carries extra fields &#x2014; GovernanceController.UpdateConfig live form captures fields not bound in the requirement: name, region, volumeMin, volumeMax, waveSensitivity, defaultSpeed, lineFadeTiming, boldTiming; GovernanceController.UpdateConfig live form captures fields not bound in the requirement: name, region, volumeMin, volumeMax, waveSensitivity, defaultSpeed, lineFadeTiming, boldTiming</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-022</b></td>
@@ -808,7 +809,7 @@
                             <td>Dashboard</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>DashboardController.Index()</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>DashboardController.Index()</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li>  <li>Live validation: 1 of 1 bound actions respond in the running app (verified routes: /Dashboard); form fields align with the bound parameters</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-029</b></td>
@@ -918,7 +919,7 @@
                             <td>Home</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>HomeController.Index()</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>HomeController.Index()</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li>  <li>Live validation: HomeController.Index not reachable in the running app &#x2014; the requirement stays source-bound; confirm the deployment covers it</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-033</b></td>
@@ -990,7 +991,7 @@
                             <td>Records</td>
                             <td><span class="pm-badge could">Could</span></td>
                             <td>3</td>
-                            <td><ul class="ac-list"> <li>RecordsController.Index() &#x2014; binds parameters: search (string?); pairs with view Records/Index.cshtml (fields: search)</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li> </ul></td>
+                            <td><ul class="ac-list"> <li>RecordsController.Index() &#x2014; binds parameters: search (string?); pairs with view Records/Index.cshtml (fields: search)</li>  <li>Authorization and model validation enforced on every action; error paths return correct status codes</li>  <li>Live validation: 1 of 1 bound actions respond in the running app (verified routes: /Records); form fields align with the bound parameters</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1192,7 +1193,7 @@
                             <td>Events</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Data model: extend ChatMessage with EventId (string, max 255 chars unless declared otherwise) (mirrors the source&#x27;s own &#x27;EventId&#x27; addition in ChatMessage.cs)</li>  <li>Views: the Events forms render and submit EventId with client validation mirroring server rules</li>  <li>Controller: modify Events action methods (EventsController.UpdateSession()) to bind and validate EventId per the source binding pattern; Database: ALTER TABLE ChatMessage ADD EventId column via versioned, dual-provider migration (SQL Server &#x2B; Oracle); Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Data model: extend ChatMessage with EventId (string, max 255 chars unless declared otherwise) (mirrors the source&#x27;s own &#x27;EventId&#x27; addition in ChatMessage.cs)</li>  <li>Views: the Events forms render and submit EventId with client validation mirroring server rules</li>  <li>Controller: modify Events action methods (EventsController.UpdateSession()) to bind and validate EventId per the source binding pattern; Database: ALTER TABLE ChatMessage ADD EventId column via versioned, dual-provider migration (SQL Server &#x2B; Oracle); Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li>  <li>Live validation: EventsController.UpdateSession not reachable in the running app &#x2014; the requirement stays source-bound; confirm the deployment covers it</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1211,7 +1212,7 @@
                             <td>Events</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Data model: extend ChatMessage with SenderId (string, max 255 chars unless declared otherwise) (mirrors the source&#x27;s own &#x27;SenderId&#x27; addition in ChatMessage.cs)</li>  <li>Views: the Events forms render and submit SenderId with client validation mirroring server rules</li>  <li>Controller: modify Events action methods (EventsController.UpdateSession()) to bind and validate SenderId per the source binding pattern; Database: ALTER TABLE ChatMessage ADD SenderId column via versioned, dual-provider migration (SQL Server &#x2B; Oracle); Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Data model: extend ChatMessage with SenderId (string, max 255 chars unless declared otherwise) (mirrors the source&#x27;s own &#x27;SenderId&#x27; addition in ChatMessage.cs)</li>  <li>Views: the Events forms render and submit SenderId with client validation mirroring server rules</li>  <li>Controller: modify Events action methods (EventsController.UpdateSession()) to bind and validate SenderId per the source binding pattern; Database: ALTER TABLE ChatMessage ADD SenderId column via versioned, dual-provider migration (SQL Server &#x2B; Oracle); Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li>  <li>Live validation: EventsController.UpdateSession not reachable in the running app &#x2014; the requirement stays source-bound; confirm the deployment covers it</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1230,7 +1231,7 @@
                             <td>Events</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Data model: extend ChatMessage with SenderName (string, max 255 chars unless declared otherwise) (mirrors the source&#x27;s own &#x27;SenderName&#x27; addition in ChatMessage.cs)</li>  <li>Views: the Events forms render and submit SenderName with client validation mirroring server rules</li>  <li>Controller: modify Events action methods (EventsController.UpdateSession()) to bind and validate SenderName per the source binding pattern; Database: ALTER TABLE ChatMessage ADD SenderName column via versioned, dual-provider migration (SQL Server &#x2B; Oracle); Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Data model: extend ChatMessage with SenderName (string, max 255 chars unless declared otherwise) (mirrors the source&#x27;s own &#x27;SenderName&#x27; addition in ChatMessage.cs)</li>  <li>Views: the Events forms render and submit SenderName with client validation mirroring server rules</li>  <li>Controller: modify Events action methods (EventsController.UpdateSession()) to bind and validate SenderName per the source binding pattern; Database: ALTER TABLE ChatMessage ADD SenderName column via versioned, dual-provider migration (SQL Server &#x2B; Oracle); Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li>  <li>Live validation: EventsController.UpdateSession not reachable in the running app &#x2014; the requirement stays source-bound; confirm the deployment covers it</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1249,7 +1250,7 @@
                             <td>Events</td>
                             <td><span class="pm-badge should">Should</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Data model: extend ChatMessage with Text (string, max 255 chars unless declared otherwise) (mirrors the source&#x27;s own &#x27;Text&#x27; addition in ChatMessage.cs)</li>  <li>Views: the Events forms render and submit Text with client validation mirroring server rules</li>  <li>Controller: modify Events action methods (EventsController.UpdateSession()) to bind and validate Text per the source binding pattern; Database: ALTER TABLE ChatMessage ADD Text column via versioned, dual-provider migration (SQL Server &#x2B; Oracle); Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Data model: extend ChatMessage with Text (string, max 255 chars unless declared otherwise) (mirrors the source&#x27;s own &#x27;Text&#x27; addition in ChatMessage.cs)</li>  <li>Views: the Events forms render and submit Text with client validation mirroring server rules</li>  <li>Controller: modify Events action methods (EventsController.UpdateSession()) to bind and validate Text per the source binding pattern; Database: ALTER TABLE ChatMessage ADD Text column via versioned, dual-provider migration (SQL Server &#x2B; Oracle); Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li>  <li>Live validation: EventsController.UpdateSession not reachable in the running app &#x2014; the requirement stays source-bound; confirm the deployment covers it</li> </ul></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1274,7 +1275,7 @@
                             <td>Events</td>
                             <td><span class="pm-badge could">Could</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Views: the Events forms render and submit Timestamp with client validation mirroring server rules</li>  <li>Data model: extend ChatMessage with Timestamp (DateTime) (mirrors the source&#x27;s own &#x27;Timestamp&#x27; addition in ChatMessage.cs); Controller: modify Events action methods (EventsController.UpdateSession()) to bind and validate Timestamp per the source binding pattern; Database: ALTER TABLE ChatMessage ADD Timestamp column via versioned, dual-provider migration (SQL Server &#x2B; Oracle)</li>  <li>Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Views: the Events forms render and submit Timestamp with client validation mirroring server rules</li>  <li>Data model: extend ChatMessage with Timestamp (DateTime) (mirrors the source&#x27;s own &#x27;Timestamp&#x27; addition in ChatMessage.cs); Controller: modify Events action methods (EventsController.UpdateSession()) to bind and validate Timestamp per the source binding pattern; Database: ALTER TABLE ChatMessage ADD Timestamp column via versioned, dual-provider migration (SQL Server &#x2B; Oracle)</li>  <li>Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li>  <li>Live validation: EventsController.UpdateSession not reachable in the running app &#x2014; the requirement stays source-bound; confirm the deployment covers it</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-053</b></td>
@@ -1283,7 +1284,7 @@
                             <td>Governance</td>
                             <td><span class="pm-badge could">Could</span></td>
                             <td>5</td>
-                            <td><ul class="ac-list"> <li>Data model: extend GlobalConfig with Name (string, max 255 chars unless declared otherwise) (mirrors the source&#x27;s own &#x27;Name&#x27; addition in GlobalConfig.cs)</li>  <li>Controller: modify Governance action methods (GovernanceController.SaveUser(), GovernanceController.UpdateConfig()) to bind and validate Name per the source binding pattern; Views: the Governance forms render and submit Name with client validation mirroring server rules</li>  <li>Database: ALTER TABLE GlobalConfig ADD Name column via versioned, dual-provider migration (SQL Server &#x2B; Oracle); Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li> </ul></td>
+                            <td><ul class="ac-list"> <li>Data model: extend GlobalConfig with Name (string, max 255 chars unless declared otherwise) (mirrors the source&#x27;s own &#x27;Name&#x27; addition in GlobalConfig.cs)</li>  <li>Controller: modify Governance action methods (GovernanceController.SaveUser(), GovernanceController.UpdateConfig()) to bind and validate Name per the source binding pattern; Views: the Governance forms render and submit Name with client validation mirroring server rules</li>  <li>Database: ALTER TABLE GlobalConfig ADD Name column via versioned, dual-provider migration (SQL Server &#x2B; Oracle); Grounding: the source repository added this field in its own history (1 commit(s), last seen 2026-05-02)</li>  <li>Live validation: 1 of 2 bound actions respond in the running app (verified routes: /Governance); form fields align with the bound parameters; live form carries extra fields &#x2014; GovernanceController.SaveUser live form captures fields not bound in the requirement: uid, name, userId, username, email, phone, password, address, usertype, userlevel; GovernanceController.UpdateConfig live form captures fields not bound in the requirement: name, region, volumeMin, volumeMax, waveSensitivity, defaultSpeed, lineFadeTiming, boldTiming</li> </ul></td>
                         </tr>
                         <tr>
                             <td><b>US-054</b></td>
@@ -2527,17 +2528,119 @@
                 <p style="color:#059669">All stories, sprints and test cases meet the standard of expectation.</p>
     </section>
 
+    <section id="functional" class="x-sec">
+            <div class="pm-kpis">
+                <div class="pm-kpi"><b>8</b><span>LIVE ROUTES CRAWLED</span></div>
+                <div class="pm-kpi"><b>11</b><span>BOUND ACTIONS VERIFIED</span></div>
+                <div class="pm-kpi"><b style="color:#059669">0</b><span>LIVE FUNCTIONS CONSOLIDATED</span></div>
+                <div class="pm-kpi"><b>7</b><span>STORIES LIVE-VALIDATED</span></div>
+            </div>
+            <p style="color:#4b5563;max-width:960px">Validated 66 stories against 8 live routes: 11 bound actions verified, 0 live functions consolidated into new requirements, 9 findings — captured from <code>https://1e768b4f-21c3-440b-a9e6-4667b8e4cb9a-00-2xbfc7131dcpa.picard.replit.dev:5000/Dashboard</code> at 2026-10-05T16:56:08Z (authenticated crawl).</p>
+            <h3 style="font-size:14px;color:#111827;margin:18px 0 6px">Live functional surface</h3>
+            <table class="pm-tbl">
+                <thead><tr><th>Route</th><th>Status</th><th>Page</th><th>Forms (action → fields)</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td><code>/</code></td>
+                        <td>ok</td>
+                        <td>Dashboard &#x2014; Shunya Sangha</td>
+                        <td>
+                                <span style="color:#9ca3af">read-only surface</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>/Dashboard</code></td>
+                        <td>ok</td>
+                        <td>Dashboard &#x2014; Shunya Sangha</td>
+                        <td>
+                                <span style="color:#9ca3af">read-only surface</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>/Records</code></td>
+                        <td>ok</td>
+                        <td>Records &#x2014; Shunya Sangha</td>
+                        <td>
+                                    <div style="margin:2px 0"><code>/Records</code> → search</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>/Governance</code></td>
+                        <td>ok</td>
+                        <td>Governance &#x2014; Shunya Sangha</td>
+                        <td>
+                                    <div style="margin:2px 0"><code>/Governance/SaveUser</code> → uid, name, userId, username, email, phone, password, address, usertype, userlevel</div>
+                                    <div style="margin:2px 0"><code>/Governance/UpdateConfig</code> → name, region, volumeMin, volumeMax, waveSensitivity, defaultSpeed, lineFadeTiming, boldTiming</div>
+                                    <div style="margin:2px 0"><code>/Governance</code> → search</div>
+                                    <div style="margin:2px 0"><code>/Governance/DeleteUser</code> → uid</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>/Admin</code></td>
+                        <td>ok</td>
+                        <td>Admin &#x2014; Shunya Sangha</td>
+                        <td>
+                                    <div style="margin:2px 0"><code>/Admin/CreateEvent</code> → id, title, venue, dressCode, fontSize, startTime, endTime, participants, sequence, hostId</div>
+                                    <div style="margin:2px 0"><code>/Admin/DeleteEvent</code> → id</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>/Events/View/eb479fff-3b36-4d23-a9db-f58b72adbc61</code></td>
+                        <td>ok</td>
+                        <td>00test00 &#x2014; Shunya Sangha</td>
+                        <td>
+                                    <div style="margin:2px 0"><code>/</code> → </div>
+                                    <div style="margin:2px 0"><code>/Events/Finalize/eb479fff-3b36-4d23-a9db-f58b72adbc61</code> → </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>/Events/View/92860856-eaa8-4b1e-8cea-815589bd8d7b</code></td>
+                        <td>ok</td>
+                        <td>lmgt &#x2014; Shunya Sangha</td>
+                        <td>
+                                    <div style="margin:2px 0"><code>/</code> → </div>
+                                    <div style="margin:2px 0"><code>/Events/Finalize/92860856-eaa8-4b1e-8cea-815589bd8d7b</code> → </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>/Events/View/49242d1a-1850-4ad4-a5ac-04d2f0d8c8a0</code></td>
+                        <td>ok</td>
+                        <td>fifakavacha &#x2014; Shunya Sangha</td>
+                        <td>
+                                    <div style="margin:2px 0"><code>/</code> → </div>
+                                    <div style="margin:2px 0"><code>/Events/Finalize/49242d1a-1850-4ad4-a5ac-04d2f0d8c8a0</code> → </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+                <h3 style="font-size:14px;color:#111827;margin:18px 0 6px">Validation findings</h3>
+                <table class="pm-tbl">
+                    <thead><tr><th>#</th><th>Finding</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>story US-004: bound action(s) LibraryController.Index, LibraryController.Create, LibraryController.Edit, LibraryController.Delete, LibraryController.GetItem, LibraryController.DiscoverScriptures have no live counterpart</td></tr>
+                        <tr><td>2</td><td>story US-010: bound action(s) EventsController.GetSession, EventsController.UpdateSession, EventsController.SendChat, EventsController.GetChats have no live counterpart</td></tr>
+                        <tr><td>3</td><td>story US-015: bound action(s) AdminController.EditEvent, AdminController.GetEvent have no live counterpart</td></tr>
+                        <tr><td>4</td><td>story US-032: bound action(s) HomeController.Index have no live counterpart</td></tr>
+                        <tr><td>5</td><td>story US-048: bound action(s) EventsController.UpdateSession have no live counterpart</td></tr>
+                        <tr><td>6</td><td>story US-049: bound action(s) EventsController.UpdateSession have no live counterpart</td></tr>
+                        <tr><td>7</td><td>story US-050: bound action(s) EventsController.UpdateSession have no live counterpart</td></tr>
+                        <tr><td>8</td><td>story US-051: bound action(s) EventsController.UpdateSession have no live counterpart</td></tr>
+                        <tr><td>9</td><td>story US-052: bound action(s) EventsController.UpdateSession have no live counterpart</td></tr>
+                    </tbody>
+                </table>
+    </section>
+
     <section id="architecture" class="x-sec">
         <div class="x-arc">
             <h3>1 &amp; 2. Introduction, Goals and Scope</h3>
-            <p>MvcReshunyasanga Programme &#x2014; the existing MS Enterprise application ingested from daluvalanokia/mvcreshunyasanga, rebuilt and extended across 52 sprints.</p>
+            <p>MvcReshunyasanga &#x2014; the existing MS Enterprise application ingested from daluvalanokia/mvcreshunyasanga, rebuilt and extended across 52 sprints.</p>
             <p>66 requirements keep the app&#x27;s current behaviors working while 18 enhancement stories extend it along its own history.</p>
 
             <h3>3. System Context (C4 level 1)</h3>
-            <div class="x-mermaid"><pre class="mermaid">flowchart LR&#xA;    subgraph actors[&quot;Actors&quot;]&#xA;            a1[&quot;developer&quot;]&#xA;            a2[&quot;user&quot;]&#xA;    end&#xA;        sys[&quot;MvcReshunyasanga Programme&quot;]&#xA;        db[(&quot;SQL Server 2019&quot;)]&#xA;    a1 --&gt;|&quot;uses&quot;| sys&#xA;    a2 --&gt;|&quot;administers&quot;| sys&#xA;    sys --&gt;|&quot;reads / writes&quot;| db</pre></div>
+            <div class="x-mermaid"><pre class="mermaid">flowchart LR&#xA;    subgraph actors[&quot;Actors&quot;]&#xA;            a1[&quot;developer&quot;]&#xA;            a2[&quot;user&quot;]&#xA;    end&#xA;        sys[&quot;MvcReshunyasanga&quot;]&#xA;        db[(&quot;SQL Server 2019&quot;)]&#xA;    a1 --&gt;|&quot;uses&quot;| sys&#xA;    a2 --&gt;|&quot;administers&quot;| sys&#xA;    sys --&gt;|&quot;reads / writes&quot;| db</pre></div>
 
             <h3>4. Container View (C4 level 2)</h3>
-            <div class="x-mermaid"><pre class="mermaid">flowchart LR&#xA;    user[&quot;&#x1F9CD; developer&quot;]&#xA;    web[&quot;MvcReshunyasanga Programme [web &#x2014; ASP.NET Core 8.0 MVC]&quot;]&#xA;    db[(&quot;SQL Server 2019&quot;)]&#xA;user --&gt;|&quot;https / browser&quot;| web&#xA;web --&gt;|&quot;entity framework / data access&quot;| db&#xA;    wl0[&quot;ASP.NET Core 8.0 MVC&quot;]&#xA;    wl1[&quot;Razor Views (.cshtml)&quot;]&#xA;    wl2[&quot;Cookie/JWT Authentication&quot;]&#xA;    sv3[&quot;Domain services per module&quot;]&#xA;    sv4[&quot;Validation pipeline&quot;]&#xA;    dl5[&quot;EF Core DbContext&quot;]&#xA;    dl6[&quot;SQL Server 2019 (prod)&quot;]&#xA;    dl7[&quot;Oracle 19c (alt)&quot;]</pre></div>
+            <div class="x-mermaid"><pre class="mermaid">flowchart LR&#xA;    user[&quot;&#x1F9CD; developer&quot;]&#xA;    web[&quot;MvcReshunyasanga [web &#x2014; ASP.NET Core 8.0 MVC]&quot;]&#xA;    db[(&quot;SQL Server 2019&quot;)]&#xA;user --&gt;|&quot;https / browser&quot;| web&#xA;web --&gt;|&quot;entity framework / data access&quot;| db&#xA;    wl0[&quot;ASP.NET Core 8.0 MVC&quot;]&#xA;    wl1[&quot;Razor Views (.cshtml)&quot;]&#xA;    wl2[&quot;Cookie/JWT Authentication&quot;]&#xA;    sv3[&quot;Domain services per module&quot;]&#xA;    sv4[&quot;Validation pipeline&quot;]&#xA;    dl5[&quot;EF Core DbContext&quot;]&#xA;    dl6[&quot;SQL Server 2019 (prod)&quot;]&#xA;    dl7[&quot;Oracle 19c (alt)&quot;]</pre></div>
 
             <h3>5. Building Block View (arc42 §5)</h3>
             <table class="pm-tbl">
@@ -2575,7 +2678,7 @@
 
             <h3>9. Architecture Decisions (ADRs)</h3>
                 <div class="x-adr">
-                    <b>ADR-001 — Run MvcReshunyasanga Programme as a MS Enterprise web application</b><span class="st">Accepted</span>
+                    <b>ADR-001 — Run MvcReshunyasanga as a MS Enterprise web application</b><span class="st">Accepted</span>
                     <p style="margin:6px 0 2px"><b>Context:</b> Microsoft Enterprise Stack detected as the platform of the existing source.</p>
                     <p style="margin:2px 0"><b>Decision:</b> Continue with ASP.NET Core 8.0 MVC; best for enterprises on the microsoft ecosystem, erp/crm/internal systems, ad integration.</p>
                 </div>
@@ -2597,7 +2700,7 @@
         </div>
     </section>
 
-    <div class="x-foot">Generated by SmartAgent PM engine · 2026-10-05 · static export of mvcreshunyasangaprogramme</div>
+    <div class="x-foot">Generated by SmartAgent PM engine · 2026-10-05 · static export of mvcreshunyasanga</div>
 </div>
 <script>
     document.getElementById('tabs').addEventListener('click', function (e) {

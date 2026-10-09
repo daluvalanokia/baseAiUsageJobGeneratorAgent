@@ -378,6 +378,24 @@
         {
             <p style="color:#4b5563">Quality report not present on this plan (generated before the quality engine).</p>
         }
+
+        @if (Model.Timings.Count > 0)
+        {
+            <h3 style="font-size:14px;color:#111827;margin:18px 0 6px">Parallel generation telemetry</h3>
+            <p style="color:#4b5563;max-width:960px">@Model.ThreadSummary — stage-by-stage traces of the thread
+                manager that fanned this plan's Roslyn source capture, capability mapping, functional crawl and
+                sprint engineering packs across worker lanes. Peak concurrency is the observed high-water mark
+                of items in flight, not the lane budget.</p>
+            <table class="pm-tbl">
+                <thead><tr><th>Stage</th><th>Items</th><th>Lane budget</th><th>Wall clock</th><th>Peak concurrency</th></tr></thead>
+                <tbody>
+                @foreach (var t in Model.Timings)
+                {
+                    <tr><td>@t.Stage</td><td>@t.Items</td><td>@t.Threads</td><td>@($"{t.ElapsedMs:N0}") ms</td><td>@t.PeakConcurrency</td></tr>
+                }
+                </tbody>
+            </table>
+        }
     </section>
 
     @* ---------------- Functional spec (live app validation) ---------------- *@

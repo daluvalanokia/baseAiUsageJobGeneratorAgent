@@ -60,6 +60,7 @@ public sealed partial class FunctionalSpecGenerator
 {
     private const int MaxRoutes = 16;
     private readonly Func<HttpMessageHandler> _handlerFactory;
+    private PmThreadManager _threads;
 
     public FunctionalSpecGenerator() : this(() => new HttpClientHandler
     {
@@ -69,13 +70,24 @@ public sealed partial class FunctionalSpecGenerator
         ServerCertificateCustomValidationCallback = (_, _, _, _) => true
     }) { }
 
-    public FunctionalSpecGenerator(Func<HttpMessageHandler> handlerFactory)
-        => _handlerFactory = handlerFactory;
+    public FunctionalSpecGenerator(Func<HttpMessageHandler> handlerFactory, PmThreadManager? threadManager = null)
+    {
+        _handlerFactory = handlerFactory;
+        _threads = threadManager ?? new PmThreadManager();
+    }
+
+    /// <summary>One route fetched in a crawl wave.</summary>
+    private sealed record CrawledPage(int Status, string Title, IReadOnlyList<PmFunctionalForm> Forms,
+        IReadOnlyList<string> Links, IReadOnlyList<string> CssHrefs, string InlineCss, int RowCount);
 
     /// <summary>Captures the functional surface of the running app.</summary>
     public async Task<PmFunctionalSpec> CaptureAsync(string baseUrl, string? userId, string? password,
-        CancellationToken ct = default)
+        CancellationToken ct = default, PmThreadManager? threadManager = null)
     {
+        // a run-scoped manager overrides the constructor default so the crawl
+        // shares the same lanes and telemetry as the rest of the generation
+        var manager = threadManager ?? _threads;
+        _threads = manager;
         var root = baseUrl.Trim().TrimEnd('/');
         using var client = new HttpClient(_handlerFactory()) { BaseAddress = new Uri(root) };
         client.Timeout = TimeSpan.FromSeconds(45);
@@ -101,38 +113,59 @@ public sealed partial class FunctionalSpecGenerator
             }
         }
 
-        var routes = new List<string> { "/" };
-        routes.AddRange(InternalLinks(entryBody));
+        // ── wave-based crawl: routes discovered in one wave are fetched in
+        // parallel on the thread manager's I/O lanes; the next wave is built
+        // from the links the wave surfaced. Page order follows wave + route
+        // order, so results match the sequential breadth-first scan.
         var pages = new List<PmFunctionalPage>();
         var cssBuilder = new System.Text.StringBuilder();
-        var cssBudget = MaxCssBytes;
-        var fetchedCss = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var page in new[] { entryBody })
-        {
-            var inline = StyleBlocks(page);
-            if (cssBudget > 0) { cssBuilder.Append(inline); cssBudget -= inline.Length; }
-            foreach (var href in StylesheetHrefs(page))
-                cssBudget = await FetchCssAsync(client, href, cssBuilder, fetchedCss, cssBudget, ct);
-        }
+        var inlineOfEntry = StyleBlocks(entryBody);
+        cssBuilder.Append(inlineOfEntry);
+        var pendingCss = new List<string>(StylesheetHrefs(entryBody));
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "/" };
+        var wave = new List<string> { "/" };
+        foreach (var link in InternalLinks(entryBody))
+            if (visited.Add(link) && wave.Count < MaxRoutes) wave.Add(link);
         var viewport = ViewportOf(entryBody);
-        for (var i = 0; i < routes.Count && pages.Count < MaxRoutes; i++)
+
+        while (wave.Count > 0 && pages.Count < MaxRoutes)
         {
-            var route = routes[i];
-            using var resp = await client.GetAsync(route, ct);
-            var body = resp.IsSuccessStatusCode ? await resp.Content.ReadAsStringAsync(ct) : string.Empty;
-            pages.Add(new PmFunctionalPage
+            // bounded wave: at most IoThreads routes in flight at once
+            var inFlight = wave.Take(Math.Min(manager.IoThreads, MaxRoutes - pages.Count)).ToList();
+            var crawled = await manager.FanOutAsync("functional: route crawl", inFlight,
+                (route, token) => FetchRouteAsync(client, route, token), ct);
+
+            var nextWave = new List<string>();
+            foreach (var (route, page) in inFlight.Zip(crawled))
             {
-                Route = route, Status = (int)resp.StatusCode, Title = TitleOf(body),
-                Forms = FormsOf(body), Links = InternalLinks(body),
-                RowCount = RowCountOf(body)
-            });
-            foreach (var link in InternalLinks(body))
-                if (routes.Count < MaxRoutes && !routes.Contains(link))
-                    routes.Add(link);
-            var inline = StyleBlocks(body);
-            if (cssBudget > 0) { cssBuilder.Append(inline); cssBudget -= inline.Length; }
-            foreach (var href in StylesheetHrefs(body))
-                cssBudget = await FetchCssAsync(client, href, cssBuilder, fetchedCss, cssBudget, ct);
+                pages.Add(new PmFunctionalPage
+                {
+                    Route = route, Status = page.Status, Title = page.Title,
+                    Forms = page.Forms, Links = page.Links, RowCount = page.RowCount
+                });
+                cssBuilder.Append(page.InlineCss);
+                pendingCss.AddRange(page.CssHrefs);
+                foreach (var link in page.Links)
+                    if (visited.Add(link) && pages.Count + nextWave.Count < MaxRoutes)
+                        nextWave.Add(link);
+            }
+            var remaining = wave.Skip(inFlight.Count).ToList();
+            foreach (var link in nextWave) remaining.Insert(0, link);
+            wave = remaining;
+        }
+
+        // stylesheets: deduped, fetched in parallel on the I/O lanes, merged in
+        // discovery order until the design-token budget is spent
+        var fetchedCss = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var orderedHrefs = pendingCss.Where(fetchedCss.Add).ToList();
+        var cssTexts = await manager.FanOutAsync("functional: stylesheet capture", orderedHrefs,
+            (href, token) => DownloadCssAsync(client, href, token), ct);
+        var cssBudget = MaxCssBytes - cssBuilder.Length;
+        foreach (var text in cssTexts)
+        {
+            if (cssBudget <= 0) break;
+            cssBuilder.Append(text);
+            cssBudget -= text.Length;
         }
 
         var design = DesignSystemAnalyzer.Analyze(cssBuilder.ToString(), pages, viewport);
@@ -527,6 +560,22 @@ public sealed partial class FunctionalSpecGenerator
     {
         var t = TitleRegex().Match(html).Groups["title"].Value.Trim();
         return t.Length > 80 ? t[..80] : t;
+    }
+
+    /// <summary>Fetches one route on a crawl lane: status, parsed surface, css references.</summary>
+    private async Task<CrawledPage> FetchRouteAsync(HttpClient client, string route, CancellationToken ct)
+    {
+        using var resp = await client.GetAsync(route, ct);
+        var body = resp.IsSuccessStatusCode ? await resp.Content.ReadAsStringAsync(ct) : string.Empty;
+        return new CrawledPage((int)resp.StatusCode, TitleOf(body), FormsOf(body),
+            InternalLinks(body), StylesheetHrefs(body), StyleBlocks(body), RowCountOf(body));
+    }
+
+    /// <summary>Downloads one stylesheet on a crawl lane (empty on failure).</summary>
+    private static async Task<string> DownloadCssAsync(HttpClient client, string href, CancellationToken ct)
+    {
+        using var resp = await client.GetAsync(href, ct);
+        return resp.IsSuccessStatusCode ? await resp.Content.ReadAsStringAsync(ct) : string.Empty;
     }
 
     private static async Task<string> GetBodyAsync(HttpClient client, string route, CancellationToken ct)

@@ -14,7 +14,7 @@ namespace SmartAgent.Core.Pm;
 /// the role outputs into the generated multi-year program.
 /// </summary>
 public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor ingestor, SprintPlanner planner,
-    PmQualityEngine quality, FunctionalSpecGenerator functionalSpec)
+    PmQualityEngine quality, FunctionalSpecGenerator functionalSpec, PmThreadManager threads)
 {
     /// <summary>Generates a full program plan from a source snapshot.</summary>
     public async Task<ProgramPlan> GenerateAsync(SourceSnapshot snapshot, PmOptions options,
@@ -22,8 +22,11 @@ public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor inge
     {
         var modules = ingestor.DetectModules(snapshot);
         var resources = planner.Roster(options.TeamSize, modules.Count);
-        var analyzer = new SourceAnalyzer();
-        var classes = analyzer.Classes(snapshot);   // deep source review input
+        // every manager shares one thread manager for this run — the Roslyn
+        // source capture, capability mapping, functional crawl and artifact
+        // attachment all fan out across its lanes instead of line-by-line
+        var analyzer = new SourceAnalyzer(threads);
+        var classes = analyzer.Classes(snapshot);   // deep source review input (parallel Roslyn)
         var profile = analyzer.ProfileApp(snapshot, classes);   // what the app actually does
         var (epics, stories) = snapshot.SourceType == SourceType.GitHub || snapshot.Files.Count > 0
             ? ingestor.FromSource(snapshot, classes, profile)
@@ -47,7 +50,7 @@ public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor inge
         if (!string.IsNullOrWhiteSpace(options.FunctionalUrl))
         {
             var captured = await functionalSpec.CaptureAsync(
-                options.FunctionalUrl!, options.FunctionalUser, options.FunctionalPassword, ct);
+                options.FunctionalUrl!, options.FunctionalUser, options.FunctionalPassword, ct, threads);
             var validation = functionalSpec.ValidateAndConsolidate(epics, stories, captured);
             epics = validation.Epics;
             stories = validation.Stories;
@@ -70,7 +73,7 @@ public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor inge
         var plan = planner.Plan(options.Name,
             snapshot.SourceType.ToString(), snapshot.SourceName, snapshot.SourceDetail,
             resources, epics, stories, squads, options);
-        plan = planner.AttachArtifacts(plan, snapshot);   // deep source capture: tests, DB scripts, HLD/DDD, issues, milestones
+        plan = planner.AttachArtifacts(plan, snapshot, classes, threads);   // deep source capture: tests, DB scripts, HLD/DDD, issues, milestones
 
         // quality engine: compare against the standard of expectation, regenerate
         // failing stories/sprints/test cases until the plan meets the standard
@@ -80,6 +83,8 @@ public sealed class PmGovernor(ThreadGovernor governor, RequirementIngestor inge
 
         plan.RoleOutputs = roleOutputs;
         plan.GovernorReportFile = reportPath;
+        plan.Timings = threads.Timings;
+        plan.ThreadSummary = threads.Summary();
         return plan;
     }
 

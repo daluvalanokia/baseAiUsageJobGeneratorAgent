@@ -21,7 +21,50 @@ public sealed class PmController(
     // ---------- MVC (user interaction) ----------
 
     [HttpGet]
-    public IActionResult Index() => View("Plan", new PmPlanInput { Name = "Agile Delivery Programme" });
+    /// <summary>Main project page: GitHub source in, PM hub analysis link out.</summary>
+    public IActionResult Index() => View("Project", new PmProjectInput());
+
+    [HttpGet]
+    public IActionResult Project() => View("Project", new PmProjectInput());
+
+    [HttpGet]
+    public IActionResult Plan() => View("Plan", new PmPlanInput { Name = "Agile Delivery Programme" });
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Project(PmProjectInput input, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) return View("Project", input);
+        try
+        {
+            // weeks → years for the engine; total budget → per-year cap; the
+            // composed prompt the analysis runs on (Ingest intent: full
+            // program generation from the GitHub source)
+            var plan = await GenerateAsync(new PmPlanInput
+            {
+                Name = input.Name.Trim(), GitHubUrl = input.GitHubUrl.Trim(), Prompt = input.ComposePrompt(),
+                FunctionalUrl = input.FunctionalUrl, FunctionalUser = input.FunctionalUser,
+                FunctionalPassword = input.FunctionalPassword,
+                Years = input.YearsFor(), TeamSize = input.TeamSize, BudgetCapPerYearUsd = input.PerYearBudgetFor()
+            }, ct);
+            programStore.Save(plan);
+
+            ViewBag.Result = new PmProjectResult(
+                plan.Slug, plan.Name, input.ComposePrompt(),
+                Url.Action("Export", new { slug = plan.Slug })!,
+                Url.Action("Hub", new { slug = plan.Slug })!,
+                plan.Sprints, plan.Weeks, plan.UserStoryCount, plan.TotalStoryPoints,
+                plan.Budget?.TotalUsd ?? 0, plan.Resources.Count,
+                plan.UnitTestCount + plan.SystemTestCount);
+            return View("Project", input);
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, $"PM hub analysis failed: {ex.Message}");
+            logger.LogError(ex, "PM hub analysis failed for {Repo}", input.GitHubUrl);
+            return View("Project", input);
+        }
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]

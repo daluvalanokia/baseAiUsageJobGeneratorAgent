@@ -104,22 +104,31 @@ public sealed record PmAppProfile
     public IReadOnlyList<(string Root, int Files)> OtherRoots { get; init; } = Array.Empty<(string, int)>();
 }
 
-public sealed partial class SourceAnalyzer
+public sealed partial class SourceAnalyzer(PmThreadManager? threads = null)
 {
+    private readonly PmThreadManager _threads = threads ?? new PmThreadManager();
+
     /// <summary>Captures classes with their public methods from source files.</summary>
     public IReadOnlyList<PmClassInfo> Classes(SourceSnapshot snapshot)
     {
         var result = new List<PmClassInfo>();
-        // Roslyn gives exact methods/params/kinds for C# — compiler truth, not heuristics
-        foreach (var rc in RoslynReader.ReadClasses(snapshot.Files))
+        // Roslyn gives exact methods/params/kinds for C# — compiler truth, not heuristics.
+        // One file per lane on the thread manager (parse trees are file-independent),
+        // output order identical to the sequential scan: C# files first, then other code.
+        var csFiles = snapshot.Files
+            .Where(f => f.Path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)).ToList();
+        foreach (var rc in _threads.FanOut("source: Roslyn class extraction", csFiles,
+            file => RoslynReader.ReadClasses(new[] { file }))
+            .SelectMany(group => group))
             result.Add(new PmClassInfo
             {
                 Name = rc.Name, Module = ModuleOf(rc.File), File = rc.File, Kind = rc.Kind,
                 Methods = rc.Methods, MethodParams = rc.MethodParams
             });
-        foreach (var file in snapshot.Files)
+        var otherFiles = snapshot.Files
+            .Where(f => IsCode(f.Path) && !f.Path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)).ToList();
+        foreach (var file in otherFiles)
         {
-            if (!IsCode(file.Path) || file.Path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)) continue;
             var module = ModuleOf(file.Path);
             foreach (var m in ClassRegex().Matches(file.Content).Cast<Match>())
             {
@@ -542,34 +551,23 @@ public sealed partial class SourceAnalyzer
             .GroupBy(f => AppRootOf(f.Path))
             .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
 
-        // controllers → capabilities with their real action methods
+        // controllers → capabilities with their real action methods.
+        // One controller per lane on the thread manager; the fan-out keeps
+        // input order (methods descending), so capability order is identical
+        // to the sequential scan, and entity claiming merges after the wave.
         var capabilities = new List<PmCapability>();
         var entityDetails = EntityDetailsOf(snapshot, classes);
         var viewDetails = ViewDetailsOf(snapshot);
+        var controllers = rootClasses.Where(c => c.Kind is "Controller" or "Hub")
+            .OrderByDescending(c => c.Methods.Count).ToList();
+        var perController = _threads.FanOut("source: capability mapping", controllers,
+            c => (Cap: CapabilityOf(c, snapshot, rootClasses, contentBy, entityDetails, viewDetails, root, fileCountByRoot),
+                Entities: CapabilityEntitiesOf(c, rootClasses, contentBy)));
         var claimed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var c in rootClasses.Where(c => c.Kind is "Controller" or "Hub")
-                     .OrderByDescending(c => c.Methods.Count))
+        foreach (var (cap, entities) in perController)
         {
-            var feature = c.Name.Replace("Controller", "", StringComparison.OrdinalIgnoreCase)
-                .Replace("Hub", "", StringComparison.OrdinalIgnoreCase);
-            var views = snapshot.Files
-                .Where(f => f.Path.Contains($"/Views/{feature}/", StringComparison.OrdinalIgnoreCase)
-                            && f.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
-                .Select(f => Path.GetFileNameWithoutExtension(f.Path)).Distinct().ToList();
-            var content = contentBy.GetValueOrDefault(c.File) ?? "";
-            var entities = rootClasses.Where(e => e.Kind == "Entity"
-                    && (e.Name.StartsWith(feature, StringComparison.OrdinalIgnoreCase)
-                        || content.Contains(e.Name, StringComparison.OrdinalIgnoreCase)))
-                .Select(e => e.Name).ToList();
             foreach (var e in entities) claimed.Add(e);
-            capabilities.Add(new PmCapability
-            {
-                Feature = feature, Kind = c.Kind, Root = root, Class = c.Name,
-                Methods = c.Methods, MethodParams = c.MethodParams, Views = views, Entities = entities,
-                EntityDetails = entityDetails.Where(d => entities.Contains(d.Name)).ToList(),
-                ViewDetails = viewDetails.Where(v => v.Feature.Equals(feature, StringComparison.OrdinalIgnoreCase)).ToList(),
-                FileCount = Math.Max(1, fileCountByRoot.GetValueOrDefault(root, 1) / 4 + views.Count + entities.Count)
-            });
+            capabilities.Add(cap);
         }
         // unclaimed domain entities → one data-model capability
         var freeEntities = rootClasses.Where(c => c.Kind == "Entity" && !claimed.Contains(c.Name))
@@ -660,8 +658,12 @@ public sealed partial class SourceAnalyzer
     public IReadOnlyList<PmEntityDetail> EntityDetailsOf(SourceSnapshot snapshot, IReadOnlyList<PmClassInfo>? classes = null)
     {
         classes ??= Classes(snapshot);
-        // Roslyn path: exact properties with exact [StringLength]/[MaxLength]/[Required]/[Key] attributes
-        var roslynEntities = RoslynReader.ReadEntities(snapshot.Files)
+        // Roslyn path: exact properties with exact [StringLength]/[MaxLength]/[Required]/[Key]
+        // attributes — parse trees are file-independent, so one .cs file per lane
+        var roslynEntities = _threads.FanOut("source: Roslyn entity extraction",
+                snapshot.Files.Where(f => f.Path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)).ToList(),
+                file => RoslynReader.ReadEntities(new[] { file }))
+            .SelectMany(group => group)
             .GroupBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
         var details = new List<PmEntityDetail>();
@@ -799,15 +801,21 @@ public sealed partial class SourceAnalyzer
 
     public IReadOnlyList<PmViewDetail> ViewDetailsOf(SourceSnapshot snapshot)
     {
-        var result = new List<PmViewDetail>();
-        foreach (var f in snapshot.Files.Where(x =>
-                     x.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase)
-                     || x.Path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)))
+        var views = snapshot.Files.Where(x =>
+                         x.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase)
+                         || x.Path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)).ToList();
+        // one view file per lane on the thread manager; output order preserved
+        return _threads.FanOut("source: view detail extraction", views, ViewDetailOf)
+            .Where(v => v != null).Cast<PmViewDetail>().ToList();
+    }
+
+    private PmViewDetail? ViewDetailOf(SourceFile f)
+    {
         {
             var parts = f.Path.Split('/', StringSplitOptions.RemoveEmptyEntries);
             string feature = parts.Length > 1 ? parts[^2] : "";
             var viewName = Path.GetFileName(f.Path);
-            if (feature.Length == 0 || viewName.StartsWith("_", StringComparison.Ordinal)) continue;
+            if (feature.Length == 0 || viewName.StartsWith("_", StringComparison.Ordinal)) return null;
 
             var fields = new List<string>();
             foreach (Match m in InputFieldRegex().Matches(f.Content))
@@ -826,9 +834,45 @@ public sealed partial class SourceAnalyzer
             behaviors = behaviors.Distinct().Take(8).ToList();
 
             if (fields.Count > 0 || behaviors.Count > 0)
-                result.Add(new PmViewDetail { Name = viewName, Feature = feature, Fields = fields, Behaviors = behaviors });
+                return new PmViewDetail { Name = viewName, Feature = feature, Fields = fields, Behaviors = behaviors };
+            return null;
         }
-        return result;
+    }
+
+    /// <summary>The capability one controller/hub class contributes to the app profile.</summary>
+    private PmCapability CapabilityOf(PmClassInfo c, SourceSnapshot snapshot, IReadOnlyList<PmClassInfo> rootClasses,
+        IReadOnlyDictionary<string, string> contentBy, IReadOnlyList<PmEntityDetail> entityDetails,
+        IReadOnlyList<PmViewDetail> viewDetails, string root,
+        IReadOnlyDictionary<string, int> fileCountByRoot)
+    {
+        var feature = c.Name.Replace("Controller", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("Hub", "", StringComparison.OrdinalIgnoreCase);
+        var views = snapshot.Files
+            .Where(f => f.Path.Contains($"/Views/{feature}/", StringComparison.OrdinalIgnoreCase)
+                        && f.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
+            .Select(f => Path.GetFileNameWithoutExtension(f.Path)).Distinct().ToList();
+        var entities = CapabilityEntitiesOf(c, rootClasses, contentBy);
+        return new PmCapability
+        {
+            Feature = feature, Kind = c.Kind, Root = root, Class = c.Name,
+            Methods = c.Methods, MethodParams = c.MethodParams, Views = views, Entities = entities,
+            EntityDetails = entityDetails.Where(d => entities.Contains(d.Name)).ToList(),
+            ViewDetails = viewDetails.Where(v => v.Feature.Equals(feature, StringComparison.OrdinalIgnoreCase)).ToList(),
+            FileCount = Math.Max(1, fileCountByRoot.GetValueOrDefault(root, 1) / 4 + views.Count + entities.Count)
+        };
+    }
+
+    /// <summary>The domain entities one controller works on (claimed by it).</summary>
+    private static IReadOnlyList<string> CapabilityEntitiesOf(PmClassInfo c, IReadOnlyList<PmClassInfo> rootClasses,
+        IReadOnlyDictionary<string, string> contentBy)
+    {
+        var feature = c.Name.Replace("Controller", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("Hub", "", StringComparison.OrdinalIgnoreCase);
+        var content = contentBy.GetValueOrDefault(c.File) ?? "";
+        return rootClasses.Where(e => e.Kind == "Entity"
+                && (e.Name.StartsWith(feature, StringComparison.OrdinalIgnoreCase)
+                    || content.Contains(e.Name, StringComparison.OrdinalIgnoreCase)))
+            .Select(e => e.Name).ToList();
     }
 
     private PmPlatform MsPlatform(SourceSnapshot snapshot, string fx)

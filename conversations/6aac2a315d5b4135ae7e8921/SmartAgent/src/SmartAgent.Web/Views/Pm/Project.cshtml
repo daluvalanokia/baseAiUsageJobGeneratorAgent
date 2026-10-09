@@ -1,0 +1,95 @@
+@model PmProjectInput
+@{
+    ViewData["Title"] = "PM Hub — Main Project Page";
+    var result = ViewBag.Result as PmProjectResult;
+}
+<section class="pm-project">
+    <h1>Main Project — PM Hub Analysis</h1>
+    <p class="lead">
+        Point the agent at a GitHub repository (the .NET solution you work on in
+        Visual Studio) and, optionally, the live app URL. Press
+        <b>PM Hub Analysis</b> and the agent composes the prompt, ingests the
+        source, and generates the full programme — you get a link to every
+        detail it produced: overview, sprints, requirements, budgets, tests,
+        architecture, living artifacts.
+    </p>
+
+    <form asp-action="Project" method="post" class="pm-form">
+        <div asp-validation-summary="All"></div>
+        <div class="pm-grid">
+            <label class="full">Project name
+                <input asp-for="Name" maxlength="80" placeholder="Mvc Reshunyasanga" />
+            </label>
+            <label class="full">GitHub source <span class="hint">(the repository holding the solution, e.g. https://github.com/owner/repo)</span>
+                <input asp-for="GitHubUrl" placeholder="https://github.com/daluvalanokia/mvcreshunyasanga" required />
+            </label>
+            <label class="full">App URL <span class="hint">(optional: live app to validate requirements against)</span>
+                <input asp-for="FunctionalUrl" placeholder="https://app.example.com/Dashboard" />
+            </label>
+            <label>App user id <span class="hint">(optional, for the crawl)</span>
+                <input asp-for="FunctionalUser" />
+            </label>
+            <label>App password <span class="hint">(used once at capture)</span>
+                <input asp-for="FunctionalPassword" type="password" />
+            </label>
+            <label>Project duration (weeks)
+                <input asp-for="Weeks" type="number" min="2" max="260" value="@(Model.Weeks > 0 ? Model.Weeks : 52)" />
+            </label>
+            <label>Budget ($) <span class="hint">(0 = unconstrained)</span>
+                <input asp-for="TotalBudgetUsd" type="number" min="0" step="1000" placeholder="500000" />
+            </label>
+            <label>Team size (count) <span class="hint">(blank = derived from modules)</span>
+                <input asp-for="TeamSize" type="number" min="6" max="200" />
+            </label>
+        </div>
+        <button type="submit" class="pm-cta">PM Hub Analysis</button>
+    </form>
+
+    @if (result is not null)
+    {
+        <div class="pm-result">
+            <h2>Analysis complete — @result.Name</h2>
+            <p class="pm-prompt">
+                <b>Generated prompt:</b> <code>@result.ComposedPrompt</code>
+            </p>
+            <div class="pm-kpis">
+                <div class="pm-kpi"><b>@result.Sprints</b><span>SPRINTS</span></div>
+                <div class="pm-kpi"><b>@result.Weeks</b><span>WEEKS</span></div>
+                <div class="pm-kpi"><b>@result.Stories</b><span>USER STORIES</span></div>
+                <div class="pm-kpi"><b>@result.StoryPoints</b><span>STORY POINTS</span></div>
+                <div class="pm-kpi"><b>@result.TestCases</b><span>TEST CASES</span></div>
+                <div class="pm-kpi green"><b>$@(result.BudgetUsd.ToString("N0"))</b><span>TOTAL BUDGET</span></div>
+            </div>
+            <p class="pm-open">
+                <a class="pm-link-main" href="@result.ExportLink">View all generated details — overview, sprints, requirements, budgets</a>
+                <span class="pm-raw">@result.ExportLink</span>
+                <a class="pm-link-alt" href="@result.HubLink">or open the tabbed hub →</a>
+            </p>
+        </div>
+    }
+</section>
+<style>
+    .pm-project { max-width: 980px; }
+    .pm-form { max-width: 900px; }
+    .pm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; margin-top: 14px; }
+    .pm-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #495057; font-weight: 600; }
+    .pm-grid input { font: inherit; padding: 8px 10px; border: 1px solid #ced4da; border-radius: 6px; }
+    .full { grid-column: 1 / -1; }
+    .hint { font-weight: 400; color: #868e96; font-size: 11px; }
+    .pm-cta { margin-top: 14px; background: #0d6efd; color: #fff; border: 0; padding: 10px 22px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .pm-cta:hover { background: #0b5ed7; }
+    .validation-summary-errors { color: #dc3545; }
+    .pm-result { margin-top: 26px; border: 1px solid #d0e1ff; background: #f4f8ff; border-radius: 10px; padding: 18px 20px; }
+    .pm-result h2 { margin: 0 0 8px; font-size: 18px; color: #0b5ed7; }
+    .pm-prompt code { display: block; background: #e9ecef; border-radius: 6px; padding: 8px 10px; font-size: 12px; margin-top: 6px; word-break: break-word; }
+    .pm-kpis { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+    .pm-kpi { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 10px 14px; text-align: center; min-width: 104px; }
+    .pm-kpi b { display: block; font-size: 18px; color: #111827; }
+    .pm-kpi span { font-size: 10px; letter-spacing: .04em; color: #868e96; }
+    .pm-kpi.green b { color: #059669; }
+    .pm-open { margin: 6px 0 0; }
+    .pm-link-main { display: inline-block; background: #059669; color: #fff; text-decoration: none; font-weight: 600; padding: 10px 18px; border-radius: 6px; }
+    .pm-link-main:hover { background: #047857; }
+    .pm-raw { display: block; margin: 8px 0; color: #6b7280; font-size: 12px; word-break: break-all; }
+    .pm-link-alt { color: #0d6efd; font-size: 13px; }
+</style>

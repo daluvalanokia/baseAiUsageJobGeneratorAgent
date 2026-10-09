@@ -106,6 +106,7 @@ builder.Services.AddSingleton(sp =>
 builder.Services.AddSingleton<SmartAgent.Core.Dat.ThreadGovernor>();
 // PM capability: role-threaded multi-year program generation (RACI, agile
 // requirements, sprints, budget) + MVC PM Hub.
+builder.Services.AddSingleton<SmartAgent.Core.Pm.PmThreadManager>();
 builder.Services.AddSingleton<SmartAgent.Core.Pm.RequirementIngestor>();
 builder.Services.AddSingleton<SmartAgent.Core.Pm.SprintPlanner>();
 builder.Services.AddSingleton<SmartAgent.Core.Pm.PmQualityEngine>();

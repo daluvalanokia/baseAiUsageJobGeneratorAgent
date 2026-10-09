@@ -234,4 +234,8 @@ public sealed class ProgramPlan
     public PmFunctionalSpec? FunctionalSpec { get; set; }
     /// <summary>Free-form user prompt that drove this generation ("create new app" / "enhance app: ...").</summary>
     public string? Prompt { get; set; }
+    /// <summary>Thread-manager traces: how the generation was parallelized, stage by stage.</summary>
+    public IReadOnlyList<PmStageTiming> Timings { get; set; } = Array.Empty<PmStageTiming>();
+    /// <summary>One-line summary of the parallel generation run ("6 stages, peak 8 lanes, 1,842 ms").</summary>
+    public string ThreadSummary { get; set; } = string.Empty;
 }
